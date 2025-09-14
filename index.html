@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Настройки уведомлений</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <style>
+    body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;margin:0;background:#0f1115;color:#e6e6e6}
+    .wrap{max-width:680px;margin:0 auto;padding:24px}
+    h1{font-size:20px;margin:0 0 16px}
+    .card{background:#171a21;border:1px solid #262b36;border-radius:14px;padding:16px;margin-bottom:16px}
+    label{display:flex;align-items:center;gap:12px;margin:10px 0}
+    input[type="checkbox"]{transform:scale(1.3)}
+    select,button{font-size:16px;padding:10px 12px;border-radius:10px;border:1px solid #2c3340;background:#0f1115;color:#e6e6e6}
+    button{cursor:pointer}
+    .row{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+    .muted{opacity:.8;font-size:14px}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>Управление ботом</h1>
+    <div class="card">
+      <label>
+        <input id="notif" type="checkbox" />
+        Включить уведомления
+      </label>
+      <div class="row">
+        <span>Интервал:</span>
+        <select id="interval">
+          <option value="4">каждые 4 часа</option>
+          <option value="8">каждые 8 часов</option>
+        </select>
+      </div>
+      <p class="muted">Откройте эту страницу из Telegram через кнопку «Открыть настройки» у бота.</p>
+      <div class="row" style="margin-top:12px">
+        <button id="save">Сохранить</button>
+        <button id="cancel" style="background:#2b2f3a">Отмена</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const tg = window.Telegram?.WebApp;
+    // Светлая/тёмная тема интеграция
+    if (tg) {
+      tg.expand(); // на всю высоту
+      tg.ready();
+      // можно подсветить тему: document.body.style.background = tg.themeParams.bg_color || "#0f1115";
+    }
+
+    document.getElementById('save').addEventListener('click', () => {
+      const payload = {
+        notifications: document.getElementById('notif').checked,
+        timeframe: parseInt(document.getElementById('interval').value, 10) // 4 или 8
+      };
+      if (!tg) {
+        alert('Демо-режим (открыто вне Telegram): ' + JSON.stringify(payload));
+        return;
+      }
+      try {
+        tg.HapticFeedback?.impactOccurred?.('light');
+      } catch(e){}
+      tg.sendData(JSON.stringify(payload)); // улетит боту как web_app_data
+    });
+
+    document.getElementById('cancel').addEventListener('click', () => {
+      if (tg) tg.close();
+      else window.history.back();
+    });
+  </script>
+</body>
+</html>

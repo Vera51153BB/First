@@ -34,7 +34,11 @@
     padding:clamp(16px,3vw,28px);
     display:flex; flex-direction:column;
   }
-
+  h1{
+    margin:0 0 .8rem;font-weight:800;letter-spacing:.02em;
+    font-size:clamp(21px,5vw,40px); text-transform:uppercase;
+  }
+  
   /* Вертикальная колонка: ВСЕ — список — кнопка — подпись */
   .stack{
     display:flex; flex-direction:column;
@@ -147,7 +151,7 @@
 </head>
 <body>
   <main class="wrap">
-    <h1>Уведомления</h1>
+    <h1>Управление уведомлениями</h1>
     <div class="stack">
 
       <!-- Секция «все» -->

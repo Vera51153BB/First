@@ -1,0 +1,270 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Уведомления</title>
+<style>
+  :root{
+    --bg:#050029;
+    --text:#e6ddcd;
+    --green:#79c172;
+    --red:#ff5f5f;
+    --muted:#a7a093;
+    --pill-h: clamp(40px, 9vw, 56px);
+    --pill-w: clamp(180px, 60vw, 320px);
+    --radius: 999px;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0;background:var(--bg);color:var(--text);
+    font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Inter, Arial, "Apple Color Emoji","Segoe UI Emoji";
+    line-height:1.35;
+    display:flex;justify-content:center;
+  }
+  .wrap{
+    width:min(680px,92vw);
+    padding:clamp(16px,3vw,28px);
+  }
+  h1{
+    margin:0 0 .8rem;font-weight:800;letter-spacing:.02em;
+    font-size:clamp(24px,5vw,40px); text-transform:uppercase;
+  }
+  .row{display:flex;gap:clamp(12px,2.8vw,18px); align-items:center; flex-wrap:wrap}
+  .section{
+    margin:clamp(14px,3vw,22px) 0;
+    padding:clamp(12px,2.6vw,18px);
+    border:1px solid #2a2458; border-radius:20px; background:rgba(255,255,255,.02);
+  }
+  .hint{color:var(--muted); font-size:clamp(12px,2.8vw,14px)}
+  .spacer{height:8px}
+  .title{font-size:clamp(16px,3.6vw,22px); font-weight:700}
+  .grow{flex:1 1 auto}
+  /* big actions */
+  .actions{gap:clamp(10px,2.6vw,14px)}
+  .btn{
+    border:none; cursor:pointer; border-radius:var(--radius);
+    padding: clamp(10px,2.6vw,14px) clamp(18px,4.4vw,26px);
+    font-size:clamp(14px,3.6vw,18px); font-weight:800; letter-spacing:.02em;
+    color:#050029; transition:transform .08s ease, filter .2s ease;
+    box-shadow: 0 6px 18px rgba(0,0,0,.25);
+  }
+  .btn:active{ transform:translateY(1px) scale(.99) }
+  .btn.green{ background:var(--green) }
+  .btn.red  { background:var(--red) }
+  .status-badge{
+    display:inline-block; padding:.25em .8em; border-radius:999px;
+    font-size:clamp(12px,2.8vw,14px); font-weight:700; margin-left:8px;
+    background:#211a53; color:var(--text); border:1px solid #3a3276;
+  }
+  /* list items */
+  .item{ display:grid; grid-template-columns: 1fr auto; gap:12px; align-items:center; padding:12px 0 }
+  .item + .item{ border-top:1px dashed #2a2458 }
+  .name{ font-size:clamp(15px,3.2vw,20px); }
+  .state{ color:var(--muted); font-size:clamp(12px,2.8vw,14px); margin-top:6px }
+  /* switch */
+  .switch{
+    --pad:6px;
+    position:relative; width:var(--pill-w); height:var(--pill-h);
+    border-radius:var(--radius); border:1px solid #382f78;
+    background: linear-gradient(90deg, var(--green) 0 50%, var(--red) 50% 100%);
+    display:inline-flex; align-items:center; justify-content:space-between;
+    padding:0 var(--pad); color:#050029; user-select:none; cursor:pointer;
+    box-shadow:inset 0 0 0 1px rgba(255,255,255,.04), 0 6px 18px rgba(0,0,0,.25);
+  }
+  .switch .label{
+    font-weight:900; letter-spacing:.03em; text-transform:uppercase;
+    font-size:clamp(12px,2.8vw,16px); width:50%; display:flex; align-items:center; justify-content:center;
+  }
+  .switch .knob{
+    position:absolute; top:50%; transform:translateY(-50%);
+    width: calc(var(--pill-h) - var(--pad)*2); height: calc(var(--pill-h) - var(--pad)*2);
+    border-radius:50%; background:#2d2a59; box-shadow: 0 6px 12px rgba(0,0,0,.35), inset 0 0 0 1px rgba(255,255,255,.06);
+    transition: left .18s ease;
+    left: var(--pad);
+  }
+  .switch[data-on="false"] .knob{ left: calc(100% - var(--pill-h) + var(--pad)) }
+  /* footer */
+  .footer{
+    display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-top:12px;
+  }
+  .ghost{
+    border:1px solid #3a3276; background:transparent; color:var(--text);
+  }
+  .right{ margin-left:auto }
+</style>
+</head>
+<body>
+  <main class="wrap">
+    <h1>Уведомления</h1>
+
+    <!-- ALL -->
+    <section class="section">
+      <div class="row" style="align-items:center; justify-content:space-between;">
+        <div class="title">все</div>
+        <span id="allState" class="status-badge">частично</span>
+      </div>
+      <div class="spacer"></div>
+      <div class="row actions">
+        <button class="btn green" id="btnAllOn">включить</button>
+        <button class="btn red"   id="btnAllOff">выключить</button>
+      </div>
+      <div class="hint" style="margin-top:10px">Переключатели ниже сохраняются на этом устройстве и применяются мгновенно.</div>
+    </section>
+
+    <!-- LIST -->
+    <section class="section" id="list"></section>
+
+    <div class="footer">
+      <button class="btn ghost" id="exportBtn" title="Скопировать настройки как JSON">Экспорт JSON</button>
+      <button class="btn ghost" id="importBtn" title="Вставьте ранее сохранённый JSON">Импорт JSON</button>
+      <div class="grow"></div>
+      <button class="btn green" id="saveToBot">Сохранить в боте</button>
+    </div>
+  </main>
+
+<script>
+/* ===== модель ===== */
+const STORAGE_KEY = 'okx_alerts_v1';
+
+const DEFAULT_ALERTS = [
+  { id: 'balance', name: 'Баланс монет', on: true },
+  { id: 'alert2',  name: 'уведомление 2', on: false },
+  { id: 'alert3',  name: 'уведомление 3', on: false },
+  { id: 'alert4',  name: 'уведомление 4', on: true  },
+];
+
+function loadState(){
+  try{
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if(!raw) return DEFAULT_ALERTS.slice();
+    const parsed = JSON.parse(raw);
+    // мягкая миграция
+    const map = Object.fromEntries(parsed.map(a=>[a.id, a.on]));
+    return DEFAULT_ALERTS.map(d => ({...d, on: map[d.id] ?? d.on}));
+  }catch{ return DEFAULT_ALERTS.slice(); }
+}
+function saveState(arr){
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(arr));
+}
+
+/* ===== рендер ===== */
+const listEl = document.getElementById('list');
+const allStateEl = document.getElementById('allState');
+let alerts = loadState();
+
+function render(){
+  listEl.innerHTML = '';
+  alerts.forEach(a=>{
+    const row = document.createElement('div');
+    row.className = 'item';
+
+    const left = document.createElement('div');
+    left.innerHTML = `<div class="name">${a.name}</div>
+                      <div class="state" id="state-${a.id}">${a.on?'включено':'выключено'}</div>`;
+    row.appendChild(left);
+
+    const sw = document.createElement('button');
+    sw.type='button';
+    sw.className='switch';
+    sw.setAttribute('data-on', String(a.on));
+    sw.setAttribute('aria-pressed', String(a.on));
+    sw.innerHTML = `
+      <span class="label">ВКЛ</span>
+      <span class="label">ВЫК</span>
+      <span class="knob"></span>
+    `;
+    sw.addEventListener('click', ()=>{
+      a.on = !a.on;
+      saveState(alerts);
+      updateOne(a.id);
+      updateAllBadge();
+    });
+    row.appendChild(sw);
+
+    listEl.appendChild(row);
+  });
+
+  updateAllBadge();
+}
+
+function updateOne(id){
+  const a = alerts.find(x=>x.id===id);
+  const state = document.getElementById('state-'+id);
+  if(state) state.textContent = a.on ? 'включено' : 'выключено';
+  // переключаем сам тумблер
+  const itemIndex = alerts.findIndex(x=>x.id===id);
+  const btn = listEl.querySelectorAll('.switch')[itemIndex];
+  if(btn){
+    btn.setAttribute('data-on', String(a.on));
+    btn.setAttribute('aria-pressed', String(a.on));
+  }
+}
+
+function updateAllBadge(){
+  const onCount = alerts.filter(a=>a.on).length;
+  let txt='частично';
+  if(onCount===0) txt='выключено';
+  else if(onCount===alerts.length) txt='включено';
+  allStateEl.textContent = txt;
+}
+
+/* ===== действия ===== */
+document.getElementById('btnAllOn').addEventListener('click', ()=>{
+  alerts.forEach(a=>a.on=true);
+  saveState(alerts); render();
+});
+document.getElementById('btnAllOff').addEventListener('click', ()=>{
+  alerts.forEach(a=>a.on=false);
+  saveState(alerts); render();
+});
+
+document.getElementById('exportBtn').addEventListener('click', ()=>{
+  const json = JSON.stringify(alerts);
+  if(navigator.clipboard){
+    navigator.clipboard.writeText(json).then(()=>alert('Настройки скопированы в буфер обмена.'));
+  }else{
+    prompt('Скопируйте JSON настроек:', json);
+  }
+});
+document.getElementById('importBtn').addEventListener('click', ()=>{
+  const raw = prompt('Вставьте ранее сохранённый JSON настроек:');
+  if(!raw) return;
+  try{
+    const arr = JSON.parse(raw);
+    if(!Array.isArray(arr)) throw new Error('bad');
+    // простая валидация
+    const ids = new Set(DEFAULT_ALERTS.map(a=>a.id));
+    for(const x of arr){ if(!ids.has(x.id) || typeof x.on!=='boolean') throw new Error('bad'); }
+    alerts = DEFAULT_ALERTS.map(d => ({...d, on: (arr.find(x=>x.id===d.id)?.on ?? d.on)}));
+    saveState(alerts); render();
+  }catch{
+    alert('Не удалось импортировать JSON.');
+  }
+});
+
+/* ===== Telegram Web App (опционально) ===== */
+const tg = window.Telegram && window.Telegram.WebApp ? window.Telegram.WebApp : null;
+if(tg){ try{ tg.ready(); }catch{} }
+
+document.getElementById('saveToBot').addEventListener('click', ()=>{
+  const payload = JSON.stringify({ alerts });
+  if(tg && tg.sendData){
+    tg.sendData(payload);   // бот получит данные в callback_query.data
+    try{ tg.close(); }catch{}
+  }else{
+    // если не в Telegram — просто копируем
+    if(navigator.clipboard){
+      navigator.clipboard.writeText(payload).then(()=>alert('JSON отправки скопирован. Откройте страницу из Telegram для автопередачи.'));
+    }else{
+      prompt('Скопируйте JSON:', payload);
+    }
+  }
+});
+
+/* init */
+render();
+</script>
+</body>
+</html>

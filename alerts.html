@@ -5,32 +5,89 @@
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>Уведомления</title>
 <style>
-  :root{ --bg:#050029; --text:#e6ddcd; --green:#79c172; --red:#ff5f5f; --muted:#a7a093;
-         --pill-h:clamp(40px,9vw,56px); --pill-w:clamp(180px,60vw,320px); --radius:999px; }
-  *{box-sizing:border-box} html,body{height:100%}
-  body{margin:0;background:var(--bg);color:var(--text);font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Inter,Arial,"Apple Color Emoji","Segoe UI Emoji";line-height:1.35;display:flex;justify-content:center;}
-  .wrap{width:min(680px,92vw);padding:clamp(16px,3vw,28px);}
-  h1{margin:0 0 .8rem;font-weight:800;letter-spacing:.02em;font-size:clamp(24px,5vw,40px);text-transform:uppercase;}
-  .row{display:flex;gap:clamp(12px,2.8vw,18px);align-items:center;flex-wrap:wrap}
-  .section{margin:clamp(14px,3vw,22px) 0;padding:clamp(12px,2.6vw,18px);border:1px solid #2a2458;border-radius:20px;background:rgba(255,255,255,.02);}
-  .hint{color:var(--muted);font-size:clamp(12px,2.8vw,14px)}
-  .spacer{height:8px} .title{font-size:clamp(16px,3.6vw,22px);font-weight:700} .grow{flex:1 1 auto}
+  :root{
+    --bg:#050029; --text:#e6ddcd; --green:#79c172; --red:#ff5f5f; --muted:#a7a093;
+    --pill-h:clamp(40px,9vw,56px); --pill-w:clamp(180px,60vw,320px); --radius:999px;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0; background:var(--bg); color:var(--text);
+    font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Inter,Arial,"Apple Color Emoji","Segoe UI Emoji";
+    line-height:1.35; display:flex; justify-content:center;
+  }
+  .wrap{
+    width:min(680px,92vw);
+    padding:clamp(16px,3vw,28px);
+    /* больше воздуха снизу */
+    padding-bottom:clamp(72px,10vh,140px);
+  }
+  h1{margin:0 0 .8rem; font-weight:800; letter-spacing:.02em;
+     font-size:clamp(24px,5vw,40px); text-transform:uppercase;}
+  .row{display:flex; gap:clamp(12px,2.8vw,18px); align-items:center; flex-wrap:wrap}
+  .section{margin:clamp(14px,3vw,22px) 0; padding:clamp(12px,2.6vw,18px);
+           border:1px solid #2a2458; border-radius:20px; background:rgba(255,255,255,.02);}
+  .hint{color:var(--muted); font-size:clamp(12px,2.8vw,14px)}
+  .spacer{height:8px}
+  .title{font-size:clamp(16px,3.6vw,22px); font-weight:700}
+  .grow{flex:1 1 auto}
+
   .actions{gap:clamp(10px,2.6vw,14px)}
-  .btn{border:none;cursor:pointer;border-radius:var(--radius);padding:clamp(10px,2.6vw,14px) clamp(18px,4.4vw,26px);
-       font-size:clamp(14px,3.6vw,18px);font-weight:800;letter-spacing:.02em;color:#050029;transition:transform .08s ease,filter .2s ease;box-shadow:0 6px 18px rgba(0,0,0,.25);}
-  .btn:active{transform:translateY(1px) scale(.99)} .btn.green{background:var(--green)} .btn.red{background:var(--red)}
-  .status-badge{display:inline-block;padding:.25em .8em;border-radius:999px;font-size:clamp(12px,2.8vw,14px);font-weight:700;margin-left:8px;background:#211a53;color:var(--text);border:1px solid #3a3276;}
-  .item{display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center;padding:12px 0}
+  .btn{
+    border:none; cursor:pointer; border-radius:var(--radius);
+    padding:clamp(10px,2.6vw,14px) clamp(18px,4.4vw,26px);
+    font-size:clamp(14px,3.6vw,18px); font-weight:800; letter-spacing:.02em;
+    color:#050029; transition:transform .08s ease, filter .2s ease;
+    box-shadow:0 6px 18px rgba(0,0,0,.25);
+  }
+  .btn:active{transform:translateY(1px) scale(.99)}
+  .btn.green{background:var(--green)}
+  .btn.red{background:var(--red)}
+
+  /* спец-стиль для «Сохранить настройки» */
+  .btn.save{
+    background:var(--bg);
+    color:var(--text);
+    border:1px solid var(--text);
+    box-shadow:none;           /* без подсветки — как просили */
+  }
+
+  .status-badge{display:inline-block; padding:.25em .8em; border-radius:999px;
+    font-size:clamp(12px,2.8vw,14px); font-weight:700; margin-left:8px;
+    background:#211a53; color:var(--text); border:1px solid #3a3276;}
+
+  .item{display:grid; grid-template-columns:1fr auto; gap:12px; align-items:center; padding:12px 0}
   .item + .item{border-top:1px dashed #2a2458}
-  .name{font-size:clamp(15px,3.2vw,20px);} .state{color:var(--muted);font-size:clamp(12px,2.8vw,14px);margin-top:6px}
-  .switch{--pad:6px;position:relative;width:var(--pill-w);height:var(--pill-h);border-radius:var(--radius);border:1px solid #382f78;
-          background:linear-gradient(90deg,var(--green) 0 50%,var(--red) 50% 100%);display:inline-flex;align-items:center;justify-content:space-between;
-          padding:0 var(--pad);color:#050029;user-select:none;cursor:pointer;box-shadow:inset 0 0 0 1px rgba(255,255,255,.04),0 6px 18px rgba(0,0,0,.25);}
-  .switch .label{font-weight:900;letter-spacing:.03em;text-transform:uppercase;font-size:clamp(12px,2.8vw,16px);width:50%;display:flex;align-items:center;justify-content:center;}
-  .switch .knob{position:absolute;top:50%;transform:translateY(-50%);width:calc(var(--pill-h) - var(--pad)*2);height:calc(var(--pill-h) - var(--pad)*2);
-                border-radius:50%;background:#2d2a59;box-shadow:0 6px 12px rgba(0,0,0,.35), inset 0 0 0 1px rgba(255,255,255,.06);transition:left .18s ease;left:var(--pad);}
+  .name{font-size:clamp(15px,3.2vw,20px)}
+  .state{color:var(--muted); font-size:clamp(12px,2.8vw,14px); margin-top:6px}
+
+  .switch{
+    --pad:6px;
+    position:relative; width:var(--pill-w); height:var(--pill-h);
+    border-radius:var(--radius); border:1px solid #382f78;
+    background:linear-gradient(90deg,var(--green) 0 50%,var(--red) 50% 100%);
+    display:inline-flex; align-items:center; justify-content:space-between;
+    padding:0 var(--pad); color:#050029; user-select:none; cursor:pointer;
+    box-shadow:inset 0 0 0 1px rgba(255,255,255,.04), 0 6px 18px rgba(0,0,0,.25);
+  }
+  .switch .label{
+    font-weight:900; letter-spacing:.03em; text-transform:uppercase;
+    font-size:clamp(12px,2.8vw,16px); width:50%; display:flex; align-items:center; justify-content:center;
+  }
+  .switch .knob{
+    position:absolute; top:50%; transform:translateY(-50%);
+    width:calc(var(--pill-h) - var(--pad)*2); height:calc(var(--pill-h) - var(--pad)*2);
+    border-radius:50%; background:#2d2a59;
+    box-shadow:0 6px 12px rgba(0,0,0,.35), inset 0 0 0 1px rgba(255,255,255,.06);
+    transition:left .18s ease; left:var(--pad);
+  }
   .switch[data-on="false"] .knob{left:calc(100% - var(--pill-h) + var(--pad))}
-  .footer{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:12px;}
+
+  /* футер с центровкой кнопки */
+  .footer{
+    margin-top:20px;
+    display:flex; justify-content:center; align-items:center;
+  }
 </style>
 </head>
 <body>
@@ -47,14 +104,15 @@
         <button class="btn green" id="btnAllOn">включить</button>
         <button class="btn red"   id="btnAllOff">выключить</button>
       </div>
-      <div class="hint" style="margin-top:10px">Переключатели ниже сохраняются на этом устройстве и применяются мгновенно.</div>
+      <div class="hint" style="margin-top:10px">
+        Переключатели ниже сохраняются на этом устройстве и применяются мгновенно.
+      </div>
     </section>
 
     <section class="section" id="list"></section>
 
     <div class="footer">
-      <div class="grow"></div>
-      <button class="btn green" id="saveBtn" title="Сохранить в боте">Сохранить настройки</button>
+      <button class="btn save" id="saveBtn" title="Сохранить в боте">Сохранить настройки</button>
     </div>
   </main>
 
@@ -88,8 +146,10 @@ function render(){
   listEl.innerHTML = '';
   alerts.forEach(a=>{
     const row = document.createElement('div'); row.className='item';
+
     const left = document.createElement('div');
-    left.innerHTML = `<div class="name">${a.name}</div><div class="state" id="state-${a.id}">${a.on?'включено':'выключено'}</div>`;
+    left.innerHTML = `<div class="name">${a.name}</div>
+                      <div class="state" id="state-${a.id}">${a.on?'включено':'выключено'}</div>`;
     row.appendChild(left);
 
     const sw = document.createElement('button');
@@ -104,6 +164,7 @@ function render(){
       updateAllBadge();
     });
     row.appendChild(sw);
+
     listEl.appendChild(row);
   });
   updateAllBadge();
@@ -122,8 +183,12 @@ function updateAllBadge(){
 }
 
 /* ===== действия ===== */
-document.getElementById('btnAllOn').addEventListener('click', ()=>{ alerts.forEach(a=>a.on=true);  saveState(alerts); render(); });
-document.getElementById('btnAllOff').addEventListener('click', ()=>{ alerts.forEach(a=>a.on=false); saveState(alerts); render(); });
+document.getElementById('btnAllOn').addEventListener('click', ()=>{
+  alerts.forEach(a=>a.on=true); saveState(alerts); render();
+});
+document.getElementById('btnAllOff').addEventListener('click', ()=>{
+  alerts.forEach(a=>a.on=false); saveState(alerts); render();
+});
 
 /* ===== Telegram Web App ===== */
 const tg = window.Telegram && window.Telegram.WebApp ? window.Telegram.WebApp : null;
@@ -133,7 +198,6 @@ document.getElementById('saveBtn').addEventListener('click', ()=>{
   const payload = JSON.stringify({ alerts });
   if(tg && tg.sendData){ tg.sendData(payload); try{ tg.close(); }catch{} }
   else{
-    // предпросмотр вне Telegram: просто сохраняем и подсказываем
     saveState(alerts);
     alert('Настройки сохранены локально. Откройте страницу из Telegram, чтобы отправить их боту.');
   }
@@ -143,3 +207,4 @@ render();
 </script>
 </body>
 </html>
+

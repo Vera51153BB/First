@@ -12,8 +12,8 @@
     --red:#ff5f5f;
     --muted:#a7a093;
 
-    --card-r: 20px;                 /* радиус и для блоков, и для кнопки */
-    --v-gap: clamp(14px,3.5vw,22px);/* ЕДИНЫЙ вертикальный шаг «воздуха» */
+    --card-r: 20px;                  /* радиус и для блоков, и для кнопки */
+    --v-gap: clamp(14px,3.5vw,22px); /* ЕДИНЫЙ вертикальный шаг «воздуха» */
 
     --pill-h: clamp(40px,9vw,56px);
     --pill-w: clamp(180px,60vw,320px);
@@ -23,9 +23,7 @@
   *{box-sizing:border-box}
   html,body{height:100%}
   body{
-    margin:0;
-    background:var(--bg);
-    color:var(--text);
+    margin:0; background:var(--bg); color:var(--text);
     font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Inter, Arial, "Apple Color Emoji","Segoe UI Emoji";
     line-height:1.35;
     display:flex; justify-content:center;
@@ -37,14 +35,14 @@
     display:flex; flex-direction:column;
   }
 
-  /* вертикальная колонка: блок — кнопка — подпись, с одинаковыми отступами */
+  /* Вертикальная колонка: ВСЕ — список — кнопка — подпись */
   .stack{
     display:flex; flex-direction:column;
     gap: var(--v-gap);
-    padding-bottom: var(--v-gap);    /* воздух до низа страницы */
+    padding-bottom: var(--v-gap); /* воздух до низа страницы */
   }
 
-  /* секция со списком тумблеров */
+  /* Карточки */
   .section{
     padding:clamp(12px,2.6vw,18px);
     border:1px solid #2a2458;
@@ -52,43 +50,66 @@
     background:rgba(255,255,255,.02);
   }
 
-  /* элементы списка */
-  .item{
-    display:grid; grid-template-columns: 1fr auto;
-    gap:12px; align-items:center; padding:12px 0;
+  .title{ font-size:clamp(16px,3.6vw,22px); font-weight:700 }
+
+  /* Шапка секции «все» */
+  .controls-header{
+    display:flex; align-items:center; justify-content:space-between;
+    gap:12px; margin-bottom:clamp(10px,2.5vw,14px);
   }
+  .status-badge{
+    display:inline-block; padding:.25em .8em; border-radius:999px;
+    font-size:clamp(12px,2.8vw,14px); font-weight:700;
+    background:#211a53; color:var(--text); border:1px solid #3a3276;
+  }
+
+  /* Две большие кнопки «включить/выключить» */
+  .actions{ display:flex; gap:clamp(10px,2.6vw,14px) }
+  .btn{
+    border:none; cursor:pointer; border-radius:999px;
+    padding: clamp(10px,2.6vw,14px) clamp(18px,4.4vw,26px);
+    font-size:clamp(14px,3.6vw,18px); font-weight:800; letter-spacing:.02em;
+    color:#050029; transition:transform .08s ease, filter .2s ease;
+    box-shadow: 0 6px 18px rgba(0,0,0,.25);
+    flex: 1 1 0;        /* одинаковая ширина */
+    white-space: nowrap;/* остаются в одну строку на мобилках */
+  }
+  .btn:active{ transform:translateY(1px) scale(.99) }
+  .btn.green{ background:var(--green) }
+  .btn.red  { background:var(--red) }
+
+  /* Список уведомлений */
+  .item{ display:grid; grid-template-columns: 1fr auto; gap:12px; align-items:center; padding:12px 0 }
   .item + .item{ border-top:1px dashed #2a2458 }
   .name{ font-size:clamp(15px,3.2vw,20px) }
   .state{ color:var(--muted); font-size:clamp(12px,2.8vw,14px); margin-top:6px }
 
-  /* переключатель */
+  /* Переключатель */
   .switch{
     --pad:6px;
     position:relative; width:var(--pill-w); height:var(--pill-h);
-    border-radius:var(--radius);
-    border:1px solid #382f78;
-    background: linear-gradient(90deg, var(--green) 0 50%, var(--red) 50% 100%);
+    border-radius:var(--radius); border:1px solid #382f78;
+    background:linear-gradient(90deg, var(--green) 0 50%, var(--red) 50% 100%);
     display:inline-flex; align-items:center; justify-content:space-between;
-    padding:0 var(--pad);
-    color:#050029; user-select:none; cursor:pointer;
+    padding:0 var(--pad); color:#050029; user-select:none; cursor:pointer;
     box-shadow: inset 0 0 0 1px rgba(255,255,255,.04), 0 6px 18px rgba(0,0,0,.25);
   }
   .switch .label{
     font-weight:900; letter-spacing:.03em; text-transform:uppercase;
-    font-size:clamp(12px,2.8vw,16px);
-    width:50%; display:flex; align-items:center; justify-content:center;
+    font-size:clamp(12px,2.8vw,16px); width:50%;
+    display:flex; align-items:center; justify-content:center;
   }
   .switch .knob{
     position:absolute; top:50%; transform:translateY(-50%);
     width: calc(var(--pill-h) - var(--pad)*2); height: calc(var(--pill-h) - var(--pad)*2);
     border-radius:50%; background:#2d2a59;
     box-shadow: 0 6px 12px rgba(0,0,0,.35), inset 0 0 0 1px rgba(255,255,255,.06);
-    transition: left .18s ease;
-    left: var(--pad); /* «вкл» — слева (зелёная половина) */
+    transition:left .18s ease;
+    left: var(--pad); /* «вкл» слева */
   }
   .switch[data-on="false"] .knob{ left: calc(100% - var(--pill-h) + var(--pad)) }
 
-  /* Кнопка «Сохранить настройки» — ширина как у секций, радиус как у секций */
+  /* Кнопка «Сохранить настройки» (ширина=карточкам, радиус=как у карточек) */
   .save-btn{
     width:100%;
     border-radius: var(--card-r);
@@ -105,24 +126,33 @@
   }
   .save-btn:active{ transform: translateY(1px) scale(.99) }
 
-  /* подпись в самом низу */
-  .footnote{
-    color:var(--muted);
-    text-align:center;
-    font-size:clamp(12px,2.8vw,14px);
-  }
+  /* Подпись в самом низу */
+  .footnote{ color:var(--muted); text-align:center; font-size:clamp(12px,2.8vw,14px) }
 </style>
 </head>
 <body>
   <main class="wrap">
     <div class="stack">
-      <!-- список тумблеров -->
+
+      <!-- Секция «все» -->
+      <section class="section">
+        <div class="controls-header">
+          <div class="title">все</div>
+          <span id="allState" class="status-badge">частично</span>
+        </div>
+        <div class="actions">
+          <button class="btn green" id="btnAllOn">включить</button>
+          <button class="btn red"   id="btnAllOff">выключить</button>
+        </div>
+      </section>
+
+      <!-- Список тумблеров -->
       <section class="section" id="list"></section>
 
-      <!-- кнопка сохранения -->
+      <!-- Кнопка сохранения -->
       <button class="save-btn" id="saveBtn">Сохранить настройки</button>
 
-      <!-- подпись внизу страницы -->
+      <!-- Подпись внизу страницы -->
       <div class="footnote">
         Переключатели сохраняются на этом устройстве и применяются мгновенно.
       </div>
@@ -152,6 +182,7 @@ function saveState(arr){ localStorage.setItem(STORAGE_KEY, JSON.stringify(arr));
 
 /* ===== рендер ===== */
 const listEl = document.getElementById('list');
+const allStateEl = document.getElementById('allState');
 let alerts = loadState();
 
 function render(){
@@ -179,11 +210,14 @@ function render(){
       a.on = !a.on;
       saveState(alerts);
       updateOne(a.id);
+      updateAllBadge();
     });
     row.appendChild(sw);
 
     listEl.appendChild(row);
   });
+
+  updateAllBadge();
 }
 
 function updateOne(id){
@@ -197,6 +231,22 @@ function updateOne(id){
     btn.setAttribute('aria-pressed', String(a.on));
   }
 }
+
+function updateAllBadge(){
+  const onCount = alerts.filter(a=>a.on).length;
+  let txt = 'частично';
+  if(onCount===0) txt='выключено';
+  else if(onCount===alerts.length) txt='включено';
+  allStateEl.textContent = txt;
+}
+
+/* Кнопки «все» */
+document.getElementById('btnAllOn').addEventListener('click', ()=>{
+  alerts.forEach(a=>a.on=true); saveState(alerts); render();
+});
+document.getElementById('btnAllOff').addEventListener('click', ()=>{
+  alerts.forEach(a=>a.on=false); saveState(alerts); render();
+});
 
 /* ===== Telegram Web App ===== */
 const tg = window.Telegram && window.Telegram.WebApp ? window.Telegram.WebApp : null;

@@ -128,6 +128,21 @@
 
   /* Подпись в самом низу */
   .footnote{ color:var(--muted); text-align:center; font-size:clamp(12px,2.8vw,14px) }
+  /* ----- Мобильная раскладка: заголовок слева сверху, тумблер ниже справа ----- */
+@media (max-width: 560px) {
+  .item{
+    grid-template-columns: 1fr;   /* одна колонка */
+    align-items: start;
+    gap: 6px;                      /* небольшой вертикальный зазор */
+  }
+  .item .switch{
+    justify-self: end;             /* выровнять тумблер по правому краю */
+    margin-top: 4px;               /* маленький отступ сверху */
+  }
+  .item .name{
+    margin-bottom: 2px;            /* чуть прижмём подпись кверху */
+  }
+}
 </style>
 </head>
 <body>

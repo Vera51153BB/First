@@ -1,269 +1,270 @@
 <!doctype html>
 <html lang="ru">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Уведомления</title>
-  <!-- Минимальная CSP для статического GH Pages -->
-  <meta http-equiv="Content-Security-Policy"
-        content="default-src 'self'; script-src 'self' https://telegram.org https://*.telegram.org; connect-src 'none'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; frame-ancestors https://web.telegram.org https://*.telegram.org;" />
-  <style>
-    :root {
-      --bg: #050029;
-      --text: #e6ddcd;
-      --muted: #cfc5b3;
-      --on: #79c172;
-      --off: #ff5f5f;
-      --knob: #2b3140;
-      --card: #0b0736;
-      --shadow: 0 10px 24px rgba(0,0,0,.35);
-      --radius: 18px;
-    }
-    html, body { height: 100%; }
-    body {
-      margin: 0; background: var(--bg); color: var(--text);
-      font: 16px/1.4 system-ui, -apple-system, Segoe UI, Roboto, Inter, Arial, sans-serif;
-    }
-    .wrap { max-width: 860px; margin: 0 auto; padding: 20px 16px 28px; }
-    .title {
-      display: flex; align-items: center; justify-content: space-between; gap: 12px;
-      margin-bottom: 14px;
-    }
-    h1 { margin: 0; font-size: 34px; letter-spacing: .5px; }
-    .subtitle { color: var(--muted); font-size: 18px; margin: 0 0 18px; }
-
-    /* Action bar */
-    .actions { display: flex; gap: 10px; flex-wrap: wrap; }
-    .btn {
-      appearance: none; border: 0; border-radius: 999px; padding: 12px 18px;
-      font-weight: 600; cursor: pointer; box-shadow: var(--shadow);
-      transition: transform .06s ease, opacity .2s ease;
-      white-space: nowrap;
-    }
-    .btn:active { transform: translateY(1px) scale(.98); }
-    .btn-save { background: var(--on); color: #0b1a10; }
-    .btn-save span.icon { margin-right: 8px; }
-
-    /* Card */
-    .card { background: var(--card); border-radius: var(--radius); padding: 18px 16px; box-shadow: var(--shadow); }
-    .section { margin-top: 18px; }
-
-    /* Grid rows */
-    .row { display: grid; grid-template-columns: 1fr auto; gap: 12px; align-items: center; padding: 14px 12px; }
-    .row + .row { border-top: 1px solid rgba(255,255,255,.06); }
-    .label { font-size: 18px; }
-    .state { font-size: 14px; color: var(--muted); }
-
-    /* Switch */
-    .switch { width: 140px; height: 44px; position: relative; border-radius: 999px; display: grid; grid-template-columns: 1fr 1fr; overflow: hidden; box-shadow: inset 0 0 0 1px rgba(0,0,0,.2); }
-    .switch[data-on="true"] { background: linear-gradient(90deg, var(--on) 0 50%, var(--off) 50% 100%); }
-    .switch[data-on="false"]{ background: linear-gradient(90deg, var(--on) 0 50%, var(--off) 50% 100%); filter: saturate(.9); }
-    .switch .side { display:flex; align-items:center; justify-content:center; font-weight:700; color:#0a1110; }
-    .switch .side.off { color:#3a0e0e; }
-    .knob { position:absolute; top:4px; width:64px; height:36px; border-radius:999px; background:var(--knob); box-shadow: 0 4px 10px rgba(0,0,0,.35);
-            transition: left .2s ease; }
-    .switch[data-on="true"]  .knob { left: 72px; }
-    .switch[data-on="false"] .knob { left: 4px; }
-    .switch[aria-disabled="true"] { opacity:.6; pointer-events:none; }
-
-    /* Master dual buttons */
-    .dual {
-      display:flex; gap:12px; flex-wrap: wrap; margin: 10px 0 0;
-    }
-    .dual .pill { flex:1 1 180px; border-radius: 999px; padding: 14px 18px; text-align:center; font-weight:700; cursor:pointer; user-select:none; box-shadow: var(--shadow); }
-    .pill.on  { background: var(--on);  color: #0b1a10; }
-    .pill.off { background: var(--off); color: #3a0e0e; }
-
-    .hint { color: var(--muted); font-size: 14px; margin-top: 10px; }
-
-    .footer { margin-top: 24px; color: var(--muted); font-size: 13px; text-align:center; opacity:.8; }
-    .preview { background:#1a104f; border-radius: 10px; padding: 10px 12px; margin-bottom: 12px; color:#cfd1ff; }
-  </style>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Уведомления</title>
+<style>
+  :root{
+    --bg:#050029;
+    --text:#e6ddcd;
+    --green:#79c172;
+    --red:#ff5f5f;
+    --muted:#a7a093;
+    --pill-h: clamp(40px, 9vw, 56px);
+    --pill-w: clamp(180px, 60vw, 320px);
+    --radius: 999px;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0;background:var(--bg);color:var(--text);
+    font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Inter, Arial, "Apple Color Emoji","Segoe UI Emoji";
+    line-height:1.35;
+    display:flex;justify-content:center;
+  }
+  .wrap{
+    width:min(680px,92vw);
+    padding:clamp(16px,3vw,28px);
+  }
+  h1{
+    margin:0 0 .8rem;font-weight:800;letter-spacing:.02em;
+    font-size:clamp(24px,5vw,40px); text-transform:uppercase;
+  }
+  .row{display:flex;gap:clamp(12px,2.8vw,18px); align-items:center; flex-wrap:wrap}
+  .section{
+    margin:clamp(14px,3vw,22px) 0;
+    padding:clamp(12px,2.6vw,18px);
+    border:1px solid #2a2458; border-radius:20px; background:rgba(255,255,255,.02);
+  }
+  .hint{color:var(--muted); font-size:clamp(12px,2.8vw,14px)}
+  .spacer{height:8px}
+  .title{font-size:clamp(16px,3.6vw,22px); font-weight:700}
+  .grow{flex:1 1 auto}
+  /* big actions */
+  .actions{gap:clamp(10px,2.6vw,14px)}
+  .btn{
+    border:none; cursor:pointer; border-radius:var(--radius);
+    padding: clamp(10px,2.6vw,14px) clamp(18px,4.4vw,26px);
+    font-size:clamp(14px,3.6vw,18px); font-weight:800; letter-spacing:.02em;
+    color:#050029; transition:transform .08s ease, filter .2s ease;
+    box-shadow: 0 6px 18px rgba(0,0,0,.25);
+  }
+  .btn:active{ transform:translateY(1px) scale(.99) }
+  .btn.green{ background:var(--green) }
+  .btn.red  { background:var(--red) }
+  .status-badge{
+    display:inline-block; padding:.25em .8em; border-radius:999px;
+    font-size:clamp(12px,2.8vw,14px); font-weight:700; margin-left:8px;
+    background:#211a53; color:var(--text); border:1px solid #3a3276;
+  }
+  /* list items */
+  .item{ display:grid; grid-template-columns: 1fr auto; gap:12px; align-items:center; padding:12px 0 }
+  .item + .item{ border-top:1px dashed #2a2458 }
+  .name{ font-size:clamp(15px,3.2vw,20px); }
+  .state{ color:var(--muted); font-size:clamp(12px,2.8vw,14px); margin-top:6px }
+  /* switch */
+  .switch{
+    --pad:6px;
+    position:relative; width:var(--pill-w); height:var(--pill-h);
+    border-radius:var(--radius); border:1px solid #382f78;
+    background: linear-gradient(90deg, var(--green) 0 50%, var(--red) 50% 100%);
+    display:inline-flex; align-items:center; justify-content:space-between;
+    padding:0 var(--pad); color:#050029; user-select:none; cursor:pointer;
+    box-shadow:inset 0 0 0 1px rgba(255,255,255,.04), 0 6px 18px rgba(0,0,0,.25);
+  }
+  .switch .label{
+    font-weight:900; letter-spacing:.03em; text-transform:uppercase;
+    font-size:clamp(12px,2.8vw,16px); width:50%; display:flex; align-items:center; justify-content:center;
+  }
+  .switch .knob{
+    position:absolute; top:50%; transform:translateY(-50%);
+    width: calc(var(--pill-h) - var(--pad)*2); height: calc(var(--pill-h) - var(--pad)*2);
+    border-radius:50%; background:#2d2a59; box-shadow: 0 6px 12px rgba(0,0,0,.35), inset 0 0 0 1px rgba(255,255,255,.06);
+    transition: left .18s ease;
+    left: var(--pad);
+  }
+  .switch[data-on="false"] .knob{ left: calc(100% - var(--pill-h) + var(--pad)) }
+  /* footer */
+  .footer{
+    display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-top:12px;
+  }
+  .ghost{
+    border:1px solid #3a3276; background:transparent; color:var(--text);
+  }
+  .right{ margin-left:auto }
+</style>
 </head>
 <body>
-  <div class="wrap">
-    <div class="title">
-      <div>
-        <h1>УВЕДОМЛЕНИЯ</h1>
-        <p class="subtitle">Управляйте оповещениями. Кнопка «Сохранить настройки» отправит их боту через Telegram WebApp.</p>
+  <main class="wrap">
+    <h1>Уведомления</h1>
+
+    <!-- ALL -->
+    <section class="section">
+      <div class="row" style="align-items:center; justify-content:space-between;">
+        <div class="title">все</div>
+        <span id="allState" class="status-badge">частично</span>
       </div>
-      <div class="actions">
-        <button class="btn btn-save" id="btnSave"><span class="icon">💾</span>Сохранить настройки</button>
+      <div class="spacer"></div>
+      <div class="row actions">
+        <button class="btn green" id="btnAllOn">включить</button>
+        <button class="btn red"   id="btnAllOff">выключить</button>
       </div>
+      <div class="hint" style="margin-top:10px">Переключатели ниже сохраняются на этом устройстве и применяются мгновенно.</div>
+    </section>
+
+    <!-- LIST -->
+    <section class="section" id="list"></section>
+
+    <div class="footer">
+      <button class="btn ghost" id="exportBtn" title="Скопировать настройки как JSON">Экспорт JSON</button>
+      <button class="btn ghost" id="importBtn" title="Вставьте ранее сохранённый JSON">Импорт JSON</button>
+      <div class="grow"></div>
+      <button class="btn green" id="saveToBot">Сохранить в боте</button>
     </div>
+  </main>
 
-    <div id="previewWarn" class="preview" hidden>
-      Предпросмотр вне Telegram. Сохранение отправит настройки в <em>localStorage</em> (для проверки интерфейса).
-    </div>
+<script>
+/* ===== модель ===== */
+const STORAGE_KEY = 'okx_alerts_v1';
 
-    <div class="card">
-      <div class="row">
-        <div>
-          <div class="label">все</div>
-          <div class="state" id="allState">—</div>
-        </div>
-        <div class="dual">
-          <div class="pill on"  id="btnAllOn">включить</div>
-          <div class="pill off" id="btnAllOff">выключить</div>
-        </div>
-      </div>
-    </div>
+const DEFAULT_ALERTS = [
+  { id: 'balance', name: 'Баланс монет', on: true },
+  { id: 'alert2',  name: 'уведомление 2', on: false },
+  { id: 'alert3',  name: 'уведомление 3', on: false },
+  { id: 'alert4',  name: 'уведомление 4', on: true  },
+];
 
-    <div class="section card" id="list">
-      <!-- Элемент уведомления шаблонно
-      <div class="row">
-        <div>
-          <div class="label">Баланс монет</div>
-          <div class="state">включено</div>
-        </div>
-        <div class="switch" data-id="balance" data-on="true" role="switch" aria-checked="true" tabindex="0">
-          <div class="side on">ВКЛ</div>
-          <div class="side off">ВЫК</div>
-          <div class="knob"></div>
-        </div>
-      </div>
-      -->
-    </div>
+function loadState(){
+  try{
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if(!raw) return DEFAULT_ALERTS.slice();
+    const parsed = JSON.parse(raw);
+    // мягкая миграция
+    const map = Object.fromEntries(parsed.map(a=>[a.id, a.on]));
+    return DEFAULT_ALERTS.map(d => ({...d, on: map[d.id] ?? d.on}));
+  }catch{ return DEFAULT_ALERTS.slice(); }
+}
+function saveState(arr){
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(arr));
+}
 
-    <div class="footer">Цветовая схема: глубокий синий фон, бежевый текст. Вёрстка гибкая, подстраивается под ширину.</div>
-  </div>
+/* ===== рендер ===== */
+const listEl = document.getElementById('list');
+const allStateEl = document.getElementById('allState');
+let alerts = loadState();
 
-  <script>
-    const tg = window.Telegram?.WebApp;
+function render(){
+  listEl.innerHTML = '';
+  alerts.forEach(a=>{
+    const row = document.createElement('div');
+    row.className = 'item';
 
-    // Конфигурация доступных уведомлений (можно дополнять)
-    const ALERTS = [
-      { id: 'balance', name: 'Баланс монет' },
-      { id: 'alert2',  name: 'уведомление 2' },
-      { id: 'alert3',  name: 'уведомление 3' },
-      { id: 'alert4',  name: 'уведомление 4' },
-    ];
+    const left = document.createElement('div');
+    left.innerHTML = `<div class="name">${a.name}</div>
+                      <div class="state" id="state-${a.id}">${a.on?'включено':'выключено'}</div>`;
+    row.appendChild(left);
 
-    // Источник истины — сервер. Но для UX — локальный кеш
-    const LS_KEY = 'okx_alerts';
+    const sw = document.createElement('button');
+    sw.type='button';
+    sw.className='switch';
+    sw.setAttribute('data-on', String(a.on));
+    sw.setAttribute('aria-pressed', String(a.on));
+    sw.innerHTML = `
+      <span class="label">ВКЛ</span>
+      <span class="label">ВЫК</span>
+      <span class="knob"></span>
+    `;
+    sw.addEventListener('click', ()=>{
+      a.on = !a.on;
+      saveState(alerts);
+      updateOne(a.id);
+      updateAllBadge();
+    });
+    row.appendChild(sw);
 
-    function loadLocal() {
-      try { return JSON.parse(localStorage.getItem(LS_KEY) || '{}'); } catch { return {}; }
+    listEl.appendChild(row);
+  });
+
+  updateAllBadge();
+}
+
+function updateOne(id){
+  const a = alerts.find(x=>x.id===id);
+  const state = document.getElementById('state-'+id);
+  if(state) state.textContent = a.on ? 'включено' : 'выключено';
+  // переключаем сам тумблер
+  const itemIndex = alerts.findIndex(x=>x.id===id);
+  const btn = listEl.querySelectorAll('.switch')[itemIndex];
+  if(btn){
+    btn.setAttribute('data-on', String(a.on));
+    btn.setAttribute('aria-pressed', String(a.on));
+  }
+}
+
+function updateAllBadge(){
+  const onCount = alerts.filter(a=>a.on).length;
+  let txt='частично';
+  if(onCount===0) txt='выключено';
+  else if(onCount===alerts.length) txt='включено';
+  allStateEl.textContent = txt;
+}
+
+/* ===== действия ===== */
+document.getElementById('btnAllOn').addEventListener('click', ()=>{
+  alerts.forEach(a=>a.on=true);
+  saveState(alerts); render();
+});
+document.getElementById('btnAllOff').addEventListener('click', ()=>{
+  alerts.forEach(a=>a.on=false);
+  saveState(alerts); render();
+});
+
+document.getElementById('exportBtn').addEventListener('click', ()=>{
+  const json = JSON.stringify(alerts);
+  if(navigator.clipboard){
+    navigator.clipboard.writeText(json).then(()=>alert('Настройки скопированы в буфер обмена.'));
+  }else{
+    prompt('Скопируйте JSON настроек:', json);
+  }
+});
+document.getElementById('importBtn').addEventListener('click', ()=>{
+  const raw = prompt('Вставьте ранее сохранённый JSON настроек:');
+  if(!raw) return;
+  try{
+    const arr = JSON.parse(raw);
+    if(!Array.isArray(arr)) throw new Error('bad');
+    // простая валидация
+    const ids = new Set(DEFAULT_ALERTS.map(a=>a.id));
+    for(const x of arr){ if(!ids.has(x.id) || typeof x.on!=='boolean') throw new Error('bad'); }
+    alerts = DEFAULT_ALERTS.map(d => ({...d, on: (arr.find(x=>x.id===d.id)?.on ?? d.on)}));
+    saveState(alerts); render();
+  }catch{
+    alert('Не удалось импортировать JSON.');
+  }
+});
+
+/* ===== Telegram Web App (опционально) ===== */
+const tg = window.Telegram && window.Telegram.WebApp ? window.Telegram.WebApp : null;
+if(tg){ try{ tg.ready(); }catch{} }
+
+document.getElementById('saveToBot').addEventListener('click', ()=>{
+  const payload = JSON.stringify({ alerts });
+  if(tg && tg.sendData){
+    tg.sendData(payload);   // бот получит данные в callback_query.data
+    try{ tg.close(); }catch{}
+  }else{
+    // если не в Telegram — просто копируем
+    if(navigator.clipboard){
+      navigator.clipboard.writeText(payload).then(()=>alert('JSON отправки скопирован. Откройте страницу из Telegram для автопередачи.'));
+    }else{
+      prompt('Скопируйте JSON:', payload);
     }
-    function saveLocal(obj) {
-      try { localStorage.setItem(LS_KEY, JSON.stringify(obj)); } catch {}
-    }
+  }
+});
 
-    function createRow(alert, on) {
-      const row = document.createElement('div');
-      row.className = 'row';
-
-      const left = document.createElement('div');
-      const label = document.createElement('div');
-      label.className = 'label';
-      label.textContent = alert.name;
-      const state = document.createElement('div');
-      state.className = 'state';
-      state.textContent = on ? 'включено' : 'выключено';
-      left.append(label, state);
-
-      const sw = document.createElement('div');
-      sw.className = 'switch';
-      sw.setAttribute('role', 'switch');
-      sw.dataset.id = alert.id;
-      setSwitch(sw, on);
-
-      sw.innerHTML = `<div class="side on">ВКЛ</div><div class="side off">ВЫК</div><div class="knob"></div>`;
-
-      const toggle = () => {
-        const cur = sw.dataset.on === 'true';
-        setSwitch(sw, !cur);
-        state.textContent = !cur ? 'включено' : 'выключено';
-        updateAllState();
-      };
-
-      sw.addEventListener('click', toggle);
-      sw.addEventListener('keydown', (e) => {
-        if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); toggle(); }
-      });
-
-      row.append(left, sw);
-      return row;
-    }
-
-    function setSwitch(el, on) {
-      el.dataset.on = String(on);
-      el.setAttribute('aria-checked', String(on));
-    }
-
-    function currentModel() {
-      const map = {};
-      document.querySelectorAll('.switch[data-id]').forEach(sw => {
-        map[sw.dataset.id] = (sw.dataset.on === 'true');
-      });
-      return { alerts: Object.entries(map).map(([id, on]) => ({ id, on })) };
-    }
-
-    function setAll(on) {
-      document.querySelectorAll('.switch[data-id]').forEach(sw => setSwitch(sw, on));
-      document.querySelectorAll('.row .state').forEach((el, idx) => {
-        if (idx === 0) return; // пропустить заголовок, если изменится структура
-        el.textContent = on ? 'включено' : 'выключено';
-      });
-      updateAllState();
-    }
-
-    function updateAllState() {
-      const model = currentModel();
-      const total = model.alerts.length;
-      const onCount = model.alerts.filter(a => a.on).length;
-      const txt = onCount === 0 ? 'всё выключено' : onCount === total ? 'всё включено' : `${onCount} из ${total} включено`;
-      document.getElementById('allState').textContent = txt;
-    }
-
-    function render() {
-      const list = document.getElementById('list');
-      const saved = loadLocal();
-      list.innerHTML = '';
-      ALERTS.forEach(a => {
-        const on = saved[a.id] ?? (a.id === 'balance'); // по умолчанию включён только «Баланс монет»
-        const row = createRow(a, !!on);
-        list.appendChild(row);
-      });
-      updateAllState();
-    }
-
-    function isTelegram() {
-      return !!(tg && tg.initDataUnsafe && (tg.initDataUnsafe.user || tg.initData));
-    }
-
-    function sendToBot(model) {
-      const payload = JSON.stringify(model);
-      if (isTelegram()) {
-        tg.HapticFeedback?.impactOccurred?.('light');
-        tg.sendData(payload); // Telegram доставит это боту как web_app_data
-        // UI-фидбек
-        tg.showAlert?.('Настройки отправлены боту');
-      } else {
-        // Предпросмотр: сохраняем локально, чтобы проверить интерфейс
-        const flat = Object.fromEntries(model.alerts.map(a => [a.id, a.on]));
-        saveLocal(flat);
-        document.getElementById('previewWarn').innerHTML = 'Сохранено в <em>localStorage</em> (предпросмотр).';
-        document.getElementById('previewWarn').hidden = false;
-      }
-    }
-
-    // bootstrap
-    render();
-
-    // Кнопки управления
-    document.getElementById('btnAllOn').addEventListener('click', () => setAll(true));
-    document.getElementById('btnAllOff').addEventListener('click', () => setAll(false));
-    document.getElementById('btnSave').addEventListener('click', () => sendToBot(currentModel()));
-
-    // Telegram специфические улучшения
-    if (isTelegram()) {
-      tg.expand?.();
-      tg.setHeaderColor?.('#050029');
-      tg.setBackgroundColor?.('#050029');
-    } else {
-      document.getElementById('previewWarn').hidden = false;
-    }
-  </script>
+/* init */
+render();
+</script>
 </body>
 </html>

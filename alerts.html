@@ -19,19 +19,22 @@
   .wrap{
     width:min(680px,92vw);
     padding:clamp(16px,3vw,28px);
-    /* больше воздуха снизу */
-    padding-bottom:clamp(72px,10vh,140px);
+    /* + воздух снизу и учёт безопасной зоны iOS */
+    padding-bottom: calc(clamp(24px,8vh,120px) + env(safe-area-inset-bottom, 0px));
   }
   h1{margin:0 0 .8rem; font-weight:800; letter-spacing:.02em;
      font-size:clamp(24px,5vw,40px); text-transform:uppercase;}
   .row{display:flex; gap:clamp(12px,2.8vw,18px); align-items:center; flex-wrap:wrap}
-  .section{margin:clamp(14px,3vw,22px) 0; padding:clamp(12px,2.6vw,18px);
-           border:1px solid #2a2458; border-radius:20px; background:rgba(255,255,255,.02);}
+  .section{
+    margin:clamp(14px,3vw,22px) 0; padding:clamp(12px,2.6vw,18px);
+    border:1px solid #2a2458; border-radius:20px; background:rgba(255,255,255,.02);
+  }
   .hint{color:var(--muted); font-size:clamp(12px,2.8vw,14px)}
   .spacer{height:8px}
   .title{font-size:clamp(16px,3.6vw,22px); font-weight:700}
   .grow{flex:1 1 auto}
 
+  /* большие кнопки */
   .actions{gap:clamp(10px,2.6vw,14px)}
   .btn{
     border:none; cursor:pointer; border-radius:var(--radius);
@@ -44,35 +47,36 @@
   .btn.green{background:var(--green)}
   .btn.red{background:var(--red)}
 
-  /* спец-стиль для «Сохранить настройки» */
-  .btn.save{
-    background:var(--bg);
-    color:var(--text);
-    border:1px solid var(--text);
-    box-shadow:none;           /* без подсветки — как просили */
+  /* бейдж состояния */
+  .status-badge{
+    display:inline-block; padding:.25em .8em; border-radius:999px;
+    font-size:clamp(12px,2.8vw,14px); font-weight:700; margin-left:8px;
+    background:#211a53; color:var(--text); border:1px solid #3a3276;
   }
 
-  .status-badge{display:inline-block; padding:.25em .8em; border-radius:999px;
-    font-size:clamp(12px,2.8vw,14px); font-weight:700; margin-left:8px;
-    background:#211a53; color:var(--text); border:1px solid #3a3276;}
-
-  .item{display:grid; grid-template-columns:1fr auto; gap:12px; align-items:center; padding:12px 0}
+  /* пункты списка */
+  .item{
+    display:grid; grid-template-columns: 1fr auto; gap:12px;
+    align-items:center; padding:12px 0;
+  }
   .item + .item{border-top:1px dashed #2a2458}
   .name{font-size:clamp(15px,3.2vw,20px)}
   .state{color:var(--muted); font-size:clamp(12px,2.8vw,14px); margin-top:6px}
 
+  /* тумблер */
   .switch{
     --pad:6px;
     position:relative; width:var(--pill-w); height:var(--pill-h);
     border-radius:var(--radius); border:1px solid #382f78;
-    background:linear-gradient(90deg,var(--green) 0 50%,var(--red) 50% 100%);
+    background:linear-gradient(90deg,var(--green) 0 50%, var(--red) 50% 100%);
     display:inline-flex; align-items:center; justify-content:space-between;
     padding:0 var(--pad); color:#050029; user-select:none; cursor:pointer;
     box-shadow:inset 0 0 0 1px rgba(255,255,255,.04), 0 6px 18px rgba(0,0,0,.25);
   }
   .switch .label{
     font-weight:900; letter-spacing:.03em; text-transform:uppercase;
-    font-size:clamp(12px,2.8vw,16px); width:50%; display:flex; align-items:center; justify-content:center;
+    font-size:clamp(12px,2.8vw,16px); width:50%;
+    display:flex; align-items:center; justify-content:center;
   }
   .switch .knob{
     position:absolute; top:50%; transform:translateY(-50%);
@@ -81,12 +85,26 @@
     box-shadow:0 6px 12px rgba(0,0,0,.35), inset 0 0 0 1px rgba(255,255,255,.06);
     transition:left .18s ease; left:var(--pad);
   }
-  .switch[data-on="false"] .knob{left:calc(100% - var(--pill-h) + var(--pad))}
+  .switch[data-on="false"] .knob{ left: calc(100% - var(--pill-h) + var(--pad)) }
 
-  /* футер с центровкой кнопки */
+  /* футер с кнопкой сохранения */
   .footer{
-    margin-top:20px;
-    display:flex; justify-content:center; align-items:center;
+    margin-top:clamp(24px,8vh,72px);
+    display:flex; justify-content:center;
+  }
+  .save{
+    background:var(--bg);               /* тёмно-синий фон */
+    color:var(--text);                  /* бежевый текст */
+    border:1px solid var(--text);       /* бежевый контур */
+    box-shadow:0 8px 28px rgba(0,0,0,.35);
+    min-width:min(600px,92vw);
+    padding:clamp(14px,3.8vw,18px) clamp(24px,6vw,30px);
+  }
+
+  /* мобильный: название над тумблером, тумблер растягивается */
+  @media (max-width: 560px){
+    .item{ grid-template-columns: 1fr; }
+    .switch{ width:100%; }
   }
 </style>
 </head>
@@ -94,6 +112,7 @@
   <main class="wrap">
     <h1>Уведомления</h1>
 
+    <!-- секция «все» -->
     <section class="section">
       <div class="row" style="align-items:center;justify-content:space-between;">
         <div class="title">все</div>
@@ -109,8 +128,10 @@
       </div>
     </section>
 
+    <!-- список уведомлений -->
     <section class="section" id="list"></section>
 
+    <!-- центрированная кнопка, воздух снизу задаётся в .wrap -->
     <div class="footer">
       <button class="btn save" id="saveBtn" title="Сохранить в боте">Сохранить настройки</button>
     </div>
@@ -123,7 +144,7 @@ const DEFAULT_ALERTS = [
   { id: 'balance', name: 'Баланс монет', on: true },
   { id: 'alert2',  name: 'уведомление 2', on: true },
   { id: 'alert3',  name: 'уведомление 3', on: true },
-  { id: 'alert4',  name: 'уведомление 4', on: true  },
+  { id: 'alert4',  name: 'уведомление 4', on: true },
 ];
 
 function loadState(){
@@ -145,41 +166,56 @@ let alerts = loadState();
 function render(){
   listEl.innerHTML = '';
   alerts.forEach(a=>{
-    const row = document.createElement('div'); row.className='item';
+    const row = document.createElement('div');
+    row.className = 'item';
 
     const left = document.createElement('div');
-    left.innerHTML = `<div class="name">${a.name}</div>
-                      <div class="state" id="state-${a.id}">${a.on?'включено':'выключено'}</div>`;
+    left.innerHTML = `
+      <div class="name">${a.name}</div>
+      <div class="state" id="state-${a.id}">${a.on ? 'включено' : 'выключено'}</div>
+    `;
     row.appendChild(left);
 
     const sw = document.createElement('button');
     sw.type='button'; sw.className='switch';
     sw.setAttribute('data-on', String(a.on));
     sw.setAttribute('aria-pressed', String(a.on));
-    sw.innerHTML = `<span class="label">ВКЛ</span><span class="label">ВЫК</span><span class="knob"></span>`;
+    sw.innerHTML = `
+      <span class="label">ВКЛ</span>
+      <span class="label">ВЫК</span>
+      <span class="knob"></span>
+    `;
     sw.addEventListener('click', ()=>{
       a.on = !a.on;
       saveState(alerts);
       updateOne(a.id);
       updateAllBadge();
     });
-    row.appendChild(sw);
 
+    row.appendChild(sw);
     listEl.appendChild(row);
   });
   updateAllBadge();
 }
+
 function updateOne(id){
   const a = alerts.find(x=>x.id===id);
   const state = document.getElementById('state-'+id);
   if(state) state.textContent = a.on ? 'включено' : 'выключено';
+
   const idx = alerts.findIndex(x=>x.id===id);
   const btn = listEl.querySelectorAll('.switch')[idx];
-  if(btn){ btn.setAttribute('data-on', String(a.on)); btn.setAttribute('aria-pressed', String(a.on)); }
+  if(btn){
+    btn.setAttribute('data-on', String(a.on));
+    btn.setAttribute('aria-pressed', String(a.on));
+  }
 }
+
 function updateAllBadge(){
   const on = alerts.filter(a=>a.on).length;
-  allStateEl.textContent = on===0 ? 'выключено' : (on===alerts.length ? 'включено' : 'частично');
+  allStateEl.textContent = on===0 ? 'выключено'
+                       : on===alerts.length ? 'включено'
+                       : 'частично';
 }
 
 /* ===== действия ===== */
@@ -190,14 +226,16 @@ document.getElementById('btnAllOff').addEventListener('click', ()=>{
   alerts.forEach(a=>a.on=false); saveState(alerts); render();
 });
 
-/* ===== Telegram Web App ===== */
+/* ===== Telegram WebApp ===== */
 const tg = window.Telegram && window.Telegram.WebApp ? window.Telegram.WebApp : null;
 if(tg){ try{ tg.ready(); tg.expand(); }catch{} }
 
 document.getElementById('saveBtn').addEventListener('click', ()=>{
   const payload = JSON.stringify({ alerts });
-  if(tg && tg.sendData){ tg.sendData(payload); try{ tg.close(); }catch{} }
-  else{
+  if(tg && tg.sendData){
+    tg.sendData(payload);
+    try{ tg.close(); }catch{}
+  }else{
     saveState(alerts);
     alert('Настройки сохранены локально. Откройте страницу из Telegram, чтобы отправить их боту.');
   }

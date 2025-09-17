@@ -286,59 +286,74 @@ document.getElementById('btnAllOn').addEventListener('click', ()=>{
 document.getElementById('btnAllOff').addEventListener('click', ()=>{
   alerts.forEach(a=>a.on=false); saveState(alerts); render();
 });
-
 /* ===== Telegram Web App ===== */
-  const tg = window.Telegram && window.Telegram.WebApp ? window.Telegram.WebApp : null;
+const tg = window.Telegram?.WebApp ?? null;
 
-  function showToast(msg){
-    const el = document.createElement('div');
-    el.className = 'toast';
-    el.textContent = msg;
-    document.body.appendChild(el);
-    requestAnimationFrame(()=>el.classList.add('show'));
-    setTimeout(()=>{ el.classList.remove('show'); el.remove(); }, 2200);
+// мягкая инициализация (если доступно)
+try { tg?.ready(); tg?.expand(); } catch {}
+
+function showToast(msg){
+  const el = document.createElement('div');
+  el.className = 'toast';
+  el.textContent = msg;
+  document.body.appendChild(el);
+  requestAnimationFrame(()=>el.classList.add('show'));
+  setTimeout(()=>{ el.classList.remove('show'); el.remove(); }, 2200);
+}
+
+// Показываем системный поп-ап Telegram (если доступен), иначе — алерт/тост
+function notifySaved({ closeAfter = false } = {}){
+  const title = 'OKXcandlebot';
+  const msg   = 'Настройки сохранены на этом устройстве.';
+
+  if (typeof tg?.showPopup === 'function') {
+    tg.showPopup(
+      { title, message: msg, buttons: [{ type: 'ok' }] },
+      () => { if (closeAfter) { try { tg.close(); } catch {} } }
+    );
+    tg.HapticFeedback?.notificationOccurred('success');
+    return;
   }
 
-  // ✅ Показываем системный поп-ап Telegram, где возможно
-  function notifySaved(closeAfter = false){
-    const title = 'OKXcandlebot';
-    const msg   = 'Настройки сохранены на этом устройстве.';
-
-    if (tg && typeof tg.showPopup === 'function') {
-      tg.showPopup(
-        { title, message: msg, buttons: [{ type: 'ok' }] },
-        () => { if (closeAfter) { try { tg.close(); } catch {} } }
-      );
-      tg.HapticFeedback?.notificationOccurred('success');
-      return;
-    }
-
-    if (tg && typeof tg.showAlert === 'function') {
-      tg.showAlert(`${title}\n${msg}`, () => {
-        if (closeAfter) { try { tg.close(); } catch {} }
-      });
-      tg.HapticFeedback?.notificationOccurred('success');
-      return;
-    }
-
-    // Фолбэк для обычного браузера
-    showToast(`${title}\n${msg}`);
+  if (typeof tg?.showAlert === 'function') {
+    tg.showAlert(`${title}\n${msg}`, () => {
+      if (closeAfter) { try { tg.close(); } catch {} }
+    });
+    tg.HapticFeedback?.notificationOccurred('success');
+    return;
   }
 
-  // обработчик «Сохранить настройки»
-  document.getElementById('saveBtn').addEventListener('click', ()=>{
-    const payload = JSON.stringify({ alerts });
+  // Фолбэк для обычного браузера
+  showToast(`${title}\n${msg}`);
+}
 
-    if (tg && typeof tg.sendData === 'function') {
+// безопасная отправка данных боту
+function safeSendData(payload){
+  try {
+    if (typeof tg?.sendData === 'function') {
       tg.sendData(payload);
-      // показываем системный поп-ап и закрываем мини-приложение после OK
-      notifySaved(true);
-    } else {
-      // открыто не в Telegram — просто локально сохраним и покажем тост
-      localStorage.setItem('okx_alerts_v1', JSON.stringify(alerts));
-      notifySaved(false);
+      return true;
     }
-  });
+  } catch (e) {
+    console.error('sendData error:', e);
+  }
+  return false;
+}
+
+// обработчик «Сохранить настройки»
+document.getElementById('saveBtn').addEventListener('click', ()=>{
+  const payload = JSON.stringify({ alerts });
+
+  const sent = safeSendData(payload);
+  if (sent) {
+    tg?.HapticFeedback?.impactOccurred('medium');
+    notifySaved({ closeAfter: true });
+  } else {
+    // вне Telegram — просто сохраняем локально и показываем тост
+    try { localStorage.setItem('okx_alerts_v1', JSON.stringify(alerts)); } catch {}
+    notifySaved({ closeAfter: false });
+  }
+});
 
 /* init */
 render();

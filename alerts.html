@@ -228,17 +228,19 @@ let alerts = loadState();
 function render(){
   listEl.innerHTML = '';
   alerts.forEach(a=>{
-    const row = document.createElement('div'); row.className='item';
+    const row = document.createElement('div');
+    row.className = 'item';
 
     const left = document.createElement('div');
     left.innerHTML = `
       <div class="name">${a.name}</div>
-      <div class="state" id="state-${a.id}">${a.on?'включено':'выключено'}</div>
+      <div class="state" id="state-${a.id}">${a.on ? 'включено' : 'выключено'}</div>
     `;
     row.appendChild(left);
 
     const sw = document.createElement('button');
-    sw.type='button'; sw.className='switch';
+    sw.type = 'button';
+    sw.className = 'switch';
     sw.setAttribute('data-on', String(a.on));
     sw.setAttribute('aria-pressed', String(a.on));
     sw.innerHTML = `
@@ -246,14 +248,17 @@ function render(){
       <span class="label">ВЫК</span>
       <span class="knob"></span>
     `;
+
+    // ←←← Вот здесь добавляем вызов onToggleChanged(a.id)
     sw.addEventListener('click', ()=>{
       a.on = !a.on;
       saveState(alerts);
       updateOne(a.id);
       updateAllBadge();
+      onToggleChanged(a.id);   // ✅ ДОБАВЛЕНО
     });
-    row.appendChild(sw);
 
+    row.appendChild(sw);
     listEl.appendChild(row);
   });
 

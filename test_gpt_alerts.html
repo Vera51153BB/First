@@ -1,45 +1,71 @@
 <!doctype html>
 <html>
 <head>
-  <meta charset="utf-8">
-  <title>Test WebApp</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta charset="utf-8" />
+  <title>Test WebApp — DIAG</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <style>
+    :root { color-scheme: light dark; }
     body { font-family: system-ui, sans-serif; margin: 16px; }
     button { padding: 12px 16px; margin: 8px 0; width: 100%; font-size: 16px; }
-    .warn { background:#fff3cd; border:1px solid #ffe69c; padding:10px; margin-bottom:12px; display:none; }
+    .row { display: flex; gap: 12px; }
+    .ok { color: #16a34a; } .bad { color: #dc2626; }
+    #diag { font: 12px/1.4 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; white-space: pre-wrap; }
   </style>
 </head>
 <body>
-  <div id="warn" class="warn">
-    Страница открыта вне Telegram WebApp. Кнопки не смогут отправить данные боту.
-    Откройте её через кнопку в боте (/start → «Открыть панель (WebApp)»).
-  </div>
-
   <h1>Панель</h1>
-  <button id="onBtn">Включено</button>
-  <button id="offBtn">Выключено</button>
+
+  <div id="status" class="bad">Инициализация…</div>
+  <div id="diag"></div>
+
+  <button id="onBtn">Включено (sendData)</button>
+  <button id="offBtn">Выключено (sendData)</button>
 
   <script>
+    const out = (msg) => {
+      const d = document.getElementById('diag');
+      d.textContent += msg + "\n";
+    };
+
     const tg = window.Telegram && window.Telegram.WebApp;
     if (!tg) {
-      document.getElementById('warn').style.display = 'block';
+      document.getElementById('status').textContent =
+        '❌ Telegram.WebApp не доступен (страница НЕ в вебвью)';
+      out('tg = ' + String(tg));
     } else {
+      document.getElementById('status').textContent =
+        '✅ WebApp готов. Нажимай кнопки — должно прилететь web_app_data.';
+      document.getElementById('status').className = 'ok';
+
       tg.ready();
       tg.expand?.();
-    }
 
-    function send(val) {
-      if (!tg) {
-        alert('Это не Telegram WebApp. Откройте через кнопку в боте (/start).');
-        return;
-      }
-      tg.sendData(val); // <-- улетит в чат с ботом как message.web_app_data
-    }
+      // Диагностика окружения
+      out('platform=' + tg.platform);
+      out('initData.length=' + (tg.initData ? tg.initData.length : 0));
+      out('themeParams=' + JSON.stringify(tg.themeParams || {}));
 
-    document.getElementById('onBtn').addEventListener('click', () => send('включено'));
-    document.getElementById('offBtn').addEventListener('click', () => send('выключено'));
+      // Визуальные клики
+      document.getElementById('onBtn').addEventListener('click', () => {
+        out('click: on → sendData("включено")');
+        tg.sendData('включено');
+      });
+      document.getElementById('offBtn').addEventListener('click', () => {
+        out('click: off → sendData("выключено")');
+        tg.sendData('выключено');
+      });
+
+      // Доп. канал: MainButton (на случай, если inline-кнопки чем-то блокируются)
+      tg.MainButton.setText('Отправить: ВКЛ');
+      tg.MainButton.show();
+      tg.onEvent('mainButtonClicked', () => {
+        out('MainButton → sendData("включено")');
+        tg.sendData('включено');
+      });
+    }
   </script>
 </body>
 </html>
+

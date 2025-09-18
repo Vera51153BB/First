@@ -294,85 +294,87 @@ document.getElementById('btnAllOff').addEventListener('click', ()=>{
 });
 
 /* ===== Telegram Web App ===== */
-const DEBUG = true;
-const SEND_ON_TOGGLE = false;          // <— не шлём на каждый клиκ, только по “Сохранить”
+  // включаем консольные логи
+  const DEBUG = true;
 
-const tg = window.Telegram?.WebApp ?? null;
-try { tg?.ready(); tg?.expand(); } catch {}
+  // ВАЖНО: чтобы Telegram не закрывал WebApp при клике на тумблер,
+  // отправляем данные ТОЛЬКО по кнопке «Сохранить настройки»
+  const SEND_ON_TOGGLE = false;
 
-// быстрый тост для браузера (когда страница открыта не через Telegram)
-function showToast(msg){
-  const el = document.createElement('div');
-  el.className = 'toast';
-  el.textContent = msg;
-  document.body.appendChild(el);
-  requestAnimationFrame(()=>el.classList.add('show'));
-  setTimeout(()=>{ el.classList.remove('show'); el.remove(); }, 2200);
-}
+  const tg = window.Telegram?.WebApp ?? null;
+  try { tg?.ready(); tg?.expand(); } catch {}
 
-// показываем системный поп-ап Telegram или тост — БЕЗ закрытия WebApp
-function notifySaved(){
-  const title = 'OKXcandlebot';
-  const msg   = 'Вы успешно изменили настройки уведомлений';
-  if (typeof tg?.showPopup === 'function') {
-    tg.showPopup({ title, message: msg, buttons: [{ type: 'ok' }] });
-    tg.HapticFeedback?.notificationOccurred('success');
-    return;
+  // Быстрый тост для браузера (когда не в Telegram)
+  function showToast(msg){
+    const el = document.createElement('div');
+    el.className = 'toast';
+    el.textContent = msg;
+    document.body.appendChild(el);
+    requestAnimationFrame(()=>el.classList.add('show'));
+    setTimeout(()=>{ el.classList.remove('show'); el.remove(); }, 2200);
   }
-  if (typeof tg?.showAlert === 'function') {
-    tg.showAlert(`${title}\n${msg}`);
-    tg.HapticFeedback?.notificationOccurred('success');
-    return;
-  }
-  showToast(`${title}\n${msg}`);
-}
 
-// безопасная отправка данных боту
-function safeSendData(payload){
-  try {
-    if (typeof tg?.sendData === 'function') {
-      tg.sendData(payload);
-      if (DEBUG) console.log('[WebApp] sendData →', payload);
-      return true;
+  // Поп-ап/алерт Telegram либо тост
+  function notifySaved(){
+    const title = 'OKXcandlebot';
+    const msg   = 'Настройки сохранены на этом устройстве.';
+    if (typeof tg?.showPopup === 'function') {
+      tg.showPopup({ title, message: msg, buttons: [{ type: 'ok' }] });
+      tg.HapticFeedback?.notificationOccurred('success');
+      return;
     }
-  } catch (e) {
-    console.error('[WebApp] sendData error:', e);
+    if (typeof tg?.showAlert === 'function') {
+      tg.showAlert(`${title}\n${msg}`);
+      tg.HapticFeedback?.notificationOccurred('success');
+      return;
+    }
+    showToast(`${title}\n${msg}`);
   }
-  if (DEBUG) console.warn('[WebApp] not in Telegram (sendData not available)');
-  return false;
-}
 
-// вызываем из обработчика каждого тумблера (но SEND_ON_TOGGLE=false, так что только лог)
-function onToggleChanged(alertId){
-  if (DEBUG) console.log('[WebApp] toggle changed:', alertId, alerts);
-  if (SEND_ON_TOGGLE) debouncedSend();
-}
+  // Безопасная отправка данных боту
+  function safeSendData(payload){
+    try {
+      if (typeof tg?.sendData === 'function') {
+        tg.sendData(payload);
+        if (DEBUG) console.log('[WebApp] sendData →', payload);
+        return true;
+      }
+    } catch (e) {
+      console.error('[WebApp] sendData error:', e);
+    }
+    if (DEBUG) console.warn('[WebApp] not in Telegram (sendData not available)');
+    return false;
+  }
 
-// дебаунс для режима SEND_ON_TOGGLE=true (оставим на будущее)
-let sendTimer = null;
-function debouncedSend(){
-  clearTimeout(sendTimer);
-  sendTimer = setTimeout(()=>{
-    const payload = JSON.stringify({ type: 'toggle', alerts });
+  // ===== ЛОГИ НА ТУМБЛЕРАХ + (опц.) моментальная отправка =====
+  function onToggleChanged(alertId){
+    if (DEBUG) console.log('[WebApp] toggle changed:', alertId, alerts);
+    if (SEND_ON_TOGGLE) debouncedSend();
+  }
+
+  // Дебаунс на случай, если включите SEND_ON_TOGGLE = true
+  let sendTimer = null;
+  function debouncedSend(){
+    clearTimeout(sendTimer);
+    sendTimer = setTimeout(()=>{
+      const payload = JSON.stringify({ type: "toggle", alerts });
+      const sent = safeSendData(payload);
+      if (!sent) {
+        try { localStorage.setItem('okx_alerts_v1', JSON.stringify(alerts)); } catch {}
+        if (DEBUG) console.log('[WebApp] saved locally (not in Telegram)');
+      }
+    }, 250);
+  }
+
+  // обработчик «Сохранить настройки»
+  document.getElementById('saveBtn').addEventListener('click', ()=>{
+    const payload = JSON.stringify({ type: "save", alerts });
     const sent = safeSendData(payload);
     if (!sent) {
-      try { localStorage.setItem(STORAGE_KEY, JSON.stringify(alerts)); } catch {}
-      if (DEBUG) console.log('[WebApp] saved locally (toggle, not in Telegram)');
+      try { localStorage.setItem('okx_alerts_v1', JSON.stringify(alerts)); } catch {}
     }
-  }, 250);
-}
-
-// обработчик кнопки “Сохранить настройки” — ТОЛЬКО отправка и поп-ап, БЕЗ tg.close()
-document.getElementById('saveBtn').addEventListener('click', ()=>{
-  const payload = JSON.stringify({ type: 'save', alerts });
-  const sent = safeSendData(payload);
-  if (!sent) {
-    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(alerts)); } catch {}
-    if (DEBUG) console.log('[WebApp] saved locally (save, not in Telegram)');
-  }
-  notifySaved();     // <— никаких closeAfter
-  // НИЧЕГО НЕ ЗАКРЫВАЕМ: tg.close() намеренно не вызываем
-});
+    notifySaved();              // только поп-ап / тост, БЕЗ tg.close()
+  });
   
 /* init */
 render();

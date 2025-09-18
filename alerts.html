@@ -293,98 +293,85 @@ document.getElementById('btnAllOff').addEventListener('click', ()=>{
   alerts.forEach(a=>a.on=false); saveState(alerts); render();
 });
 
-  /* ===== Telegram Web App ===== */
-  const DEBUG = true;                 // логи в консоль
-  const SEND_ON_TOGGLE = false;       // <<< ВАЖНО: ничего не шлём на каждом клике
+/* ===== Telegram Web App ===== */
+const DEBUG = true;
+const SEND_ON_TOGGLE = false;          // <— не шлём на каждый клиκ, только по “Сохранить”
 
-  const tg = window.Telegram?.WebApp ?? null;
-  try { tg?.ready(); tg?.expand(); } catch {}
+const tg = window.Telegram?.WebApp ?? null;
+try { tg?.ready(); tg?.expand(); } catch {}
 
-  // Тост для обычного браузера
-  function showToast(msg){
-    const el = document.createElement('div');
-    el.className = 'toast';
-    el.textContent = msg;
-    document.body.appendChild(el);
-    requestAnimationFrame(()=>el.classList.add('show'));
-    setTimeout(()=>{ el.classList.remove('show'); el.remove(); }, 2200);
+// быстрый тост для браузера (когда страница открыта не через Telegram)
+function showToast(msg){
+  const el = document.createElement('div');
+  el.className = 'toast';
+  el.textContent = msg;
+  document.body.appendChild(el);
+  requestAnimationFrame(()=>el.classList.add('show'));
+  setTimeout(()=>{ el.classList.remove('show'); el.remove(); }, 2200);
+}
+
+// показываем системный поп-ап Telegram или тост — БЕЗ закрытия WebApp
+function notifySaved(){
+  const title = 'OKXcandlebot';
+  const msg   = 'Вы успешно изменили настройки уведомлений';
+  if (typeof tg?.showPopup === 'function') {
+    tg.showPopup({ title, message: msg, buttons: [{ type: 'ok' }] });
+    tg.HapticFeedback?.notificationOccurred('success');
+    return;
   }
+  if (typeof tg?.showAlert === 'function') {
+    tg.showAlert(`${title}\n${msg}`);
+    tg.HapticFeedback?.notificationOccurred('success');
+    return;
+  }
+  showToast(`${title}\n${msg}`);
+}
 
-  // Поп-ап/алерт Telegram либо тост (НИЧЕГО НЕ ЗАКРЫВАЕМ)
-  function notifySaved(){
-    const title = 'OKXcandlebot';
-    const msg   = 'Новые настройки отправлены боту.';
-
-    if (typeof tg?.showPopup === 'function') {
-      tg.showPopup({ title, message: msg, buttons: [{ type: 'ok' }] });
-      tg.HapticFeedback?.notificationOccurred('success');
-      return;
+// безопасная отправка данных боту
+function safeSendData(payload){
+  try {
+    if (typeof tg?.sendData === 'function') {
+      tg.sendData(payload);
+      if (DEBUG) console.log('[WebApp] sendData →', payload);
+      return true;
     }
-    if (typeof tg?.showAlert === 'function') {
-      tg.showAlert(`${title}\n${msg}`);
-      tg.HapticFeedback?.notificationOccurred('success');
-      return;
-    }
-    showToast(`${title}\n${msg}`);
+  } catch (e) {
+    console.error('[WebApp] sendData error:', e);
   }
+  if (DEBUG) console.warn('[WebApp] not in Telegram (sendData not available)');
+  return false;
+}
 
-  // Безопасная передача данных боту (возвращает true/false)
-  function safeSendData(payload){
-    try {
-      if (typeof tg?.sendData === 'function') {
-        tg.sendData(payload);
-        if (DEBUG) console.log('[WebApp] sendData →', payload);
-        return true;
-      }
-    } catch (e) {
-      console.error('[WebApp] sendData error:', e);
-    }
-    if (DEBUG) console.warn('[WebApp] not in Telegram (sendData unavailable)');
-    return false;
-  }
+// вызываем из обработчика каждого тумблера (но SEND_ON_TOGGLE=false, так что только лог)
+function onToggleChanged(alertId){
+  if (DEBUG) console.log('[WebApp] toggle changed:', alertId, alerts);
+  if (SEND_ON_TOGGLE) debouncedSend();
+}
 
-  // Логируем переключения (и при желании — отправляем с дебаунсом)
-  function onToggleChanged(alertId){
-    if (DEBUG) console.log('[WebApp] toggle changed:', alertId, alerts);
-    if (SEND_ON_TOGGLE) debouncedSend();
-  }
-
-  let sendTimer = null;
-  function debouncedSend(){
-    clearTimeout(sendTimer);
-    sendTimer = setTimeout(()=>{
-      const payload = JSON.stringify({ type: "toggle", alerts });
-      const sent = safeSendData(payload);
-      if (!sent) {
-        try { localStorage.setItem('okx_alerts_v1', JSON.stringify(alerts)); } catch {}
-        if (DEBUG) console.log('[WebApp] saved locally (not in Telegram)');
-      }
-    }, 250);
-  }
-
-  // Кнопка «Сохранить настройки»
-  document.getElementById('saveBtn').addEventListener('click', ()=>{
-    const payload = JSON.stringify({ type: "save", alerts });
+// дебаунс для режима SEND_ON_TOGGLE=true (оставим на будущее)
+let sendTimer = null;
+function debouncedSend(){
+  clearTimeout(sendTimer);
+  sendTimer = setTimeout(()=>{
+    const payload = JSON.stringify({ type: 'toggle', alerts });
     const sent = safeSendData(payload);
     if (!sent) {
-      try { localStorage.setItem('okx_alerts_v1', JSON.stringify(alerts)); } catch {}
+      try { localStorage.setItem(STORAGE_KEY, JSON.stringify(alerts)); } catch {}
+      if (DEBUG) console.log('[WebApp] saved locally (toggle, not in Telegram)');
     }
-    notifySaved(); // показываем поп-ап/тост. НЕ закрываем WebApp.
-  });
+  }, 250);
+}
 
-// ===== Обработчик «Сохранить настройки» =====
+// обработчик кнопки “Сохранить настройки” — ТОЛЬКО отправка и поп-ап, БЕЗ tg.close()
 document.getElementById('saveBtn').addEventListener('click', ()=>{
-  const payload = JSON.stringify({ type: "save", alerts });
-  if (DEBUG) console.log('[WebApp] Save clicked → payload:', payload);
-
+  const payload = JSON.stringify({ type: 'save', alerts });
   const sent = safeSendData(payload);
-  if (sent) {
-    tg?.HapticFeedback?.impactOccurred('medium');
-    notifySaved({ closeAfter: true });
-  } else {
-    try { localStorage.setItem('okx_alerts_v1', JSON.stringify(alerts)); } catch {}
-    notifySaved({ closeAfter: false });
+  if (!sent) {
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(alerts)); } catch {}
+    if (DEBUG) console.log('[WebApp] saved locally (save, not in Telegram)');
   }
+  notifySaved();     // <— никаких closeAfter
+  // НИЧЕГО НЕ ЗАКРЫВАЕМ: tg.close() намеренно не вызываем
 });
   
 /* init */

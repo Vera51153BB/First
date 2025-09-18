@@ -343,26 +343,27 @@ document.getElementById('btnAllOff').addEventListener('click', ()=>{
 });
 
 /* ===== Telegram Web App (поп-ап + закрытие после OK; без падений на Desktop) ===== */
+/* ===== Telegram Web App (Desktop-safe) ===== */
 const DEBUG = true;
-const SEND_ON_TOGGLE = false;      // не шлём при каждом тумблере, только по «Сохранить»
+const SEND_ON_TOGGLE = false; // шлём только по «Сохранить»
 
 const tg = window.Telegram?.WebApp ?? null;
 try { tg?.ready(); tg?.expand(); } catch {}
 
-const PLATFORM = tg?.platform || '';                 // 'tdesktop' | 'android' | 'ios' | 'macos' | ...
+const PLATFORM = tg?.platform || '';
 const IS_DESKTOP = PLATFORM === 'tdesktop' || PLATFORM === 'macos';
 
-/* быстрый тост — запасной вариант */
+/* тост на странице — для Desktop/браузера */
 function showToast(msg){
   const el = document.createElement('div');
   el.className = 'toast';
   el.textContent = msg;
   document.body.appendChild(el);
   requestAnimationFrame(()=>el.classList.add('show'));
-  setTimeout(()=>{ el.classList.remove('show'); el.remove(); }, 2200);
+  setTimeout(()=>{ el.classList.remove('show'); el.remove(); }, 2600);
 }
 
-/* безопасная отправка данных в бота */
+/* безопасная отправка в бота */
 function safeSendData(payload){
   try {
     if (typeof tg?.sendData === 'function') {
@@ -375,40 +376,43 @@ function safeSendData(payload){
   return false;
 }
 
-/* уведомление + закрытие мини-аппа ТОЛЬКО после OK */
-function notifySavedAndMaybeClose(){
-  const title = 'OKXcandlebot';
-  const msg   = 'Настройки сохранены на этом устройстве.';
+/* СВОДКА статусов в нужном виде */
+function buildSummary(list){
+  // удобная мапа id→on
+  const on = Object.fromEntries(list.map(a => [a.id, !!a.on]));
 
-  if (typeof tg?.showPopup === 'function') {
-    try {
-      tg.showPopup(
-        { title, message: msg, buttons: [{ id:'ok', type:'ok' }] },
-        (btnId) => {
-          if (btnId === 'ok' && !IS_DESKTOP) {
-            setTimeout(() => { try { tg.close(); } catch {} }, 120);
-          }
-        }
-      );
-      tg.HapticFeedback?.notificationOccurred('success');
-      return;
-    } catch(e){ console.warn('showPopup failed, fallback to alert/toast', e); }
+  const order = [
+    ['balance', 'Баланс монет'],
+    ['alert2',  'Индекс RSI'],
+    ['alert3',  'Уведомление 3'],
+    ['alert4',  'Уведомление 4'],
+  ];
+
+  const values = order.map(([id]) => on[id]);
+  let body;
+
+  if (values.every(Boolean)) {
+    body = 'Все уведомления: ВКЛЮЧЕНЫ';
+  } else if (values.every(v => !v)) {
+    body = 'Все уведомления: ВЫКЛЮЧЕНЫ';
+  } else {
+    body = order
+      .map(([id, title]) => `${title} — ${on[id] ? 'ВКЛЮЧЁН' : 'ВЫКЛЮЧЕН'}`)
+      .join('\n');
   }
 
-  if (typeof tg?.showAlert === 'function') {
-    try {
-      tg.showAlert(`${title}\n${msg}`, () => {
-        if (!IS_DESKTOP) setTimeout(() => { try { tg.close(); } catch {} }, 120);
-      });
-      tg.HapticFeedback?.notificationOccurred('success');
-      return;
-    } catch(e){ console.warn('showAlert failed, fallback to toast', e); }
-  }
-
-  showToast(`${title}\n${msg}`);
+  // Итоговое сообщение для окна/алерта/тоста
+  return [
+    'OKXcandlebot',
+    'Новые настройки уведомлений:',
+    '',
+    body,
+    '',
+    'Настройки сохранены на этом устройстве.'
+  ].join('\n');
 }
 
-/* (опционально) лог переключателей; можно включить мгновенную отправку, если понадобится */
+/* (опционально) лог на переключателях */
 function onToggleChanged(alertId){
   if (DEBUG) console.log('[WebApp] toggle changed:', alertId, alerts);
   if (SEND_ON_TOGGLE) {
@@ -421,7 +425,38 @@ function onToggleChanged(alertId){
   }
 }
 
-/* Риппл для всех кнопок (.btn и .save-btn) + лёгкий хаптик */
+/* поп-ап/алерт/тост с закрытием ТОЛЬКО на мобильных */
+function notifySavedAndMaybeClose(){
+  const message = buildSummary(alerts);
+
+  // Desktop: избегаем showPopup/showAlert — у некоторых сборок TDesktop это закрывает клиент
+  if (IS_DESKTOP) {
+    showToast(message);
+    return;
+  }
+
+  // Мобильные: полноценный поп-ап Telegram + закрытие после OK
+  if (typeof tg?.showPopup === 'function') {
+    try {
+      tg.showPopup(
+        { title: 'OKXcandlebot', message, buttons: [{ id:'ok', type:'ok' }] },
+        (btnId) => { if (btnId === 'ok') setTimeout(()=>{ try { tg.close(); } catch {} }, 120); }
+      );
+      return;
+    } catch(e){ console.warn('showPopup failed, fallback to showAlert', e); }
+  }
+
+  if (typeof tg?.showAlert === 'function') {
+    try {
+      tg.showAlert(message, () => setTimeout(()=>{ try { tg.close(); } catch {} }, 120));
+      return;
+    } catch(e){ console.warn('showAlert failed, fallback to toast', e); }
+  }
+
+  showToast(message);
+}
+
+/* Риппл + лёгкий хаптик на кликах по кнопкам */
 function attachRipple(selector){
   document.querySelectorAll(selector).forEach(el=>{
     el.addEventListener('click', (e)=>{
@@ -434,20 +469,25 @@ function attachRipple(selector){
   });
 }
 
-/* «Сохранить настройки» — отправка, вспышка, поп-ап; закрытие (моб) после OK */
+/* «Сохранить настройки» — отправка, вспышка, сводка */
 const saveEl = document.getElementById('saveBtn');
-saveEl.addEventListener('click', (e)=>{
+saveEl.addEventListener('click', ()=>{
   const payload = JSON.stringify({ type:'save', alerts });
   const sent = safeSendData(payload);
   if (!sent) { try { localStorage.setItem(STORAGE_KEY, JSON.stringify(alerts)); } catch {} }
 
-  // визуальный отклик на самой кнопке
+  // визуальный отклик
   saveEl.classList.remove('saved'); void saveEl.offsetWidth; saveEl.classList.add('saved');
-
-  // чуть сильнее хаптик при сохранении
   try{ tg?.HapticFeedback?.notificationOccurred('success'); }catch{}
 
   notifySavedAndMaybeClose();
+});
+
+/* init для эффектов */
+attachRipple('.btn, .save-btn');
+
+/* диагностика */
+tg?.onEvent?.('web_app_close', () => { if (DEBUG) console.log('[WebApp] event: web_app_close');
 });
 
 /* init */

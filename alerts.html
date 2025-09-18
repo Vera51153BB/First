@@ -295,7 +295,7 @@ document.getElementById('btnAllOff').addEventListener('click', ()=>{
 
   /* ===== Telegram Web App ===== */
 const DEBUG = true;                 // включаем консольные логи
-const SEND_ON_TOGGLE = false;       // если true — слать данные в бота при каждом тумблере (с дебаунсом)
+const SEND_ON_TOGGLE = true;       // если true — слать данные в бота при каждом тумблере (с дебаунсом)
 
 const tg = window.Telegram?.WebApp ?? null;
 try { tg?.ready(); tg?.expand(); } catch {}
@@ -359,7 +359,7 @@ let sendTimer = null;
 function debouncedSend(){
   clearTimeout(sendTimer);
   sendTimer = setTimeout(()=>{
-    const payload = JSON.stringify({ alerts });
+    const payload = JSON.stringify({ type: "toggle", alerts });
     const sent = safeSendData(payload);
     if (!sent) {
       try { localStorage.setItem('okx_alerts_v1', JSON.stringify(alerts)); } catch {}
@@ -370,7 +370,7 @@ function debouncedSend(){
 
 // ===== Обработчик «Сохранить настройки» =====
 document.getElementById('saveBtn').addEventListener('click', ()=>{
-  const payload = JSON.stringify({ alerts });
+  const payload = JSON.stringify({ type: "save", alerts });
   if (DEBUG) console.log('[WebApp] Save clicked → payload:', payload);
 
   const sent = safeSendData(payload);

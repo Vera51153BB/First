@@ -6,30 +6,40 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <style>
-    body { font-family: sans-serif; margin: 16px; }
+    body { font-family: system-ui, sans-serif; margin: 16px; }
     button { padding: 12px 16px; margin: 8px 0; width: 100%; font-size: 16px; }
+    .warn { background:#fff3cd; border:1px solid #ffe69c; padding:10px; margin-bottom:12px; display:none; }
   </style>
 </head>
 <body>
+  <div id="warn" class="warn">
+    Страница открыта вне Telegram WebApp. Кнопки не смогут отправить данные боту.
+    Откройте её через кнопку в боте (/start → «Открыть панель (WebApp)»).
+  </div>
+
   <h1>Панель</h1>
   <button id="onBtn">Включено</button>
   <button id="offBtn">Выключено</button>
 
   <script>
-    const tg = window.Telegram?.WebApp;
-    tg?.ready(); // сообщаем Telegram, что WebApp готов
+    const tg = window.Telegram && window.Telegram.WebApp;
+    if (!tg) {
+      document.getElementById('warn').style.display = 'block';
+    } else {
+      tg.ready();
+      tg.expand?.();
+    }
 
-    // По клику отправляем в бота строку. Можно отправлять и JSON.
-    document.getElementById('onBtn').addEventListener('click', () => {
-      tg?.sendData('включено');
-    });
+    function send(val) {
+      if (!tg) {
+        alert('Это не Telegram WebApp. Откройте через кнопку в боте (/start).');
+        return;
+      }
+      tg.sendData(val); // <-- улетит в чат с ботом как message.web_app_data
+    }
 
-    document.getElementById('offBtn').addEventListener('click', () => {
-      tg?.sendData('выключено');
-    });
-
-    // Необязательно: растягиваем на всю высоту
-    tg?.expand?.();
+    document.getElementById('onBtn').addEventListener('click', () => send('включено'));
+    document.getElementById('offBtn').addEventListener('click', () => send('выключено'));
   </script>
 </body>
 </html>

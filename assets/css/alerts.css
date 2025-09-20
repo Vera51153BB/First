@@ -1,1 +1,14 @@
 /* alerts-page overrides. Пока ничего специфичного здесь нет. Для правок Alerts */
+/* Сетка строки: слева название + шестерёнка, справа — свитч */
+.item { grid-template-columns: 1fr auto; }
+.item .left { display:flex; align-items:center; justify-content:space-between; gap:12px; }
+
+.gear-btn{
+  display:inline-flex; align-items:center; justify-content:center;
+  width:36px; height:36px; border-radius:999px;
+  border:1px solid #3a3276; background:transparent; color:#e6ddcd;
+  cursor:pointer; transition:background .2s, color .2s, border-color .2s;
+}
+.gear-btn:hover{ background:rgba(255,255,255,.06); border-color:#6a61bf; }
+svg.feather-settings{ stroke: currentColor; }
+

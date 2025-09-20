@@ -27,6 +27,53 @@ body{
   padding:clamp(16px,3vw,28px);
   display:flex; flex-direction:column;
 }
+
+/* Верхняя панель */
+.topbar{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  margin-bottom:clamp(14px,3vw,22px);
+}
+
+.help-btn{
+  background:none;
+  border:1px solid var(--text);
+  border-radius:999px;
+  padding:6px 14px;
+  font-weight:600;
+  color:var(--text);
+  font-size:clamp(13px,3vw,16px);
+  cursor:pointer;
+  transition:background .2s, color .2s;
+}
+.help-btn:hover{ background:rgba(255,255,255,.08); }
+
+.lang-switch{
+  display:flex;
+  gap:6px;
+}
+.lang-switch button{
+  background:none;
+  border:1px solid transparent;
+  border-radius:999px;
+  padding:6px 12px;
+  font-weight:600;
+  font-size:clamp(13px,3vw,16px);
+  color:var(--text);
+  cursor:pointer;
+  transition:background .2s, color .2s;
+}
+.lang-switch button.active{
+  background:#e6ddcd;   /* бело-бежевый */
+  color:#050029;        /* тёмный текст */
+  border-color:#e6ddcd;
+}
+.lang-switch button:hover:not(.active){
+  background:rgba(255,255,255,.08);
+}
+/* Конец верхней языковой панели*/
+
 h1{
   margin:0 0 .8rem;font-weight:800;letter-spacing:.02em;
   font-size:clamp(21px,5vw,29px); text-transform:uppercase;

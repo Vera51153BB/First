@@ -85,3 +85,27 @@
   // диагностический лог закрытия
   tg?.onEvent?.('web_app_close', () => { if (DEBUG) console.log('[WebApp] event: web_app_close'); });
 })();
+
+// Управление языковой панелью
+document.addEventListener('DOMContentLoaded', ()=>{
+  const langBtns = document.querySelectorAll('.lang-switch button');
+  langBtns.forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      langBtns.forEach(b=>b.classList.remove('active'));
+      btn.classList.add('active');
+      const lang = btn.dataset.lang;
+      // сохранить в localStorage
+      try{ localStorage.setItem('okx_lang', lang); }catch{}
+      // TODO: переключить текст на странице
+      console.log('Язык выбран:', lang);
+    });
+  });
+
+  // при загрузке — выставить сохранённый язык
+  const saved = localStorage.getItem('okx_lang');
+  if(saved){
+    const active = document.querySelector(`.lang-switch button[data-lang="${saved}"]`);
+    if(active){ langBtns.forEach(b=>b.classList.remove('active')); active.classList.add('active'); }
+  }
+});
+// Управление языковой панелью конец

@@ -11,15 +11,24 @@
 </head>
 <body>
   <main class="wrap">
-      <!-- Верхняя панель -->
-  <div class="topbar">
-    <button class="help-btn">Помощь</button>
-    <div class="lang-switch">
-      <button data-lang="EN">EN</button>
-      <button data-lang="HI">हिन्दी</button>
-      <button data-lang="RU" class="active">RU</button>
+<!-- Верхняя панель -->
+<div class="topbar">
+  <button class="help-btn" id="helpBtn">
+    <span class="qmark">?</span>
+    <span data-i18n="common.help">Помощь</span>
+  </button>
+
+  <!-- Языковое меню -->
+  <div class="lang">
+    <button class="lang-toggle" id="langToggle" aria-haspopup="true" aria-expanded="false">
+      <span class="globe" aria-hidden="true">🌐</span>
+      <span id="langCurrent">English</span>
+    </button>
+    <div class="lang-dropdown" id="langDropdown" role="menu">
+      <!-- пункты заполняет Core.js -->
     </div>
   </div>
+</div>
 
     <h1>Управление уведомлениями</h1>
     <div class="stack">

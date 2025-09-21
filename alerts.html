@@ -12,41 +12,56 @@
 <body>
   <main class="wrap">
 <!-- Верхняя панель -->
+<!-- Top-right: Help + Language dropdown -->
 <div class="topbar">
-  <button class="help-btn" id="helpBtn">
-    <span class="qmark">?</span>
-    <span data-i18n="common.help">Помощь</span>
-  </button>
+  <div></div> <!-- пустой левый столбец, оставляем для симметрии -->
 
-  <!-- Языковое меню -->
-  <div class="lang">
-    <button class="lang-toggle" id="langToggle" aria-haspopup="true" aria-expanded="false">
-      <span class="globe" aria-hidden="true">🌐</span>
-      <span id="langCurrent">English</span>
+  <div class="top-actions">
+    <!-- Help button (та же «пилюля», иконка ? в кружке) -->
+    <button class="pill-btn help-btn" id="helpBtn">
+      <span class="icon icon-help" aria-hidden="true"></span>
+      <span data-i18n="common.help">Help</span>
     </button>
-    <div class="lang-dropdown" id="langDropdown" role="menu">
-      <!-- пункты заполняет Core.js -->
+
+    <!-- Language dropdown -->
+    <div class="lang-dropdown" id="langDropdown">
+      <button class="pill-btn lang-trigger" type="button" aria-haspopup="true" aria-expanded="false">
+        <span class="icon icon-globe" aria-hidden="true"></span>
+        <span id="langCurrent">English</span>
+        <svg class="chev" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+          <path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+      </button>
+      <div class="lang-menu" role="menu" aria-label="Languages">
+        <!-- порядок: EN, HI, ES, FR, RU -->
+        <button data-lang="en" role="menuitem"><span class="icon icon-globe"></span> English</button>
+        <button data-lang="hi" role="menuitem"><span class="icon icon-globe"></span> हिन्दी</button>
+        <button data-lang="es" role="menuitem"><span class="icon icon-globe"></span> Español</button>
+        <button data-lang="fr" role="menuitem"><span class="icon icon-globe"></span> Français</button>
+        <button data-lang="ru" role="menuitem"><span class="icon icon-globe"></span> Русский</button>
+      </div>
     </div>
   </div>
 </div>
 
     <h1>Управление уведомлениями</h1>
     <div class="stack">
-
+      
 <!-- Секция «все» -->
 <section class="section">
   <div class="controls-header">
-    <div class="title" id="allHeader">
+    <div class="title">
       <span data-i18n="alerts.header_label">Все уведомления:</span>
       <span id="allState" class="all-state">частично</span>
     </div>
   </div>
 
   <div class="actions">
-    <button class="btn green" id="btnAllOn"  data-i18n="common.enable">включить</button>
-    <button class="btn red"   id="btnAllOff" data-i18n="common.disable">выключить</button>
+    <button class="btn green" id="btnAllOn" data-i18n="alerts.all_on_btn">включить</button>
+    <button class="btn red"   id="btnAllOff" data-i18n="alerts.all_off_btn">выключить</button>
   </div>
 </section>
+
 
       <!-- Список тумблеров -->
       <section class="section" id="list"></section>

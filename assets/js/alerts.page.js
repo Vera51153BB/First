@@ -197,5 +197,5 @@
 
   // init
   render();
-  attachRipple('.btn, .save-btn');
+  attachRipple('.btn, .save-btn, .gear-btn');
 })();

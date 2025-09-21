@@ -471,3 +471,75 @@ h1{
   width:28px; height:28px; display:inline-grid; place-items:center;
   border-radius:50%; border:1px dashed #3a3276; color:#e6ddcd;
 }
+
+/* ---------- Top-right actions (Help + Language) ---------- */
+.top-actions{
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+
+/* унифицированная «пилюля» для активных кнопок (Help, Lang trigger) */
+.pill-btn{
+  display:inline-flex; align-items:center; gap:8px;
+  border:1px solid var(--text);
+  border-radius:999px;
+  padding:6px 12px;
+  font-weight:700;
+  font-size:clamp(12px,2.8vw,14px);
+  color:var(--text);
+  background:transparent;
+  cursor:pointer;
+  transition:background .2s ease, color .2s ease, transform .08s ease, border-color .2s ease;
+  box-shadow: 0 6px 18px rgba(0,0,0,.18);
+}
+.pill-btn:hover{ background:rgba(255,255,255,.08); border-color:#e6ddcd; }
+.pill-btn:active{ transform:translateY(1px) scale(.98); }
+.pill-btn:focus-visible{ outline:2px solid #8aa3ff; outline-offset:2px; }
+
+/* иконка-вопрос и глобус — одинаковый кружок по цвету */
+.icon{
+  width:18px; height:18px;
+  display:inline-grid; place-items:center;
+  color:#1b6ee3;         /* голубой */
+}
+.icon::before{
+  content:"";
+  display:block; width:18px; height:18px;
+  border-radius:50%;
+  box-shadow: inset 0 0 0 2px currentColor;
+}
+.icon-help::before{ /* рисуем "?" поверх круга */
+  content:"?"; font-weight:900; font-size:13px; line-height:18px; text-align:center;
+  color:var(--text);
+  background: radial-gradient(circle at 50% 50%, transparent 7px, currentColor 7px 9px, transparent 9px);
+}
+.icon-globe::before{
+  /* просто круг; сам «глобус» минималистично стилем круга; можно заменить на SVG */
+  background: none;
+}
+
+/* Language dropdown */
+.lang-dropdown{ position:relative; }
+.lang-trigger .chev{ margin-left:2px; opacity:.85; }
+
+.lang-menu{
+  position:absolute; right:0; top:calc(100% + 8px);
+  background:#1b1645;
+  color:var(--text);
+  border:1px solid #3a3276;
+  border-radius:12px;
+  min-width:180px;
+  padding:6px;
+  display:none;
+  z-index:2000;
+  box-shadow: 0 10px 24px rgba(0,0,0,.35);
+}
+.lang-dropdown.open .lang-menu{ display:block; }
+.lang-menu button{
+  width:100%; text-align:left;
+  display:flex; align-items:center; gap:8px;
+  padding:8px 10px; border-radius:10px; border:none; background:transparent; color:var(--text);
+  cursor:pointer; font-weight:600;
+}
+.lang-menu button:hover{ background:rgba(255,255,255,.06); }

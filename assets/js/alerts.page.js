@@ -1,188 +1,216 @@
 // ===== Alerts page (модель + рендер + отправка) =====
-(function(){
-  const { tg, DEBUG, safeSendData, notifySavedAndMaybeClose, attachRipple, saveLocal, loadLocal } = window.Core;
-  const T = (k)=> window.I18N?.t(k) ?? k;
+// Примечания:
+// - Этот файл предполагает, что уже загружены:
+//   1) telegram-web-app.js
+//   2) assets/js/i18n.js   (где window.I18N содержит словари)
+//   3) assets/js/core.js   (где window.Core = { tg, i18n, ... })
+//
+// - Мы ждём DOMContentLoaded, чтобы элементы #list/#saveBtn уже существовали.
+// - Мультиязык: все подписи берутся из словарей через Core.i18n.t().
+//   Для общих фраз используем неймспейс "common", для этой страницы — "alerts".
+// - На пункте "Индекс RSI" показываем кнопку-шестерёнку (переход на страницу настроек).
+
+document.addEventListener('DOMContentLoaded', () => {
+  if (!window.Core) {
+    console.error('[alerts.page] Core is not loaded — check script order and core.js errors');
+    return;
+  }
+
+  const {
+    tg, DEBUG,
+    safeSendData, notifySavedAndMaybeClose, attachRipple,
+    saveLocal, loadLocal, Bus, i18n
+  } = window.Core;
+
+  // Удобные алиасы перевода
+  const tCommon = (k) => i18n.t(k, 'common'); // общий неймспейс
+  const tA      = (k) => i18n.t(k, 'alerts'); // неймспейс этой страницы
+  const tItem   = (id) => i18n.t(`items.${id}`, 'alerts'); // название пункта по id
 
   /* ===== модель ===== */
   const STORAGE_KEY = 'okx_alerts_v1';
+
+  // Примечание: name хранить не обязательно — рендерим по id через словари.
+  // Но оставим для совместимости: если name есть — используем, иначе берём переведённый.
   const DEFAULT_ALERTS = [
-    { id: 'balance', name_key: 'alerts.items.balance', on: true },
-    { id: 'alert2',  name_key: 'alerts.items.rsi',     on: true, has_settings: true },
-    { id: 'alert3',  name_key: 'alerts.items.item3',   on: true },
-    { id: 'alert4',  name_key: 'alerts.items.item4',   on: true },
+    { id: 'balance', name: null, on: true },
+    { id: 'alert2',  name: null, on: true }, // Индекс RSI
+    { id: 'alert3',  name: null, on: true },
+    { id: 'alert4',  name: null, on: true },
   ];
 
   function loadState(){
     const saved = loadLocal(STORAGE_KEY, null);
-    if (!saved) return DEFAULT_ALERTS.map(x=>({...x}));
-    const map = Object.fromEntries(saved.map(a=>[a.id, a.on]));
-    return DEFAULT_ALERTS.map(d => ({...d, on: map[d.id] ?? d.on}));
+    if (!saved) return DEFAULT_ALERTS.map(x => ({...x}));
+    const map = Object.fromEntries(saved.map(a => [a.id, a.on]));
+    return DEFAULT_ALERTS.map(d => ({ ...d, on: map[d.id] ?? d.on }));
   }
   function saveState(arr){ saveLocal(STORAGE_KEY, arr); }
 
-  /* ===== рендер ===== */
-  const listEl = document.getElementById('list');
+  /* ===== элементы ===== */
+  const listEl     = document.getElementById('list');
   const allStateEl = document.getElementById('allState');
-  const saveEl = document.getElementById('saveBtn');
+  const saveEl     = document.getElementById('saveBtn');
+  const btnAllOn   = document.getElementById('btnAllOn');
+  const btnAllOff  = document.getElementById('btnAllOff');
+
+  if (!listEl || !allStateEl || !saveEl || !btnAllOn || !btnAllOff) {
+    console.error('[alerts.page] Missing required DOM nodes (#list/#allState/#saveBtn/#btnAllOn/#btnAllOff)');
+  }
+
   let alerts = loadState();
 
+  /* ===== рендер ===== */
   function render(){
-    // Заголовки/кнопки "все" тоже можно локализовать, если они размечены data-i18n, но список — руками:
+    // Перевод бейджа состояния «все»
+    updateAllBadge();
+
+    // Список
     listEl.innerHTML = '';
-    alerts.forEach(a=>{
+    alerts.forEach(a => {
       const row = document.createElement('div');
       row.className = 'item';
 
-      // левая часть: имя + состояние + (опц.) кнопка-настройка
+      // Левая колонка: название + подпись «включено/выключено»
       const left = document.createElement('div');
-      left.className = 'left';
-
-      const textWrap = document.createElement('div');
-      textWrap.innerHTML = `
-        <div class="name">${T(a.name_key)}</div>
-        <div class="state" id="state-${a.id}">${T('common.enabled')}</div>
+      const nameText = a.name || tItem(a.id); // если name не задан, тянем из словаря
+      left.innerHTML = `
+        <div class="name">${nameText}</div>
+        <div class="state" id="state-${a.id}">
+          ${a.on ? tCommon('on') : tCommon('off')}
+        </div>
       `;
-      left.appendChild(textWrap);
+      row.appendChild(left);
 
-      if (a.has_settings) {
+      // Кнопка «шестерёнка» для RSI (переход к детальной настройке)
+      // Примечание: если не нужна — можно скрыть через CSS .gear-btn{display:none;}
+      if (a.id === 'alert2') {
         const gear = document.createElement('button');
         gear.type = 'button';
         gear.className = 'gear-btn';
-        gear.setAttribute('aria-label', 'settings');
-        // простая иконка (inline svg = меньше запросов)
-        gear.innerHTML = `
-          <svg class="feather-settings" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="12" r="3"></circle>
-            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33h.09a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51h.09a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82v.09a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
-          </svg>`;
-        gear.addEventListener('click', ()=>{
-          // ведём на страницу параметров RSI (i18n язык сохраняем)
-          const lang = window.I18N?.lang || 'en';
-          window.location.href = `setting_alerts_rsi.html?lang=${encodeURIComponent(lang)}`;
+        gear.setAttribute('aria-label', tCommon('settings'));
+        // иконку можно нарисовать CSS или вставить SVG; здесь — минимальная «три полоски»
+        gear.innerHTML = `<span class="gear-ico" aria-hidden="true"></span>`;
+        gear.addEventListener('click', (ev) => {
+          ev.stopPropagation();
+          // Используем Telegram API, если доступно; иначе обычная ссылка
+          const url = (window.ALERTS_RSI_URL || 'setting_alerts_rsi.html');
+          try {
+            if (typeof tg?.openLink === 'function') tg.openLink(url);
+            else window.open(url, '_blank', 'noopener');
+          } catch { window.open(url, '_blank', 'noopener'); }
         });
-        left.appendChild(gear);
+        row.appendChild(gear);
       }
 
-      row.appendChild(left);
-
-      // правый переключатель
+      // Тумблер
       const sw = document.createElement('button');
       sw.type = 'button';
       sw.className = 'switch';
       sw.setAttribute('data-on', String(a.on));
       sw.setAttribute('aria-pressed', String(a.on));
       sw.innerHTML = `
-        <span class="label">${T('common.on_short')}</span>
-        <span class="label">${T('common.off_short')}</span>
+        <span class="label">${tCommon('on_short')}</span>
+        <span class="label">${tCommon('off_short')}</span>
         <span class="knob"></span>
       `;
 
-      sw.addEventListener('click', ()=>{
+      sw.addEventListener('click', () => {
         a.on = !a.on;
         saveState(alerts);
         updateOne(a.id);
         updateAllBadge();
         onToggleChanged(a.id);
-        try{ tg?.HapticFeedback?.selectionChanged?.(); }catch{}
+        try { tg?.HapticFeedback?.selectionChanged?.(); } catch {}
       });
 
       row.appendChild(sw);
       listEl.appendChild(row);
     });
-
-    updateAllTexts();
-    updateAllBadge();
-  }
-
-  // локализация динамических «enabled/включено» и т.п.
-  function updateAllTexts(){
-    alerts.forEach(a=>{
-      const st = document.getElementById('state-'+a.id);
-      if (st) st.textContent = a.on ? T('common.enabled') : T('alerts.all_status.off');
-    });
-    // подпись бейджа
-    updateAllBadge();
   }
 
   function updateOne(id){
-    const a = alerts.find(x=>x.id===id);
+    const a = alerts.find(x => x.id === id);
     const state = document.getElementById('state-'+id);
-    if(state) state.textContent = a.on ? T('common.enabled') : T('alerts.all_status.off');
-    const idx = alerts.findIndex(x=>x.id===id);
+    if (state) state.textContent = a.on ? tCommon('on') : tCommon('off');
+    const idx = alerts.findIndex(x => x.id === id);
     const btn = listEl.querySelectorAll('.switch')[idx];
-    if(btn){
+    if (btn) {
       btn.setAttribute('data-on', String(a.on));
       btn.setAttribute('aria-pressed', String(a.on));
-      // обновим надписи ON/OFF на всякий случай — вдруг язык сменили
+      // также перерисуем короткие подписи ON/OFF на тумблере (если сменили язык):
       const labels = btn.querySelectorAll('.label');
-      if (labels[0]) labels[0].textContent = T('common.on_short');
-      if (labels[1]) labels[1].textContent = T('common.off_short');
+      if (labels[0]) labels[0].textContent = tCommon('on_short');
+      if (labels[1]) labels[1].textContent = tCommon('off_short');
+    }
+    // и название, если оно берётся из словаря
+    const nameNode = listEl.querySelectorAll('.item .name')[idx];
+    if (nameNode && !DEFAULT_ALERTS[idx].name) {
+      nameNode.textContent = tItem(a.id);
     }
   }
 
   function updateAllBadge(){
-    const onCount = alerts.filter(a=>a.on).length;
-    const txt = onCount===0 ? T('alerts.all_status.off')
-               : onCount===alerts.length ? T('alerts.all_status.on')
-               : T('alerts.all_status.partial');
+    const onCount = alerts.filter(a => a.on).length;
+    let txt = tCommon('partially');        // «частично»
+    if (onCount === 0) txt = tCommon('off');
+    else if (onCount === alerts.length) txt = tCommon('on');
     allStateEl.textContent = txt;
   }
 
   /* Кнопки «все» */
-  document.getElementById('btnAllOn').addEventListener('click', ()=>{ alerts.forEach(a=>a.on=true);  saveState(alerts); render(); });
-  document.getElementById('btnAllOff').addEventListener('click', ()=>{ alerts.forEach(a=>a.on=false); saveState(alerts); render(); });
+  btnAllOn.addEventListener('click', () => { alerts.forEach(a => a.on = true);  saveState(alerts); render(); });
+  btnAllOff.addEventListener('click', () => { alerts.forEach(a => a.on = false); saveState(alerts); render(); });
 
   /* лог на переключателях (без мгновенной отправки) */
   function onToggleChanged(alertId){
     if (DEBUG) console.log('[WebApp] toggle changed:', alertId, alerts);
   }
 
-  /* СВОДКА статусов для окна/тоста */
+  /* СВОДКА статусов для окна/тоста (на текущем языке) */
   function buildSummary(list){
-    const on = Object.fromEntries(list.map(a => [a.id, !!a.on]));
-    const order = [
-      ['balance', T('alerts.items.balance')],
-      ['alert2',  T('alerts.items.rsi')],
-      ['alert3',  T('alerts.items.item3')],
-      ['alert4',  T('alerts.items.item4')],
-    ];
-    const values = order.map(([id]) => on[id]);
+    const onMap = Object.fromEntries(list.map(a => [a.id, !!a.on]));
+    const order = ['balance', 'alert2', 'alert3', 'alert4'];
+    const allOn  = order.every(id => onMap[id]);
+    const allOff = order.every(id => !onMap[id]);
+
     let body;
-    if (values.every(Boolean))      body = T('alerts.summary_all_on');
-    else if (values.every(v=>!v))   body = T('alerts.summary_all_off');
-    else body = order.map(([id, title]) => `${title} — ${on[id] ? T('common.on') : T('common.off')}`).join('\n');
+    if (allOn)      body = tA('summary.all_on');   // например: "Все уведомления: ВКЛЮЧЕНЫ"
+    else if (allOff)body = tA('summary.all_off');  // например: "Все уведомления: ВЫКЛЮЧЕНЫ"
+    else {
+      body = order
+        .map(id => `${tItem(id)} — ${onMap[id] ? tCommon('on_caps') : tCommon('off_caps')}`)
+        .join('\n');
+    }
 
     return [
-      T('alerts.saved_title'),
-      T('alerts.saved_prefix'),
+      'OKXcandlebot',
+      tA('summary.title'), // "Новые настройки уведомлений:"
       '',
       body,
       '',
-      T('alerts.saved_footer')
+      tA('summary.saved')  // "Настройки сохранены на этом устройстве."
     ].join('\n');
   }
 
   /* «Сохранить настройки» — отправка, вспышка, сводка */
-  saveEl.addEventListener('click', ()=>{
+  saveEl.addEventListener('click', () => {
     const payload = JSON.stringify({ type:'save', alerts });
     const sent = safeSendData(payload);
     if (!sent) saveState(alerts);
 
+    // визуальный отклик
     saveEl.classList.remove('saved'); void saveEl.offsetWidth; saveEl.classList.add('saved');
-    try{ tg?.HapticFeedback?.notificationOccurred?.('success'); }catch{}
+    try { tg?.HapticFeedback?.notificationOccurred?.('success'); } catch {}
 
     const message = buildSummary(alerts);
-    notifySavedAndMaybeClose(message, { title:T('alerts.saved_title'), closeOnMobile:true });
+    notifySavedAndMaybeClose(message, { title:'OKXcandlebot', closeOnMobile:true });
   });
 
-  // реагируем на смену языка
-  window.addEventListener('i18n:change', ()=> render());
+  // Ререндер при смене языка (кнопки EN/हिन्दी/RU в topbar)
+  Bus.on('langchange', () => render());
 
-  // init
+  // Старт
   render();
-  attachRipple('.btn, .save-btn');
-})();
-
-  render();
-  attachRipple('.btn, .save-btn');
-})();
+  attachRipple('.btn, .save-btn, .gear-btn');
+});

@@ -150,13 +150,19 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  function updateAllBadge(){
-    const onCount = alerts.filter(a => a.on).length;
-    let txt = tCommon('partially');        // «частично»
-    if (onCount === 0) txt = tCommon('off');
-    else if (onCount === alerts.length) txt = tCommon('on');
-    allStateEl.textContent = txt;
-  }
+function updateAllBadge(){
+  const onCount = alerts.filter(a => a.on).length;
+
+  // левая неизменная часть: «Все уведомления:»
+  const labelEl = document.getElementById('allLabel');
+  if (labelEl) labelEl.textContent = tA('header_label'); // из словаря alerts.header_label
+
+  // правый бейдж: Включены / Выключены / Частично
+  let txt = tCommon('partially');        // «частично»
+  if (onCount === 0) txt = tCommon('off');
+  else if (onCount === alerts.length) txt = tCommon('on');
+  allStateEl.textContent = txt;
+}
 
   /* Кнопки «все» */
   btnAllOn.addEventListener('click', () => { alerts.forEach(a => a.on = true);  saveState(alerts); render(); });

@@ -180,6 +180,60 @@
     initLangDropdown();
     translateHTML();
 
+// Language dropdown (Help рядом)
+document.addEventListener('DOMContentLoaded', () => {
+  const dd = document.getElementById('langDropdown');
+  if(!dd) return;
+
+  const trigger = dd.querySelector('.lang-trigger');
+  const menu = dd.querySelector('.lang-menu');
+  const current = document.getElementById('langCurrent');
+
+  // Показ/скрытие
+  trigger?.addEventListener('click', (e)=>{
+    e.stopPropagation();
+    dd.classList.toggle('open');
+    trigger.setAttribute('aria-expanded', dd.classList.contains('open'));
+  });
+  document.addEventListener('click', (e)=>{
+    if(!dd.contains(e.target)){ dd.classList.remove('open'); trigger?.setAttribute('aria-expanded','false'); }
+  });
+
+  // Выбор языка
+  menu?.querySelectorAll('button[data-lang]').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const lang = btn.dataset.lang;
+      window.Core.i18n.setLang(lang);
+      current.textContent = (
+        lang === 'en' ? 'English' :
+        lang === 'hi' ? 'हिन्दी' :
+        lang === 'es' ? 'Español' :
+        lang === 'fr' ? 'Français' :
+        'Русский'
+      );
+      dd.classList.remove('open');
+      trigger?.setAttribute('aria-expanded','false');
+    });
+  });
+
+  // Подписка на смену языка — держим заголовок триггера в актуальном состоянии
+  window.addEventListener('i18n:change', (ev)=>{
+    const l = ev.detail?.lang || window.Core.i18n.getLang();
+    current.textContent = (
+      l === 'en' ? 'English' :
+      l === 'hi' ? 'हिन्दी' :
+      l === 'es' ? 'Español' :
+      l === 'fr' ? 'Français' :
+      'Русский'
+    );
+  });
+
+  // Help — просто событие/тост (можешь открыть /help-страницу)
+  document.getElementById('helpBtn')?.addEventListener('click', ()=>{
+    window.Core.showToast(window.I18N?.t('common.help') || 'Help');
+  });
+});
+    
     // Кнопка "Помощь" — пока просто отправим событие в бота
     const help = document.getElementById('helpBtn');
     help?.addEventListener('click', ()=>{

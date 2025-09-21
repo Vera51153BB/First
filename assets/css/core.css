@@ -382,3 +382,62 @@ h1{
 }
 .gear-btn .gear-ico::before{ top:0; box-shadow: 0 5px 0 0 currentColor; }
 .gear-btn .gear-ico::after{ bottom:0; }
+
+/* --- Help button: иконка "?" в кружке, стилистика как у активных кнопок --- */
+.help-btn{
+  display:inline-flex; align-items:center; gap:8px;
+  background: none; border:1px solid var(--text); border-radius:999px;
+  padding:6px 14px; font-weight:700; color:var(--text);
+  font-size:clamp(13px,3vw,16px); cursor:pointer;
+  transition: background .2s,color .2s,box-shadow .2s;
+}
+.help-btn:hover{ background:rgba(255,255,255,.08); }
+.help-btn .qmark{
+  display:inline-grid; place-items:center;
+  width:20px; height:20px; border-radius:50%;
+  background: var(--text); color:#050029; font-weight:900; font-size:12px;
+}
+
+/* --- Lang dropdown --- */
+.lang{ position:relative; }
+.lang-toggle{
+  display:inline-flex; align-items:center; gap:8px;
+  background: none; border:1px solid var(--text); border-radius:999px;
+  padding:6px 14px; font-weight:700; color:var(--text);
+  font-size:clamp(13px,3vw,16px); cursor:pointer;
+  transition: background .2s,color .2s,box-shadow .2s;
+}
+.lang-toggle:hover{ background:rgba(255,255,255,.08); }
+.lang-toggle .globe{ filter:grayscale(0.1); }
+
+.lang-dropdown{
+  position:absolute; right:0; top:100%; margin-top:8px;
+  min-width:220px; background:#1b1645; border:1px solid #3a3276;
+  border-radius:12px; box-shadow:0 10px 24px rgba(0,0,0,.35);
+  padding:6px; display:none; z-index:50;
+}
+.lang-dropdown.open{ display:block; }
+
+.lang-item{
+  display:flex; align-items:center; gap:10px;
+  width:100%; padding:8px 10px; border-radius:10px;
+  background:transparent; color:var(--text); border:none; cursor:pointer;
+  text-align:left; font-weight:700;
+}
+.lang-item:hover{ background:rgba(255,255,255,.06); }
+.lang-item .dot{
+  width:14px; height:14px; border-radius:50%;
+  box-shadow: inset 0 0 0 2px #e6ddcd; /* «обведён бело-бежевым кругом» */
+  background: transparent;
+}
+.lang-item.active .dot{ background:#e6ddcd; }
+.lang-item.active .label{ color:#050029; background:#e6ddcd; border-radius:8px; padding:1px 6px; }
+
+/* --- «все уведомления: <статус>» как простой текст --- */
+.all-state{ font-weight:800; margin-left:.4em; }
+
+/* --- маленькая иконка «шестерёнка» в строках (если используете) --- */
+.icon-gear{
+  width:28px; height:28px; display:inline-grid; place-items:center;
+  border-radius:50%; border:1px dashed #3a3276; color:#e6ddcd;
+}

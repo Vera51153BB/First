@@ -33,43 +33,76 @@
   let alerts = loadState();
 
   function render(){
-    // 1) Заголовок «Все уведомления: …» (простой текст)
-    updateAllBadge();
+  // заголовок «Все уведомления: …» (просто текст)
+  updateAllBadge();
 
-    // 2) Список элементов
-    listEl.innerHTML = '';
-    alerts.forEach((a, index)=>{
-      const row = document.createElement('div');
-      row.className = 'item';
+  listEl.innerHTML = '';
+  alerts.forEach((a)=>{
 
-      // --- левая часть: название + текущий статус ---
-      const left = document.createElement('div');
-      const displayName = a.name || t(`alerts.items.${a.id}`) || a.id;
-      left.innerHTML = `
-        <div class="name">${displayName}</div>
-        <div class="state" id="state-${a.id}">${a.on ? tCommon('on') : tCommon('off')}</div>
-      `;
-      row.appendChild(left);
+    // 1) контейнер строки
+    const row = document.createElement('div');
+    row.className = 'item';
 
-      // --- тумблер (переключатель ON/OFF на карточке) ---
-      const sw = document.createElement('button');
-      sw.type = 'button';
-      sw.className = 'switch';
-      sw.setAttribute('data-on', String(a.on));
-      sw.setAttribute('aria-pressed', String(a.on));
-      sw.innerHTML = `
-        <span class="label">${tCommon('on_short')}</span>
-        <span class="label">${tCommon('off_short')}</span>
-        <span class="knob"></span>
-      `;
-      sw.addEventListener('click', ()=>{
-        a.on = !a.on;
-        saveState(alerts);
-        updateOne(a.id);
-        updateAllBadge();
-        try{ tg?.HapticFeedback?.selectionChanged?.(); }catch{}
-      });
+    // 2) левая колонка: имя + состояние (on/off)
+    const left = document.createElement('div');
+    const displayName = a.name || t(`alerts.items.${a.id}`) || a.id;
+    left.innerHTML = `
+      <div class="name">${displayName}</div>
+      <div class="state" id="state-${a.id}">${a.on ? tCommon('on') : tCommon('off')}</div>
+    `;
+    row.appendChild(left);
 
+    // 3) тумблер
+    const sw = document.createElement('button');
+    sw.type = 'button';
+    sw.className = 'switch';
+    sw.setAttribute('data-on', String(a.on));
+    sw.setAttribute('aria-pressed', String(a.on));
+    sw.innerHTML = `
+      <span class="label">${tCommon('on_short')}</span>
+      <span class="label">${tCommon('off_short')}</span>
+      <span class="knob"></span>
+    `;
+    sw.addEventListener('click', ()=>{
+      a.on = !a.on;
+      saveState(alerts);
+      updateOne(a.id);
+      updateAllBadge();
+      try{ tg?.HapticFeedback?.selectionChanged?.(); }catch{}
+    });
+
+    // 4) ШЕСТЕРЁНКА — <<< вот это НОВОЕ
+    const gearBtn = document.createElement('button');
+    gearBtn.className = 'gear-btn';
+    gearBtn.setAttribute('aria-label', t('common.settings') || 'Settings');
+    gearBtn.innerHTML = `
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <circle cx="12" cy="12" r="3"></circle>
+        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33h.09a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51h.09a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82v.09a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+      </svg>`;
+    gearBtn.addEventListener('click', (e)=>{
+      e.stopPropagation();     // чтобы клик по шестерёнке не трогал тумблер
+      if (a.id === 'alert2') {
+        // переход на страницу настроек RSI (если другая — поменяй путь)
+        window.location.href = 'setting_alerts_rsi.html';
+      } else {
+        window.Core.showToast(t('common.settings'));
+      }
+    });
+
+    // 5) правая колонка: тумблер + шестерёнка (рядом)
+    const rightWrap = document.createElement('div');
+    rightWrap.style.display = 'flex';
+    rightWrap.style.alignItems = 'center';
+    rightWrap.style.gap = '10px';
+    rightWrap.appendChild(sw);
+    rightWrap.appendChild(gearBtn);
+
+    row.appendChild(rightWrap);
+    listEl.appendChild(row);
+  });
+}
+  
       // --- шестерёнка (кнопка настроек справа) ---
       // ВАЖНО: нужен символ <symbol id="icon-gear"> в alerts.html (см. инструкцию)
       const gearBtn = document.createElement('button');

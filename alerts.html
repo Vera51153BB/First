@@ -12,34 +12,30 @@
 <body>
   <main class="wrap">
 <!-- Верхняя панель -->
-<!-- Top-right: Help + Language dropdown -->
+<!-- Topbar: Help + Language dropdown (правый верхний угол) -->
 <div class="topbar">
-  <div></div> <!-- пустой левый столбец, оставляем для симметрии -->
-
-  <div class="top-actions">
-    <!-- Help button (та же «пилюля», иконка ? в кружке) -->
-    <button class="pill-btn help-btn" id="helpBtn">
-      <span class="icon icon-help" aria-hidden="true"></span>
+  <div class="spacer"></div>
+  <div class="topbar-right">
+    <!-- Help pill -->
+    <button id="helpBtn" class="pill pill-outline with-icon">
+      <span class="icon circ">?</span>
       <span data-i18n="common.help">Help</span>
     </button>
 
     <!-- Language dropdown -->
-    <div class="lang-dropdown" id="langDropdown">
-      <button class="pill-btn lang-trigger" type="button" aria-haspopup="true" aria-expanded="false">
-        <span class="icon icon-globe" aria-hidden="true"></span>
-        <span id="langCurrent">English</span>
-        <svg class="chev" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
-          <path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-        </svg>
+    <div class="lang-menu" id="langMenu">
+      <button id="langBtn" class="pill pill-outline with-icon" aria-haspopup="true" aria-expanded="false">
+        <span class="icon globe" aria-hidden="true"></span>
+        <span id="langBtnLabel">English</span>
       </button>
-      <div class="lang-menu" role="menu" aria-label="Languages">
+      <ul class="lang-list" id="langList" role="menu" aria-label="Language">
         <!-- порядок: EN, HI, ES, FR, RU -->
-        <button data-lang="en" role="menuitem"><span class="icon icon-globe"></span> English</button>
-        <button data-lang="hi" role="menuitem"><span class="icon icon-globe"></span> हिन्दी</button>
-        <button data-lang="es" role="menuitem"><span class="icon icon-globe"></span> Español</button>
-        <button data-lang="fr" role="menuitem"><span class="icon icon-globe"></span> Français</button>
-        <button data-lang="ru" role="menuitem"><span class="icon icon-globe"></span> Русский</button>
-      </div>
+        <li data-lang="en" role="menuitem"><span class="icon globe"></span> English</li>
+        <li data-lang="hi" role="menuitem"><span class="icon globe"></span> हिन्दी</li>
+        <li data-lang="es" role="menuitem"><span class="icon globe"></span> Español</li>
+        <li data-lang="fr" role="menuitem"><span class="icon globe"></span> Français</li>
+        <li data-lang="ru" role="menuitem"><span class="icon globe"></span> Русский</li>
+      </ul>
     </div>
   </div>
 </div>

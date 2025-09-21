@@ -260,48 +260,81 @@ h1{
   gap:12px;
 }
 
-/* Кнопка с иконкой "шестерёнка" */
+/* ====== simple text for "All notifications: ..." ====== */
+/* --- «все уведомления: <статус>» как простой текст --- */
+.all-state{
+  font-weight: 800;
+  margin-left: .4em;
+}
+
+/* ====== gear button (settings) on each row ====== */
 .gear-btn{
-  width:38px;
-  height:38px;
-  border-radius:50%;
-  border:1px solid #3a3276;
-  background:rgba(255,255,255,.02);
-  display:grid;
-  place-items:center;
-  cursor:pointer;
+  position: relative;                    /* нужно для риппла (::after) */
+  display: inline-grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1px solid #3a3276;
+  background: transparent;
+  color: var(--text);
+  cursor: pointer;
+
+  /* эффекты */
   transition:
+    background .20s ease,
+    border-color .20s ease,
     transform .08s ease,
-    filter .2s ease,
-    border-color .2s ease,
-    background-color .2s ease;
+    filter .20s ease;
+  box-shadow: 0 6px 18px rgba(0,0,0,.18);
 }
-.gear-btn:active{ transform:translateY(1px) scale(.985); filter:brightness(.98) }
-.gear-btn:focus-visible{ outline:2px solid #8aa3ff; outline-offset:2px }
-.gear-btn:hover{ border-color:#4b4394; background:rgba(255,255,255,.04) }
+.gear-btn:hover{
+  background: rgba(255,255,255,.06);
+  border-color: #554bb0;
+  filter: brightness(1.02);
+}
+.gear-btn:active{
+  transform: translateY(1px) scale(.98);
+}
+.gear-btn:focus-visible{
+  outline: 2px solid #8aa3ff;
+  outline-offset: 2px;
+}
 
-/* SVG внутри шестерёнки */
+/* иконка внутри шестерёнки */
 .gear-btn svg{
-  width:22px; height:22px;
-  stroke:#c7c1b5;
-  fill:none;
-  stroke-width:2;
-  stroke-linecap:round;
-  stroke-linejoin:round;
-  transition:stroke .2s;
+  width: 22px;
+  height: 22px;
+  stroke: #c7c1b5;
+  fill: none;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  transition: stroke .20s ease, transform .12s ease;
 }
-.gear-btn:hover svg{ stroke:#9fd19a }
+.gear-btn:hover svg{
+  stroke: #9fd19a;                       /* мягкая подсветка как у зелёных кнопок */
+}
+.gear-btn:active svg{
+  transform: scale(.96);
+}
 
-/* Риппл-эффект для .gear-btn такой же, как у .btn/.save-btn */
+/* ripple — такой же механизм, как у .btn/.save-btn */
 .gear-btn::after{
-  content:"";
-  position:absolute;
-  left:var(--rx,50%); top:var(--ry,50%);
-  width:0; height:0; border-radius:50%;
-  background:rgba(255,255,255,.35);
-  transform:translate(-50%,-50%);
-  opacity:0; pointer-events:none;
+  content: "";
+  position: absolute;
+  left: var(--rx,50%);
+  top:  var(--ry,50%);
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background: rgba(255,255,255,.35);
+  transform: translate(-50%,-50%);
+  opacity: 0;
+  pointer-events: none;
 }
+.gear-btn.rippling::after{ animation: btn-ripple .5s ease-out; } /* используем ту же @keyframes */
+
 
 /* === Универсальная "маленькая" кнопка в стиле save-btn (контурная) === */
 .btn-outline{
@@ -432,9 +465,6 @@ h1{
 }
 .lang-item.active .dot{ background:#e6ddcd; }
 .lang-item.active .label{ color:#050029; background:#e6ddcd; border-radius:8px; padding:1px 6px; }
-
-/* --- «все уведомления: <статус>» как простой текст --- */
-.all-state{ font-weight:800; margin-left:.4em; }
 
 /* --- маленькая иконка «шестерёнка» в строках (если используете) --- */
 .icon-gear{

@@ -29,12 +29,14 @@ body{
 }
 
 /* Верхняя панель */
+/* ===== Topbar: right-aligned Help + Language ===== */
 .topbar{
   display:flex;
   align-items:center;
-  justify-content:space-between;
-  margin-bottom:clamp(14px,3vw,22px);
+  margin-bottom: clamp(10px,3vw,16px);
 }
+.topbar .spacer{ flex:1; }
+.topbar-right{ display:flex; align-items:center; gap:10px; }
 
 .help-btn{
   background:none;

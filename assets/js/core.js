@@ -8,6 +8,8 @@
   const IS_DESKTOP = PLATFORM === 'tdesktop' || PLATFORM === 'macos';
   const DEBUG = true;
 
+  // -------------------- Вспомогалки UI --------------------
+
   // Быстрый тост для Desktop/браузера
   function showToast(msg){
     const el = document.createElement('div');
@@ -72,14 +74,18 @@
     });
   }
 
+  // -------------------- Хранилище/утилиты --------------------
+
   // LocalStorage helpers
   function saveLocal(key, val){ try{ localStorage.setItem(key, JSON.stringify(val)); }catch{} }
   function loadLocal(key, def){ try{ const r = localStorage.getItem(key); return r ? JSON.parse(r) : def; }catch{ return def; } }
 
-  // NEW: компактный debounce
-  function debounce(fn, wait=250){ let t=null; return (...a)=>{ clearTimeout(t); t=setTimeout(()=>fn(...a), wait); }; }
+  // NEW: компактный debounce (антиспам отправок/рендеров)
+  function debounce(fn, wait=250){
+    let t=null; return (...a)=>{ clearTimeout(t); t=setTimeout(()=>fn(...a), wait); };
+  }
 
-  // NEW: EventBus (напр., смена языка)
+  // NEW: простой EventBus (например, для смены языка)
   const Bus = (()=> {
     const m = new Map();
     return {
@@ -88,7 +94,11 @@
     };
   })();
 
-  // ===== i18n обвязка (интеграция с window.I18N из assets/js/i18n.js) =====
+  // -------------------- i18n-обвязка --------------------
+  // Примечания:
+  // - Нативные словари и pickLang живут в assets/js/i18n.js и кладут объект window.I18N.
+  // - Здесь даём тонкую обёртку + инициализируем новое выпадающее меню языков в правом верхнем углу.
+
   const OKX_LANGS = [
     { code:'en', label:'English'  },
     { code:'hi', label:'हिन्दी'    },
@@ -98,59 +108,12 @@
   ];
 
   function currentLang(){ return window.I18N?.lang || 'en'; }
-  function setLang(code){ window.I18N?.setLang(code); Bus.emit('langchange', code); }
-  function t(path){ return window.I18N?.t(path) ?? path; }
-
-  // Инициализация выпадающего меню языков
-  function initLangDropdown(){
-    const toggle = document.getElementById('langToggle');
-    const dd     = document.getElementById('langDropdown');
-    const curr   = document.getElementById('langCurrent');
-    if(!toggle || !dd || !curr) return;
-
-    // наполнение
-    dd.innerHTML = '';
-    const now = currentLang();
-    curr.textContent = OKX_LANGS.find(l=>l.code===now)?.label || 'English';
-
-    OKX_LANGS.forEach(l=>{
-      const btn = document.createElement('button');
-      btn.className = 'lang-item' + (l.code===now ? ' active' : '');
-      btn.setAttribute('role','menuitem');
-      btn.dataset.lang = l.code;
-      btn.innerHTML = `<span class="dot"></span><span class="label">${l.label}</span>`;
-      btn.addEventListener('click', ()=>{
-        setLang(l.code);
-        curr.textContent = l.label;
-        dd.classList.remove('open');
-        toggle.setAttribute('aria-expanded','false');
-        // отметим активный
-        dd.querySelectorAll('.lang-item').forEach(x=>x.classList.toggle('active', x.dataset.lang===l.code));
-      });
-      dd.appendChild(btn);
-    });
-
-    // открытие/закрытие
-    toggle.addEventListener('click', ()=>{
-      const open = dd.classList.toggle('open');
-      toggle.setAttribute('aria-expanded', String(open));
-    });
-    document.addEventListener('click', (e)=>{
-      if (!dd.contains(e.target) && !toggle.contains(e.target)) {
-        dd.classList.remove('open'); toggle.setAttribute('aria-expanded','false');
-      }
-    });
-
-    // при смене языка извне
-    window.addEventListener('i18n:change', (ev)=>{
-      const code = ev?.detail?.lang || currentLang();
-      const lang = OKX_LANGS.find(l=>l.code===code) || OKX_LANGS[0];
-      curr.textContent = lang.label;
-      dd.querySelectorAll('.lang-item').forEach(x=>x.classList.toggle('active', x.dataset.lang===code));
-      // перерисуем тексты с data-i18n
-      translateHTML();
-    });
+  function setLang(code){
+    if (!OKX_LANGS.some(l=>l.code===code)) code = 'en';
+    window.I18N?.setLang(code);
+    Bus.emit('langchange', code);
   }
+  function t(path){ return window.I18N?.t(path) ?? path; }
 
   // Применение переводов по data-i18n / data-i18n-placeholder
   function translateHTML(){
@@ -164,82 +127,100 @@
     });
   }
 
-  // Публичный API
+  // === NEW: dropdown языков (EN, HI, ES, FR, RU) + Help рядом ===
+  // Ожидаемая разметка в HTML (см. alerts.html топбар):
+  //  <button id="helpBtn" class="pill pill-outline with-icon">...</button>
+  //  <div id="langMenu" class="lang-menu">
+  //    <button id="langBtn" class="pill pill-outline with-icon"><span id="langBtnLabel">English</span></button>
+  //    <ul id="langList" class="lang-list"><li data-lang="en">...</li> ...</ul>
+  //  </div>
+  function initTopbarLangAndHelp(){
+    const btn   = document.getElementById('langBtn');
+    const list  = document.getElementById('langList');
+    const menu  = document.getElementById('langMenu');
+    const label = document.getElementById('langBtnLabel');
+    const help  = document.getElementById('helpBtn');
+
+    if (!btn || !list || !menu) return; // на странице нет меню — выходим
+
+    // начальная подпись
+    const now = currentLang();
+    if (label) {
+      const cur = OKX_LANGS.find(l=>l.code===now);
+      label.textContent = cur ? cur.label : 'English';
+    }
+
+    // открыть/закрыть
+    btn.addEventListener('click', (e)=>{
+      e.stopPropagation();
+      const open = menu.classList.toggle('open');
+      btn.setAttribute('aria-expanded', String(open));
+    });
+
+    // выбор языка
+    list.querySelectorAll('li[data-lang]').forEach(li=>{
+      li.addEventListener('click', ()=>{
+        const L = li.getAttribute('data-lang');
+        setLang(L);
+        const found = OKX_LANGS.find(x=>x.code===L);
+        if (label && found) label.textContent = found.label;
+        menu.classList.remove('open');
+        btn.setAttribute('aria-expanded','false');
+      });
+    });
+
+    // клик вне меню — закрыть
+    document.addEventListener('click', (e)=>{
+      if (!menu.contains(e.target)) {
+        menu.classList.remove('open');
+        btn.setAttribute('aria-expanded','false');
+      }
+    });
+
+    // Help — тост/попап (можно заменить на переход)
+    if (help) {
+      help.addEventListener('click', (e)=>{
+        try{
+          const r = help.getBoundingClientRect();
+          help.style.setProperty('--rx', (e.clientX - r.left) + 'px');
+          help.style.setProperty('--ry', (e.clientY - r.top)  + 'px');
+          help.classList.remove('rippling'); void help.offsetWidth; help.classList.add('rippling');
+          tg?.HapticFeedback?.impactOccurred?.('light');
+        }catch{}
+        // отправим событие боту; если вне TG — покажем тост
+        const sent = safeSendData(JSON.stringify({ type:'help' }));
+        if (!sent) showToast(t('common.help') || 'Help');
+      });
+    }
+
+    // при смене языка извне — обновим label и перерисуем тексты
+    window.addEventListener('i18n:change', (ev)=>{
+      const code = ev?.detail?.lang || currentLang();
+      const lang = OKX_LANGS.find(l=>l.code===code) || OKX_LANGS[0];
+      if (label) label.textContent = lang.label;
+      translateHTML();
+    });
+  }
+
+  // -------------------- Публичный API --------------------
   window.Core = {
     tg, DEBUG, PLATFORM, IS_DESKTOP,
     showToast, safeSendData, notifySavedAndMaybeClose,
     attachRipple, saveLocal, loadLocal, debounce, Bus,
     i18n: { t, setLang, currentLang, OKX_LANGS },
+    translateHTML,                 // иногда удобно дернуть вручную
   };
 
-  // Лог закрытия
+  // диагностический лог закрытия
   tg?.onEvent?.('web_app_close', () => { if (DEBUG) console.log('[WebApp] event: web_app_close'); });
 
-  // Авто-инициализация
+  // -------------------- Авто-инициализация --------------------
   document.addEventListener('DOMContentLoaded', ()=>{
-    initLangDropdown();
+    // применим переводы к data-i18n
     translateHTML();
-
-// Language dropdown (Help рядом)
-document.addEventListener('DOMContentLoaded', () => {
-  const dd = document.getElementById('langDropdown');
-  if(!dd) return;
-
-  const trigger = dd.querySelector('.lang-trigger');
-  const menu = dd.querySelector('.lang-menu');
-  const current = document.getElementById('langCurrent');
-
-  // Показ/скрытие
-  trigger?.addEventListener('click', (e)=>{
-    e.stopPropagation();
-    dd.classList.toggle('open');
-    trigger.setAttribute('aria-expanded', dd.classList.contains('open'));
-  });
-  document.addEventListener('click', (e)=>{
-    if(!dd.contains(e.target)){ dd.classList.remove('open'); trigger?.setAttribute('aria-expanded','false'); }
-  });
-
-  // Выбор языка
-  menu?.querySelectorAll('button[data-lang]').forEach(btn=>{
-    btn.addEventListener('click', ()=>{
-      const lang = btn.dataset.lang;
-      window.Core.i18n.setLang(lang);
-      current.textContent = (
-        lang === 'en' ? 'English' :
-        lang === 'hi' ? 'हिन्दी' :
-        lang === 'es' ? 'Español' :
-        lang === 'fr' ? 'Français' :
-        'Русский'
-      );
-      dd.classList.remove('open');
-      trigger?.setAttribute('aria-expanded','false');
-    });
-  });
-
-  // Подписка на смену языка — держим заголовок триггера в актуальном состоянии
-  window.addEventListener('i18n:change', (ev)=>{
-    const l = ev.detail?.lang || window.Core.i18n.getLang();
-    current.textContent = (
-      l === 'en' ? 'English' :
-      l === 'hi' ? 'हिन्दी' :
-      l === 'es' ? 'Español' :
-      l === 'fr' ? 'Français' :
-      'Русский'
-    );
-  });
-
-  // Help — просто событие/тост (можешь открыть /help-страницу)
-  document.getElementById('helpBtn')?.addEventListener('click', ()=>{
-    window.Core.showToast(window.I18N?.t('common.help') || 'Help');
-  });
-});
-    
-    // Кнопка "Помощь" — пока просто отправим событие в бота
-    const help = document.getElementById('helpBtn');
-    help?.addEventListener('click', ()=>{
-      const sent = safeSendData(JSON.stringify({ type:'help' }));
-      if (!sent) showToast(t('common.help'));
-    });
+    // инициализируем правый верхний «Help + языки»
+    initTopbarLangAndHelp();
+    // риппл на маленьких пилюлях
+    attachRipple('.pill');
   });
 })();
-

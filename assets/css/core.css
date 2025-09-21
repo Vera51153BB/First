@@ -30,13 +30,19 @@ body{
 
 /* Верхняя панель */
 /* ===== Topbar: right-aligned Help + Language ===== */
+/* === Topbar (правый верх, Help + Language) === */
 .topbar{
   display:flex;
-  align-items:center;
-  margin-bottom: clamp(10px,3vw,16px);
+  justify-content:flex-end;    /* уводим элементы вправо */
+  gap:12px;
+  margin-bottom: clamp(14px,3vw,22px);
 }
-.topbar .spacer{ flex:1; }
-.topbar-right{ display:flex; align-items:center; gap:10px; }
+
+.topbar-right{
+  display:flex;
+  align-items:center;
+  gap:10px;                     /* между Help и языком */
+}
 
 .help-btn{
   background:none;
@@ -482,22 +488,37 @@ h1{
 }
 
 /* унифицированная «пилюля» для активных кнопок (Help, Lang trigger) */
-.pill-btn{
+/* Кнопки-«таблетки» */
+.pill{
   display:inline-flex; align-items:center; gap:8px;
-  border:1px solid var(--text);
-  border-radius:999px;
   padding:6px 12px;
-  font-weight:700;
-  font-size:clamp(12px,2.8vw,14px);
-  color:var(--text);
-  background:transparent;
+  border-radius: 999px;
+  font-weight:600;
+  font-size: clamp(13px,3vw,16px);
+  line-height:1;
   cursor:pointer;
-  transition:background .2s ease, color .2s ease, transform .08s ease, border-color .2s ease;
-  box-shadow: 0 6px 18px rgba(0,0,0,.18);
+  user-select:none;
+  transition: background .2s, color .2s, border-color .2s, transform .08s ease;
 }
-.pill-btn:hover{ background:rgba(255,255,255,.08); border-color:#e6ddcd; }
-.pill-btn:active{ transform:translateY(1px) scale(.98); }
-.pill-btn:focus-visible{ outline:2px solid #8aa3ff; outline-offset:2px; }
+.pill-outline{
+  background: transparent;
+  color: var(--text);
+  border: 1px solid var(--text);
+}
+.pill-outline:hover{ background: rgba(255,255,255,.08); }
+.pill:active{ transform: translateY(1px) scale(.985); }
+
+/* маленькие иконки в пиллах */
+.pill .icon{ display:inline-grid; place-items:center; }
+.pill .icon.globe{
+  width:18px; height:18px; border-radius:50%;
+  border:2px solid #9bc3ff;        /* цвет как просили для «глобуса» */
+}
+.pill .icon.circ{
+  width:18px; height:18px; border-radius:50%;
+  border:2px solid #9bc3ff;        /* такой же кружок для «?» */
+  font-weight:800; font-size:12px;
+}
 
 /* иконка-вопрос и глобус — одинаковый кружок по цвету */
 .icon{
@@ -522,26 +543,32 @@ h1{
 }
 
 /* Language dropdown */
-.lang-dropdown{ position:relative; }
-.lang-trigger .chev{ margin-left:2px; opacity:.85; }
-
-.lang-menu{
-  position:absolute; right:0; top:calc(100% + 8px);
-  background:#1b1645;
-  color:var(--text);
-  border:1px solid #3a3276;
-  border-radius:12px;
-  min-width:180px;
-  padding:6px;
+/* Language dropdown */
+.lang-menu{ position:relative; }
+.lang-list{
+  position:absolute;
+  right:0;
+  top: calc(100% + 8px);
+  background: #1b1645;
+  color: var(--text);
+  border: 1px solid #3a3276;
+  border-radius: 12px;
+  padding: 6px;
   display:none;
-  z-index:2000;
-  box-shadow: 0 10px 24px rgba(0,0,0,.35);
+  min-width: 180px;
+  box-shadow: 0 10px 22px rgba(0,0,0,.35);
+  z-index: 20;
 }
-.lang-dropdown.open .lang-menu{ display:block; }
-.lang-menu button{
-  width:100%; text-align:left;
+.lang-list.open{ display:block; }
+.lang-list li{
   display:flex; align-items:center; gap:8px;
-  padding:8px 10px; border-radius:10px; border:none; background:transparent; color:var(--text);
-  cursor:pointer; font-weight:600;
+  padding: 8px 10px;
+  border-radius: 8px;
+  cursor:pointer;
 }
-.lang-menu button:hover{ background:rgba(255,255,255,.06); }
+.lang-list li:hover{ background: rgba(255,255,255,.06); }
+.lang-list .dot{
+  width:10px; height:10px; border-radius:50%;
+  border: 2px solid #9bc3ff;
+}
+.lang-list li.active .dot{ background:#9bc3ff; }

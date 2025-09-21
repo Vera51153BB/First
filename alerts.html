@@ -33,19 +33,20 @@
     <h1>Управление уведомлениями</h1>
     <div class="stack">
 
-      <!-- Секция «все» -->
-      <section class="section">
-        <div class="controls-header">
-          <div class="title">
-            <span id="allLabel" data-i18n="header_label" data-i18n-ns="alerts">Все уведомления:</span>
-          </div>
-          <span id="allState" class="status-badge">частично</span>
-        </div>
-        <div class="actions">
-          <button class="btn green" id="btnAllOn">включить</button>
-          <button class="btn red"   id="btnAllOff">выключить</button>
-        </div>
-      </section>
+<!-- Секция «все» -->
+<section class="section">
+  <div class="controls-header">
+    <div class="title" id="allHeader">
+      <span data-i18n="alerts.header_label">Все уведомления:</span>
+      <span id="allState" class="all-state">частично</span>
+    </div>
+  </div>
+
+  <div class="actions">
+    <button class="btn green" id="btnAllOn"  data-i18n="common.enable">включить</button>
+    <button class="btn red"   id="btnAllOff" data-i18n="common.disable">выключить</button>
+  </div>
+</section>
 
       <!-- Список тумблеров -->
       <section class="section" id="list"></section>

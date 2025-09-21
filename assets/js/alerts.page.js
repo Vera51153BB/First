@@ -110,8 +110,8 @@ document.addEventListener('DOMContentLoaded', () => {
       sw.setAttribute('data-on', String(a.on));
       sw.setAttribute('aria-pressed', String(a.on));
       sw.innerHTML = `
-        <span class="label">${tCommon('on_short')}</span>
-        <span class="label">${tCommon('off_short')}</span>
+        <span class="label">${tCommon('on')}</span>
+        <span class="label">${tCommon('off')}</span>
         <span class="knob"></span>
       `;
 
@@ -140,8 +140,8 @@ document.addEventListener('DOMContentLoaded', () => {
       btn.setAttribute('aria-pressed', String(a.on));
       // также перерисуем короткие подписи ON/OFF на тумблере (если сменили язык):
       const labels = btn.querySelectorAll('.label');
-      if (labels[0]) labels[0].textContent = tCommon('on_short');
-      if (labels[1]) labels[1].textContent = tCommon('off_short');
+      if (labels[0]) labels[0].textContent = tCommon('on');
+      if (labels[1]) labels[1].textContent = tCommon('off');
     }
     // и название, если оно берётся из словаря
     const nameNode = listEl.querySelectorAll('.item .name')[idx];

@@ -302,3 +302,83 @@ h1{
   transform:translate(-50%,-50%);
   opacity:0; pointer-events:none;
 }
+
+/* === Универсальная "маленькая" кнопка в стиле save-btn (контурная) === */
+.btn-outline{
+  background: var(--bg);
+  color: var(--text);
+  border: 1px solid var(--text);
+  border-radius: var(--radius);
+  padding: 6px 14px;
+  font-weight: 700;
+  font-size: clamp(13px,3vw,16px);
+  line-height: 1;
+  cursor: pointer;
+  transition: transform .08s ease, filter .2s ease, background .2s ease, color .2s ease;
+}
+.btn-outline:active{ transform: translateY(1px) scale(.99); }
+.btn-outline:focus-visible{ outline:2px solid #8aa3ff; outline-offset:2px; }
+.btn-outline:hover{ background: rgba(255,255,255,.06); }
+
+/* Применяем единый стиль к "Помощь" и языкам */
+.help-btn{ all: unset; }
+.help-btn, .lang-switch button{ /* тот же вид, что у save-btn, но мини */
+  background: var(--bg);
+  color: var(--text);
+  border: 1px solid var(--text);
+  border-radius: var(--radius);
+  padding: 6px 12px;
+  font-weight: 700;
+  font-size: clamp(13px,3vw,16px);
+  line-height: 1;
+  cursor: pointer;
+  transition: transform .08s ease, filter .2s ease, background .2s ease, color .2s ease;
+}
+.help-btn:hover, .lang-switch button:hover{ background: rgba(255,255,255,.06); }
+.help-btn:active, .lang-switch button:active{ transform: translateY(1px) scale(.99); }
+.help-btn:focus-visible, .lang-switch button:focus-visible{
+  outline:2px solid #8aa3ff; outline-offset:2px;
+}
+
+/* Активный язык: бежевый маркер-точка + тёмно-синие буквы */
+.lang-switch button.active{
+  background: var(--text);   /* бело-бежевый фон */
+  color: var(--bg);          /* глубокий тёмно-синий текст */
+  border-color: var(--text);
+  position: relative;
+}
+.lang-switch button.active::before{
+  content:"";
+  display:inline-block;
+  width: 8px; height: 8px;
+  border-radius: 999px;
+  background: var(--text);   /* кружок в цвет шрифта (бежевый) */
+  margin-right: 8px;
+  vertical-align: middle;
+}
+
+/* Кнопка-шестерёнка (настройки) — тоже в общем стиле */
+.gear-btn{
+  background: var(--bg);
+  color: var(--text);
+  border: 1px solid var(--text);
+  border-radius: 999px;
+  width: 40px; height: 40px;
+  display: inline-flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  transition: transform .08s ease, background .2s ease, color .2s ease;
+  margin-left: 10px;
+}
+.gear-btn:hover{ background: rgba(255,255,255,.06); }
+.gear-btn:active{ transform: translateY(1px) scale(.99); }
+
+/* простая иконка-«три линии» без SVG (можно заменить своим SVG) */
+.gear-btn .gear-ico{
+  width: 16px; height: 12px; position: relative;
+}
+.gear-btn .gear-ico::before,
+.gear-btn .gear-ico::after{
+  content:""; position:absolute; left:0; right:0; height:2px; background: currentColor;
+}
+.gear-btn .gear-ico::before{ top:0; box-shadow: 0 5px 0 0 currentColor; }
+.gear-btn .gear-ico::after{ bottom:0; }

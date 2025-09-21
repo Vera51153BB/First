@@ -39,11 +39,7 @@
       try {
         tg.showPopup(
           { title, message, buttons: [{ id:'ok', type:'ok' }] },
-          (btnId) => {
-            if (btnId === 'ok' && closeOnMobile) {
-              setTimeout(()=>{ try { tg.close(); } catch {} }, 120);
-            }
-          }
+          (btnId) => { if (btnId === 'ok' && closeOnMobile) setTimeout(()=>{ try { tg.close(); } catch {} }, 120); }
         );
         tg?.HapticFeedback?.notificationOccurred?.('success');
         return;
@@ -80,144 +76,116 @@
   function saveLocal(key, val){ try{ localStorage.setItem(key, JSON.stringify(val)); }catch{} }
   function loadLocal(key, def){ try{ const r = localStorage.getItem(key); return r ? JSON.parse(r) : def; }catch{ return def; } }
 
-  // NEW: компактный debounce для антиспама отправок/рендеров
-  function debounce(fn, wait=250){
-    let t=null;
-    return (...args)=>{ clearTimeout(t); t=setTimeout(()=>fn(...args), wait); };
-  }
+  // NEW: компактный debounce
+  function debounce(fn, wait=250){ let t=null; return (...a)=>{ clearTimeout(t); t=setTimeout(()=>fn(...a), wait); }; }
 
-  // NEW: простой EventBus для внутренних уведомлений (например, смена языка)
+  // NEW: EventBus (напр., смена языка)
   const Bus = (()=> {
-    const listeners = new Map(); // event -> Set<fn>
+    const m = new Map();
     return {
-      on(evt, fn){ if(!listeners.has(evt)) listeners.set(evt, new Set()); listeners.get(evt).add(fn); return ()=>this.off(evt, fn); },
-      off(evt, fn){ listeners.get(evt)?.delete(fn); },
-      emit(evt, payload){ listeners.get(evt)?.forEach(fn=>{ try{ fn(payload); }catch(e){ console.error(e); } }); },
+      on(evt, fn){ if(!m.has(evt)) m.set(evt, new Set()); m.get(evt).add(fn); return ()=>m.get(evt).delete(fn); },
+      emit(evt, p){ m.get(evt)?.forEach(f=>{ try{ f(p); }catch(e){ console.error(e); } }); },
     };
   })();
 
-  // ===== i18n (минимальный каркас) =====
-  // Примечания:
-  // - Словари храним в window.I18N (см. assets/js/i18n.js).
-  // - Ключ хранится в localStorage под ключом OKX_LANG_KEY.
-  // - Расстановка текстов по атрибутам data-i18n и data-i18n-placeholder.
-  const OKX_LANG_KEY = 'okx_lang';
-  const FALLBACK_ORDER = ['en','hi','ru']; // порядок по умолчанию
-  const VALID_LANGS = new Set(['en','hi','ru']);
+  // ===== i18n обвязка (интеграция с window.I18N из assets/js/i18n.js) =====
+  const OKX_LANGS = [
+    { code:'en', label:'English'  },
+    { code:'hi', label:'हिन्दी'    },
+    { code:'es', label:'Español'  },
+    { code:'fr', label:'Français' },
+    { code:'ru', label:'Русский'  },
+  ];
 
-  function detectLang(){
-    const saved = (localStorage.getItem(OKX_LANG_KEY)||'').trim();
-    if (saved && VALID_LANGS.has(saved)) return saved;
-    // По navigator.language пытаемся выбрать ru/en/hi, иначе 'en'
-    const nav = (navigator.language || navigator.userLanguage || '').toLowerCase();
-    if (nav.startsWith('ru')) return 'ru';
-    if (nav.startsWith('hi')) return 'hi';
-    return 'en';
-  }
+  function currentLang(){ return window.I18N?.lang || 'en'; }
+  function setLang(code){ window.I18N?.setLang(code); Bus.emit('langchange', code); }
+  function t(path){ return window.I18N?.t(path) ?? path; }
 
-  function getLang(){ return (localStorage.getItem(OKX_LANG_KEY) || detectLang()); }
+  // Инициализация выпадающего меню языков
+  function initLangDropdown(){
+    const toggle = document.getElementById('langToggle');
+    const dd     = document.getElementById('langDropdown');
+    const curr   = document.getElementById('langCurrent');
+    if(!toggle || !dd || !curr) return;
 
-  function setLang(lang){
-    if (!VALID_LANGS.has(lang)) lang = 'en';
-    try{ localStorage.setItem(OKX_LANG_KEY, lang); }catch{}
-    // визуально переключаем активную кнопку
-    document.querySelectorAll('.lang-switch button').forEach(b=>{
-      b.classList.toggle('active', b.dataset.lang === lang);
+    // наполнение
+    dd.innerHTML = '';
+    const now = currentLang();
+    curr.textContent = OKX_LANGS.find(l=>l.code===now)?.label || 'English';
+
+    OKX_LANGS.forEach(l=>{
+      const btn = document.createElement('button');
+      btn.className = 'lang-item' + (l.code===now ? ' active' : '');
+      btn.setAttribute('role','menuitem');
+      btn.dataset.lang = l.code;
+      btn.innerHTML = `<span class="dot"></span><span class="label">${l.label}</span>`;
+      btn.addEventListener('click', ()=>{
+        setLang(l.code);
+        curr.textContent = l.label;
+        dd.classList.remove('open');
+        toggle.setAttribute('aria-expanded','false');
+        // отметим активный
+        dd.querySelectorAll('.lang-item').forEach(x=>x.classList.toggle('active', x.dataset.lang===l.code));
+      });
+      dd.appendChild(btn);
     });
-    // пробуем применить переводы на странице
-    translateHTML(lang);
-    Bus.emit('langchange', lang);
-  }
 
-  // NEW: функция перевода узлов по data-* атрибутам
-  function t(key, ns){
-    // ns — необязательный неймспейс ('alerts', 'rsi' и т.п.)
-    const dict = (window.I18N || {});
-    const lang = getLang();
-    const path = (ns ? `${ns}.${key}` : key);
-    const val = path.split('.').reduce((acc, k)=> (acc && acc[k] !== undefined) ? acc[k] : undefined, dict[lang]);
-    if (val !== undefined) return String(val);
-    // Фолбэк по порядку
-    for (const fb of FALLBACK_ORDER){
-      const fbVal = path.split('.').reduce((acc, k)=> (acc && acc[k] !== undefined) ? acc[k] : undefined, dict[fb]);
-      if (fbVal !== undefined) return String(fbVal);
-    }
-    return key; // если ничего не нашли — возвращаем ключ
-  }
-
-  function translateHTML(lang){
-    const nodes = document.querySelectorAll('[data-i18n]');
-    nodes.forEach(el=>{
-      const key = el.getAttribute('data-i18n') || '';
-      const ns = el.getAttribute('data-i18n-ns') || '';
-      if (!key) return;
-      el.textContent = t(key, ns || undefined);
+    // открытие/закрытие
+    toggle.addEventListener('click', ()=>{
+      const open = dd.classList.toggle('open');
+      toggle.setAttribute('aria-expanded', String(open));
     });
-    const phNodes = document.querySelectorAll('[data-i18n-placeholder]');
-    phNodes.forEach(el=>{
-      const key = el.getAttribute('data-i18n-placeholder') || '';
-      const ns = el.getAttribute('data-i18n-ns') || '';
-      if (!key) return;
-      el.setAttribute('placeholder', t(key, ns || undefined));
+    document.addEventListener('click', (e)=>{
+      if (!dd.contains(e.target) && !toggle.contains(e.target)) {
+        dd.classList.remove('open'); toggle.setAttribute('aria-expanded','false');
+      }
+    });
+
+    // при смене языка извне
+    window.addEventListener('i18n:change', (ev)=>{
+      const code = ev?.detail?.lang || currentLang();
+      const lang = OKX_LANGS.find(l=>l.code===code) || OKX_LANGS[0];
+      curr.textContent = lang.label;
+      dd.querySelectorAll('.lang-item').forEach(x=>x.classList.toggle('active', x.dataset.lang===code));
+      // перерисуем тексты с data-i18n
+      translateHTML();
     });
   }
 
-  // NEW: инициализация языковой панели (вместо старого кода внизу файла)
-  function initLangSwitch(){
-    const current = getLang();
-    // Пометим активную кнопку
-    document.querySelectorAll('.lang-switch button').forEach(btn=>{
-      btn.classList.toggle('active', btn.dataset.lang === current);
-      btn.addEventListener('click', ()=> setLang(btn.dataset.lang));
+  // Применение переводов по data-i18n / data-i18n-placeholder
+  function translateHTML(){
+    document.querySelectorAll('[data-i18n]').forEach(el=>{
+      const key = el.getAttribute('data-i18n'); if(!key) return;
+      el.textContent = t(key);
     });
-    // Применим переводы при первом рендере
-    translateHTML(current);
+    document.querySelectorAll('[data-i18n-placeholder]').forEach(el=>{
+      const key = el.getAttribute('data-i18n-placeholder'); if(!key) return;
+      el.setAttribute('placeholder', t(key));
+    });
   }
 
   // Публичный API
   window.Core = {
-    // базовые
     tg, DEBUG, PLATFORM, IS_DESKTOP,
     showToast, safeSendData, notifySavedAndMaybeClose,
-    attachRipple, saveLocal, loadLocal,
-
-    // NEW: доп. утилиты
-    debounce,
-    Bus,                 // простейший внутренний EventBus
-    i18n: {              // i18n-утилиты
-      getLang, setLang, t, translateHTML, OKX_LANG_KEY, VALID_LANGS: Array.from(VALID_LANGS)
-    },
+    attachRipple, saveLocal, loadLocal, debounce, Bus,
+    i18n: { t, setLang, currentLang, OKX_LANGS },
   };
 
-  // диагностический лог закрытия
+  // Лог закрытия
   tg?.onEvent?.('web_app_close', () => { if (DEBUG) console.log('[WebApp] event: web_app_close'); });
 
-  // Авто-инициализация i18n-панели после загрузки DOM
-  document.addEventListener('DOMContentLoaded', initLangSwitch);
-})();
+  // Авто-инициализация
+  document.addEventListener('DOMContentLoaded', ()=>{
+    initLangDropdown();
+    translateHTML();
 
-// ===== Управление языковой панелью (legacy-hook) =====
-// Примечание: исторический блок оставлен намеренно, чтобы не ломать старые страницы,
-// где уже были подключены обработчики. Теперь логика находится в Core (см. initLangSwitch).
-// Этот блок не делает ничего, если Core уже повесил обработчики.
-document.addEventListener('DOMContentLoaded', ()=>{
-  const langBtns = document.querySelectorAll('.lang-switch button');
-  if (!langBtns.length) return; // нет панели — выходим
-
-  // Если по какой-то причине Core ещё не выставил active — выставим здесь.
-  const saved = localStorage.getItem('okx_lang');
-  if(saved){
-    const active = document.querySelector(`.lang-switch button[data-lang="${saved}"]`);
-    if(active){ langBtns.forEach(b=>b.classList.remove('active')); active.classList.add('active'); }
-  }
-
-  // Заодно добавим лёгкий fallback-лог в консоль при клике,
-  // но основная логика — в Core.i18n.setLang.
-  langBtns.forEach(btn=>{
-    btn.addEventListener('click', ()=>{
-      console.log('Язык выбран (fallback handler):', btn.dataset.lang);
-    }, { once: true });
+    // Кнопка "Помощь" — пока просто отправим событие в бота
+    const help = document.getElementById('helpBtn');
+    help?.addEventListener('click', ()=>{
+      const sent = safeSendData(JSON.stringify({ type:'help' }));
+      if (!sent) showToast(t('common.help'));
+    });
   });
-});
-// Управление языковой панелью конец
+})();
 

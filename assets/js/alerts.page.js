@@ -230,5 +230,5 @@
 
   // init
   render();
-  attachRipple('.btn, .save-btn, .gear-btn');
+  attachRipple('.btn, .save-btn, .gear-btn, .pill');
 })();

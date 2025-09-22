@@ -154,21 +154,34 @@ h1{
 /* Список уведомлений — единая раскладка (desktop = mobile)
    1-я строка: .item-head  →  название слева (.name), статус справа (.state)
    2-я строка: .item-controls → тумблер слева (.switch), шестерёнка справа (.gear-btn) */
-/* Список уведомлений */
-.item{ display:grid; grid-template-columns: 1fr auto; gap:12px; align-items:center; padding:12px 0 }
-.item + .item{ border-top:1px dashed #2a2458 }
-.name{ font-size:clamp(15px,3.2vw,20px) }
-.state{ color:var(--muted); font-size:clamp(12px,2.8vw,14px); margin-top:6px }
-/* Мобильная раскладка */
-@media (max-width: 786px) {
-  .item{
-    grid-template-columns: 1fr;
-    align-items: start;
-    gap: 6px;
-  }
-  .item .switch{ justify-self: end; margin-top: 4px; }
-  .item .name{ margin-bottom: 2px; }
+.item{
+  display: grid;
+  grid-template-columns: 1fr;   /* одна колонка для всех экранов */
+  gap: 8px;
+  align-items: start;
+  padding: 12px 0;
 }
+.item + .item{ border-top:1px dashed #2a2458; }
+
+.item-head{
+  display: flex;
+  align-items: center;
+  justify-content: space-between; /* имя слева, статус справа */
+  gap: 10px;
+}
+
+.item-controls{
+  display: flex;
+  align-items: center;
+  justify-content: space-between; /* тумблер слева, шестерёнка справа */
+  gap: 10px;
+}
+
+.name{ font-size: clamp(15px,3.2vw,20px); }
+.state{ color: var(--muted); font-size: clamp(12px,2.8vw,14px); }
+
+.item-controls .switch{ margin-top: 2px; }   /* слегка выравниваем по оптике */
+.item-controls .gear-btn{ margin-left: auto; } /* гарантируем прижим вправо */
 
 /* Переключатель */
 .switch{

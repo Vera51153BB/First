@@ -30,34 +30,55 @@
   let alerts = loadState();
 
 function render(){
-  // «Все уведомления: …» (простой текст)
+  // «Все уведомления: …»
   updateAllBadge();
 
   listEl.innerHTML = '';
 
   alerts.forEach((a) => {
-    // item-контейнер: стабильная двухстрочная раскладка через класс
+    // контейнер строки
     const row = document.createElement('div');
-    row.className = 'item item--stacked';
+    row.className = 'item item--split';
 
-    // 1) Верхняя строка — имя индикатора
+    // ---------- ВЕРХ: name | state ----------
+    const top = document.createElement('div');
+    top.className = 'row-top';
+
     const nameDiv = document.createElement('div');
     nameDiv.className = 'name';
-    nameDiv.textContent = a.name || tItem(a.id) || a.id;
-    row.appendChild(nameDiv);
+    nameDiv.textContent = a.name || t(`alerts.items.${a.id}`) || a.id;
 
-    // 2) Нижняя строка — state • switch • gear
-    const controlsRow = document.createElement('div');
-    controlsRow.className = 'item-controls';
-
-    // state (включено/выключено)
     const stateDiv = document.createElement('div');
     stateDiv.className = 'state';
     stateDiv.id = 'state-' + a.id;
     stateDiv.textContent = a.on ? tCommon('on') : tCommon('off');
-    controlsRow.appendChild(stateDiv);
 
-    // Тумблер
+    top.appendChild(nameDiv);
+    top.appendChild(stateDiv);
+
+    // ---------- НИЗ: gear | switch (switch справа) ----------
+    const bottom = document.createElement('div');
+    bottom.className = 'row-bottom';
+
+    // шестерёнка
+    const gearBtn = document.createElement('button');
+    gearBtn.className = 'gear-btn';
+    gearBtn.setAttribute('aria-label', t('common.settings') || 'Settings');
+    gearBtn.innerHTML = `
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <circle cx="12" cy="12" r="3"></circle>
+        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33h.09a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51h.09a1.65 1.65 0 0 0 1.82-.33l;.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82v.09a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+      </svg>`;
+    gearBtn.addEventListener('click', (e)=>{
+      e.stopPropagation();
+      if (a.id === 'alert2') {
+        window.location.href = 'setting_alerts_rsi.html';
+      } else {
+        window.Core.showToast(t('common.settings'));
+      }
+    });
+
+    // тумблер
     const sw = document.createElement('button');
     sw.type = 'button';
     sw.className = 'switch';
@@ -75,59 +96,41 @@ function render(){
       updateAllBadge();
       try{ tg?.HapticFeedback?.selectionChanged?.(); }catch{}
     });
-    controlsRow.appendChild(sw);
 
-    // Шестерёнка
-    const gearBtn = document.createElement('button');
-    gearBtn.className = 'gear-btn';
-    gearBtn.setAttribute('aria-label', t('common.settings') || 'Settings');
-    gearBtn.innerHTML = `
-      <svg viewBox="0 0 24 24" aria-hidden="true">
-        <circle cx="12" cy="12" r="3"></circle>
-        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33h.09a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51h.09a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82v.09a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
-      </svg>`;
-    gearBtn.addEventListener('click', (e)=>{
-      e.stopPropagation();
-      if (a.id === 'alert2') {
-        window.location.href = 'setting_alerts_rsi.html';
-      } else {
-        window.Core.showToast(t('common.settings'));
-      }
-    });
-    controlsRow.appendChild(gearBtn);
+    bottom.appendChild(gearBtn);
+    bottom.appendChild(sw);
 
-    // собрать карточку
-    row.appendChild(controlsRow);
+    // сборка строки
+    row.appendChild(top);
+    row.appendChild(bottom);
     listEl.appendChild(row);
-  }); // <— закрыли forEach !
+  });
 
-  // ripple для интерактивных кнопок (вызов ОДИН раз после рендера)
-  attachRipple('.btn, .save-btn, .gear-btn');
+  // ripple для интерактивных
+  attachRipple('.btn, .save-btn, .gear-btn, .switch');
 }
 
-  function updateOne(id){
-    const a = alerts.find(x => x.id === id);
+function updateOne(id){
+  const a = alerts.find(x => x.id === id);
+  const state = document.getElementById('state-'+id);
+  if (state) state.textContent = a.on ? tCommon('on') : tCommon('off');
 
-    // state-текст
-    const state = document.getElementById('state-'+id);
-    if (state) state.textContent = a.on ? tCommon('on') : tCommon('off');
-
-    // тумблер
-    const idx = alerts.findIndex(x => x.id === id);
-    const btn = listEl.querySelectorAll('.switch')[idx];
-    if (btn) {
-      btn.setAttribute('data-on', String(a.on));
-      btn.setAttribute('aria-pressed', String(a.on));
-      // подписи ON/OFF (на случай смены языка)
-      const labels = btn.querySelectorAll('.label');
-      if (labels[0]) labels[0].textContent = tCommon('on_short');
-      if (labels[1]) labels[1].textContent = tCommon('off_short');
-    }
-
-    // имя (если берём из словаря)
-    const nameNode = listEl.querySelectorAll('.item .name')[idx];
-    if (nameNode && !DEFAULT_ALERTS[idx].name) nameNode.textContent = tItem(a.id);
+  // тумблер внутри нужной строки
+  const idx = alerts.findIndex(x => x.id === id);
+  const row = listEl.querySelectorAll('.item')[idx];
+  const btn = row?.querySelector('.switch');
+  if (btn) {
+    btn.setAttribute('data-on', String(a.on));
+    btn.setAttribute('aria-pressed', String(a.on));
+    const labels = btn.querySelectorAll('.label');
+    if (labels[0]) labels[0].textContent = tCommon('on_short');
+    if (labels[1]) labels[1].textContent = tCommon('off_short');
   }
+
+  // обновим заголовок при смене языка
+  const nameNode = row?.querySelector('.name');
+  if (nameNode && !a.name) nameNode.textContent = t(`alerts.items.${a.id}`);
+}
 
   function updateAllBadge(){
     const onCount = alerts.filter(a=>a.on).length;

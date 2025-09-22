@@ -316,7 +316,8 @@ button.switch{
   background: transparent;
   color: var(--text);
   cursor: pointer;
-
+  z-index: 2;
+  
   /* эффекты */
   transition:
     background .20s ease,

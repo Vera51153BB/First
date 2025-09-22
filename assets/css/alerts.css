@@ -1,14 +1,55 @@
-/* alerts-page overrides. Пока ничего специфичного здесь нет. Для правок Alerts */
-/* Сетка строки: слева название + шестерёнка, справа — свитч */
-.item { grid-template-columns: 1fr auto; }
-.item .left { display:flex; align-items:center; justify-content:space-between; gap:12px; }
+/* alerts-page overrides. Здесь только то, что относится к раскладке Alerts. */
 
-.gear-btn{
-  display:inline-flex; align-items:center; justify-content:center;
-  width:36px; height:36px; border-radius:999px;
-  border:1px solid #3a3276; background:transparent; color:#e6ddcd;
-  cursor:pointer; transition:background .2s, color .2s, border-color .2s;
+/* ====== Карточка уведомления: 2-строчная сетка ======
+   1-я строка:  name | state
+   2-я строка:  gear | switch
+   (названия областей ниже в grid-template-areas) */
+.item{
+  display: grid;
+  grid-template-columns: 1fr auto;
+  grid-template-rows: auto auto;
+  grid-template-areas:
+    "name  state"
+    "gear  switch";
+  column-gap: 12px;
+  row-gap: 8px;
+  align-items: center;
+  /* padding/border остаются из core.css */
 }
-.gear-btn:hover{ background:rgba(255,255,255,.06); border-color:#6a61bf; }
-svg.feather-settings{ stroke: currentColor; }
 
+/* Контейнер, который создаёт JS (в нём лежат state, switch, gear).
+   Делаем его "прозрачным" для грид-раскладки родителя: */
+.item-controls{ display: contents; }
+
+/* Области грида */
+.item .name   { grid-area: name; }
+.item .state  { grid-area: state; margin: 0; }     /* текстовое "включено / выключено" */
+.item .gear-btn { grid-area: gear;  justify-self: start; }
+.item .switch { grid-area: switch; justify-self: end; }
+
+/* Адаптивные микро-правки — на узких экранах немного сжать вертикальные отступы */
+@media (max-width: 480px){
+  .item{ row-gap: 6px; column-gap: 10px; }
+}
+
+/* ====== Шестерёнка: небольшие доработки, чтобы stroke не «обрезался» ====== */
+.item .gear-btn{
+  position: relative;     /* для риппла */
+  line-height: 0;         /* убираем влияние текста */
+  z-index: 1;             /* поверх пунктирного разделителя */
+  overflow: visible;      /* не обрезать stroke у SVG */
+}
+.item .gear-btn svg{
+  overflow: visible;              /* ключ к «необрезанию» */
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
+}
+
+/* Если хочется едва заметно приподнять весь блок контролов над линией-разделителем,
+   раскомментируй следующую строку:
+.item-controls{ position: relative; z-index: 1; }
+*/

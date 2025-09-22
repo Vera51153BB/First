@@ -582,3 +582,37 @@ button.switch{
   .item.item--stacked .item-controls .switch{ justify-self: stretch; }
 }
 
+/* === Макет строки: верх — name | state, низ — gear | (switch справа) === */
+.item--split{
+  display:block;                 /* отказываемся от старой 2-колоночной сетки */
+  padding:12px 0;
+}
+.item--split + .item--split{ border-top:1px dashed #2a2458; }
+
+/* верхний ряд: название слева, статус справа */
+.item--split .row-top{
+  display:grid;
+  grid-template-columns: 1fr auto;  /* name | state */
+  align-items:center;
+  gap:12px;
+}
+.item--split .row-top .name{ margin:0; }
+.item--split .row-top .state{ margin:0; }
+
+/* нижний ряд: шестерёнка слева, тумблер справа */
+.item--split .row-bottom{
+  margin-top:8px;
+  display:grid;
+  grid-template-columns: auto 1fr;   /* gear | switch (растягиваем трек) */
+  align-items:center;
+  gap:10px;
+}
+.item--split .row-bottom .switch{
+  justify-self:end;                  /* тумблер прижат к правому краю */
+}
+
+/* адаптив: просто уменьшаем зазоры */
+@media (max-width: 786px){
+  .item--split .row-top{ gap:10px; }
+  .item--split .row-bottom{ margin-top:6px; gap:8px; }
+}

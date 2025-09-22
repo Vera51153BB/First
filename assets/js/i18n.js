@@ -18,7 +18,7 @@ const DICTS = {
       all_on_btn: "Enable",
       all_off_btn: "Disable",
       items: {
-        balance: "Balance",
+        balance: "Gainers / Losers",
         alert2:  "RSI Index",
         alert3:  "Alert 3",
         alert4:  "Alert 4",
@@ -49,7 +49,7 @@ const DICTS = {
       all_on_btn: "सक्रिय करें",
       all_off_btn: "निष्क्रिय करें",
       items: {
-        balance: "बैलेंस",
+        balance: "लाभ बनाम हानि",
         alert2:  "RSI सूचकांक",
         alert3:  "अलर्ट 3",
         alert4:  "अलर्ट 4",
@@ -80,7 +80,7 @@ const DICTS = {
       all_on_btn: "включить",
       all_off_btn: "выключить",
       items: {
-        balance: "Баланс монет",
+        balance: "Растущие / Падающие",
         alert2:  "Индекс RSI",
         alert3:  "Уведомление 3",
         alert4:  "Уведомление 4",
@@ -111,7 +111,7 @@ const DICTS = {
       all_on_btn: "Activar",
       all_off_btn: "Desactivar",
       items: {
-        balance: "Saldo",
+        balance: "Ganadores / Perdedores",
         alert2:  "Índice RSI",
         alert3:  "Alerta 3",
         alert4:  "Alerta 4",
@@ -142,7 +142,7 @@ const DICTS = {
       all_on_btn: "Activer",
       all_off_btn: "Désactiver",
       items: {
-        balance: "Solde",
+        balance: "Gagnants / Perdants",
         alert2:  "Indice RSI",
         alert3:  "Alerte 3",
         alert4:  "Alerte 4",
@@ -173,7 +173,7 @@ const DICTS = {
       all_on_btn: "Aktivieren",
       all_off_btn: "Deaktivieren",
       items: {
-        balance: "Kontostand",
+        balance: "Gewinner / Verlierer",
         alert2:  "RSI-Index",
         alert3:  "Alarm 3",
         alert4:  "Alarm 4",
@@ -204,7 +204,7 @@ const DICTS = {
       all_on_btn: "Abilita",
       all_off_btn: "Disabilita",
       items: {
-        balance: "Saldo",
+        balance: "Vincenti / Perdenti",
         alert2:  "Indice RSI",
         alert3:  "Avviso 3",
         alert4:  "Avviso 4",
@@ -218,7 +218,6 @@ const DICTS = {
     }
   },
 };
-
 
   function pickLang() {
     const saved = localStorage.getItem('okx_lang');

@@ -174,14 +174,28 @@ h1{
   display: flex;
   align-items: center;
   justify-content: space-between; /* тумблер слева, шестерёнка справа */
-  gap: 10px;
+  gap: 12px;
 }
 
+/* типографика */
 .name{ font-size: clamp(15px,3.2vw,20px); }
 .state{ color: var(--muted); font-size: clamp(12px,2.8vw,14px); }
 
-.item-controls .switch{ margin-top: 2px; }   /* слегка выравниваем по оптике */
-.item-controls .gear-btn{ margin-left: auto; } /* гарантируем прижим вправо */
+/* тумблер должен быть «пилюлей», занимать всю доступную ширину */
+.item-controls .switch{
+  flex: 1 1 auto;
+  min-width: 220px;    /* чтобы не схлопывался */
+  margin-top: 2px;
+}
+
+/* починка «белого прямоугольника» если что-то перезаписало button */
+button.switch{
+  appearance: none;
+  -webkit-appearance: none;
+  display: inline-flex;               /* важно, чтобы лейблы шли в строку */
+  background: linear-gradient(90deg, var(--green) 0 50%, var(--red) 50% 100%);
+  border: 1px solid #382f78;
+}
 
 /* Переключатель */
 .switch{
@@ -196,7 +210,7 @@ h1{
 .switch .label{
   font-weight:900; letter-spacing:.03em; text-transform:uppercase;
   font-size:clamp(12px,2.8vw,16px); width:50%;
-  display:flex; align-items:center; justify-content:center;
+  display:flex; align-items:center; justify-content:center; white-space:nowrap;
   opacity:.65; transition:opacity .18s;
 }
 .switch[data-on="true"]  .label:first-child{ opacity:1; }

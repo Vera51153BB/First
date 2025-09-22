@@ -563,3 +563,22 @@ button.switch{
   border:2px solid #7dc0f8;        /* такой же голубой как у иконок */
 }
 .lang-list li.active .dot{ background:#7dc0f8; }
+
+/* ===== Двухстрочная карточка уведомления (name ↑, ниже state + switch + gear) ===== */
+.item.item--stacked{               /* принудительно блочная раскладка вместо grid из .item */
+  display:block;
+}
+
+.item-controls{                    /* нижняя строка с состоянием, тумблером и шестерёнкой */
+  display:grid;
+  grid-template-columns: auto 1fr auto;  /* state | switch | gear */
+  align-items:center;
+  gap:10px;
+  margin-top:6px;
+}
+
+/* мелочь для узких экранов: тумблеру не надо прижиматься вправо */
+@media (max-width: 786px){
+  .item.item--stacked .item-controls .switch{ justify-self: stretch; }
+}
+

@@ -84,9 +84,9 @@
   const LANGS = [
     { code:'en', label:'English'  },
     { code:'hi', label:'हिन्दी'    },
+    { code:'ru', label:'Русский'  },    
     { code:'es', label:'Español'  },
     { code:'fr', label:'Français' },
-    { code:'ru', label:'Русский'  },
     { code:'fr', label:'Deutsch' },
     { code:'ru', label:'Italiano'  },
   ];

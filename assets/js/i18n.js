@@ -19,7 +19,7 @@ const DICTS = {
       all_off_btn: "Disable",
       items: {
         balance: "Gainers / Losers",
-        alert2:  "RSI Index",
+        alert2:  "RSI Zones & Extremes",
         alert3:  "Alert 3",
         alert4:  "Alert 4",
       },
@@ -50,7 +50,7 @@ const DICTS = {
       all_off_btn: "निष्क्रिय करें",
       items: {
         balance: "लाभ बनाम हानि",
-        alert2:  "RSI सूचकांक",
+        alert2:  "RSI: क्षेत्र और चरम)",
         alert3:  "अलर्ट 3",
         alert4:  "अलर्ट 4",
       },
@@ -81,7 +81,7 @@ const DICTS = {
       all_off_btn: "выключить",
       items: {
         balance: "Растущие / Падающие",
-        alert2:  "Индекс RSI",
+        alert2:  "RSI: зоны и экстремумы",
         alert3:  "Уведомление 3",
         alert4:  "Уведомление 4",
       },
@@ -112,7 +112,7 @@ const DICTS = {
       all_off_btn: "Desactivar",
       items: {
         balance: "Ganadores / Perdedores",
-        alert2:  "Índice RSI",
+        alert2:  "RSI: Zonas y Extremos",
         alert3:  "Alerta 3",
         alert4:  "Alerta 4",
       },
@@ -143,7 +143,7 @@ const DICTS = {
       all_off_btn: "Désactiver",
       items: {
         balance: "Gagnants / Perdants",
-        alert2:  "Indice RSI",
+        alert2:  "RSI: Zones & Extrêmes",
         alert3:  "Alerte 3",
         alert4:  "Alerte 4",
       },
@@ -174,7 +174,7 @@ const DICTS = {
       all_off_btn: "Deaktivieren",
       items: {
         balance: "Gewinner / Verlierer",
-        alert2:  "RSI-Index",
+        alert2:  "RSI: Zonen & Extremwerte",
         alert3:  "Alarm 3",
         alert4:  "Alarm 4",
       },
@@ -205,7 +205,7 @@ const DICTS = {
       all_off_btn: "Disabilita",
       items: {
         balance: "Vincenti / Perdenti",
-        alert2:  "Indice RSI",
+        alert2:  "RSI: Zone ed Estremi",
         alert3:  "Avviso 3",
         alert4:  "Avviso 4",
       },

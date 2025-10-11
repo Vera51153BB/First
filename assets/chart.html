@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="ru">
+<head>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width,initial-scale=1" />
+	<title>OKX SWAP Chart</title>
+
+	<!-- Факты: CSP расширен под Telegram WebApp, Lightweight-Charts и наш скрипт -->
+	<!-- Предположение: хостинг отдает /assets/ по HTTPS и этот файл доступен как WEBAPP_BASE/chart.html -->
+	<meta http-equiv="Content-Security-Policy"
+		content="default-src 'self' https://telegram.org https://unpkg.com;
+		         img-src 'self' data: https:;
+		         style-src 'self' 'unsafe-inline';
+		         script-src 'self' https://telegram.org https://unpkg.com 'unsafe-inline';
+		         connect-src 'self' https://www.okx.com wss://ws.okx.com wss://wsaws.okx.com;">
+
+	<style>
+		:root{
+			--bg:#0b0f14; --text:#e6e6e6; --muted:#9aa4af; --accent:#ffd65c; --danger:#ff6b6b;
+			--pad: clamp(10px, 2.5vw, 14px);
+			--radius: 12px;
+
+			/* Ровно 3 строки управления снизу (факт) */
+			--ctl-lines: 3;
+			--ctl-font: clamp(12px, 2.8vw, 14px);
+			--ctl-line-height: 1.2;
+			--ctl-height: calc(var(--ctl-lines) * var(--ctl-font) * var(--ctl-line-height) + (var(--pad) * 2));
+		}
+		html,body{height:100%;margin:0;background:var(--bg);color:var(--text);font-family:system-ui,Arial}
+		#wrap{height:100%;display:flex;flex-direction:column}
+		header{padding:10px 14px;font-weight:600;letter-spacing:.3px}
+		#chart{flex:1;min-height:320px}
+
+		/* Нижняя панель управления: максимум 3 строки (факт) */
+		footer#controls{
+			height: var(--ctl-height);
+			min-height: var(--ctl-height);
+			max-height: var(--ctl-height);
+			border-top: 1px solid rgba(255,255,255,.08);
+			padding: var(--pad);
+			font-size: var(--ctl-font);
+			line-height: var(--ctl-line-height);
+			display: grid;
+			grid-template-rows: repeat(3, 1fr);
+			gap: 4px;
+			background: rgba(255,255,255,0.02);
+			overflow: hidden;
+		}
+		.row{display:flex;align-items:center;gap:10px;min-height:0}
+		.row a,.row button{
+			background: transparent; color: var(--text);
+			border: 1px solid rgba(255,255,255,.18);
+			border-radius: var(--radius); padding: 6px 10px;
+			cursor: pointer; text-decoration: none; font: inherit; line-height: 1.1; white-space: nowrap;
+		}
+		.row a:hover,.row button:hover{border-color: rgba(255,255,255,.35)}
+		.row .muted{color: var(--muted);border-color: rgba(255,255,255,.12)}
+		.row .danger{color: var(--danger);border-color: rgba(255,0,0,.25)}
+		.row .star.active{background: rgba(255,214,92,.08);border-color: rgba(255,214,92,.8);color: var(--accent)}
+		.row .spacer{flex:1}
+
+		.hint{padding:8px 14px;color:var(--muted);font-size:12px}
+		.err{color:var(--danger)}
+	</style>
+
+	<!-- Внешние скрипты (факт): Telegram WebApp, Lightweight-Charts -->
+	<script src="https://telegram.org/js/telegram-web-app.js"></script>
+	<script src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
+	<!-- Наш модуль работы с OKX REST/WS + рендер графика -->
+	<script defer src="./js/okx_chart.js"></script>
+</head>
+<body>
+<div id="wrap">
+	<header id="title">Chart</header>
+	<div id="chart"></div>
+
+	<!-- 3 строки управления (факт) -->
+	<footer id="controls" aria-label="controls">
+		<!-- row 1: Избранное + имя инструмента + «последнее обновление» -->
+		<div class="row" id="row-fav">
+			<button id="btn-fav" class="star" type="button" aria-pressed="false">⭐️ Добавить в избранное</button>
+			<span id="sym" class="muted"></span>
+			<div class="spacer"></div>
+			<span id="last-upd" class="muted" title="Последнее обновление">…</span>
+		</div>
+
+		<!-- row 2: быстрый выбор таймфрейма + ссылка OKX -->
+		<div class="row" id="row-intervals">
+			<span class="muted">Таймфрейм:</span>
+			<a data-int="15" class="int">15m</a>
+			<a data-int="60" class="int">1h</a>
+			<a data-int="240" class="int">4h</a>
+			<a data-int="1440" class="int">1d</a>
+			<div class="spacer"></div>
+			<a id="okx-link" class="danger" target="_blank" rel="noopener">Открыть на OKX</a>
+		</div>
+
+		<!-- row 3: копирование ссылки и ТВ-вид (внешний), если нужен -->
+		<div class="row" id="row-share">
+			<button id="btn-copy" type="button" class="muted">Скопировать ссылку</button>
+			<a id="tv-link" class="muted" target="_blank" rel="noopener">Открыть в TradingView</a>
+			<div class="spacer"></div>
+			<span class="muted" id="bottom-hint">Обновляется автоматически (WebSocket)</span>
+		</div>
+	</footer>
+
+	<div class="hint" id="hint"></div>
+</div>
+
+<script>
+/* ------------------------------------------
+   Минимальная интеграция окружения (факты/предположения отмечены)
+   ------------------------------------------ */
+(function(){
+	try{
+		const tg = window.Telegram?.WebApp;
+		tg?.expand();
+		tg?.enableClosingConfirmation();
+	}catch(e){}
+})();
+</script>
+</body>
+</html>

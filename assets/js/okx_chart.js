@@ -315,14 +315,26 @@
 	// Индикатор состояния + общие действия
 	// =========================================================
 	function setStatus(mode, text){
-		// mode: 'online' | 'degraded' | 'offline'
-		elStatusDot.classList.remove('online','degraded','offline');
-		elStatusDot.classList.add(mode);
-		elStatusText.textContent = text || (
-			mode==='online' ? 'Онлайн (WS)' :
-			mode==='degraded' ? 'Деградирован (REST)' : 'Оффлайн'
-		);
-	}
+	// mode: 'online' | 'degraded' | 'offline'
+	elStatusDot.classList.remove('online','degraded','offline');
+	elStatusDot.classList.add(mode);
+
+	let label = '';
+	if (mode === 'online')   label = '🟢 Онлайн (WS) — данные обновляются в реальном времени.';
+	if (mode === 'degraded') label = '🟡 Деградирован (REST) — WebSocket временно недоступен, данные периодически подгружаются.';
+	if (mode === 'offline')  label = '🔴 Оффлайн — нет связи с источниками (проверьте интернет или попробуйте позже/альтернативный источник).';
+
+	elStatusText.textContent = text || (
+		mode==='online' ? 'Онлайн (WS)' :
+		mode==='degraded' ? 'Деградирован (REST)' : 'Оффлайн'
+	);
+
+	// Подсказки по hover/tap
+	elStatusDot.title  = label;
+	elStatusText.title = 'Нажмите i для справки';
+
+	// Если открыт поповер статуса, при смене mode можно обновить текст (оставляем статичный список — факт)
+}
 
 	function initCommonActions(){
 		// Избранное (localStorage:fav_coins)

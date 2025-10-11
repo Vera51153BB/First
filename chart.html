@@ -125,12 +125,25 @@
 	<div id="chart"></div>
 
 	<!-- Узкая док-панель: только статус + стрелка (факт) -->
-	<footer id="dock" aria-label="status bar">
-		<div id="status-dot" class="offline" aria-hidden="true"></div>
-		<span id="status-text">Оффлайн</span>
-		<div class="spacer"></div>
-		<button id="btn-panel" aria-expanded="false" aria-controls="panel" title="Открыть настройки">▲</button>
-	</footer>
+<footer id="dock" aria-label="status bar">
+	<div id="status-dot" class="offline" aria-hidden="true" title="Индикатор состояния"></div>
+	<span id="status-text" title="Нажмите i для справки">Оффлайн</span>
+	<button id="btn-status-info" class="muted" type="button" aria-haspopup="dialog" aria-expanded="false" title="Что значит этот индикатор?">i</button>
+	<div class="spacer"></div>
+	<button id="btn-panel" aria-expanded="false" aria-controls="panel" title="Открыть настройки">▲</button>
+</footer>
+<!-- ВСПЛЫВАЮЩАЯ ПОДСКАЗКА С ОПИСАНИЕМ СТАТУСОВ (новый блок) -->
+<section id="status-popover" role="dialog" aria-modal="false" hidden>
+	<div class="tip-card">
+		<div class="tip-title">Что значит индикатор состояния?</div>
+		<ul class="tip-list">
+			<li>🟢 <b>Онлайн (WS)</b> — данные обновляются в реальном времени.</li>
+			<li>🟡 <b>Деградирован (REST)</b> — WebSocket временно недоступен, данные периодически подгружаются.</li>
+			<li>🔴 <b>Оффлайн</b> — нет связи с источниками (проверьте интернет или попробуйте позже/альтернативный источник).</li>
+		</ul>
+		<button id="btn-tip-close" type="button" class="muted" title="Закрыть">Понятно</button>
+	</div>
+</section>
 
 	<!-- Выезжающее окно с настройками — 3 строки (факт) -->
 	<section id="panel" role="dialog" aria-modal="true" aria-label="Настройки графика" hidden>

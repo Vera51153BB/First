@@ -15,11 +15,12 @@
 
 	<link rel="stylesheet" href="./css/chart.css">
 
-	<!-- Внешние скрипты (факт): Telegram WebApp, Lightweight-Charts; TradingView подгружается по требованию -->
+	<!-- Внешние скрипты: Telegram WebApp, Lightweight-Charts; TradingView подгружается по требованию -->
 	<script src="https://telegram.org/js/telegram-web-app.js"></script>
 	<script src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
-	<!-- Наш модуль (факт) -->
+	<!-- Наши модули -->
 	<script defer src="./js/okx_chart.js"></script>
+	<script defer src="./js/ui_panel.js"></script> 
 </head>
 <body>
 <div id="wrap">
@@ -84,40 +85,5 @@
 
 	<div class="hint" id="hint"></div>
 </div>
-
-<script>
-/* ---------------------------
- * ЛОГИКА ДОКА И ПАНЕЛИ (факт)
- * --------------------------- */
-(function(){
-	const btn = document.getElementById('btn-panel');
-	const panel = document.getElementById('panel');
-	const close = document.getElementById('btn-close');
-
-	function openPanel(){
-		panel.hidden = false;
-		requestAnimationFrame(()=> panel.classList.add('open'));
-		btn.setAttribute('aria-expanded', 'true');
-	}
-	function closePanel(){
-		panel.classList.remove('open');
-		btn.setAttribute('aria-expanded', 'false');
-		setTimeout(()=>{ panel.hidden = true; }, 250);
-	}
-	btn.addEventListener('click', ()=>{
-		const expanded = btn.getAttribute('aria-expanded') === 'true';
-		if (expanded) closePanel(); else openPanel();
-	});
-	close.addEventListener('click', closePanel);
-
-	// Закрытие по свайпу вниз (предположение, простой вариант)
-	let startY=0;
-	panel.addEventListener('touchstart', (e)=>{ startY = e.touches[0].clientY; }, {passive:true});
-	panel.addEventListener('touchmove', (e)=>{
-		const dy = e.touches[0].clientY - startY;
-		if (dy>60) closePanel();
-	},{passive:true});
-})();
-</script>
 </body>
 </html>

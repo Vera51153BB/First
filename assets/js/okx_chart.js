@@ -1,5 +1,5 @@
-/* -*- coding: utf-8 -*-  First/js/okx_chart.js
- * Управление графиком и источниками (OKX/TradingView) + WebApp высота + статус.
+/* -*- coding: utf-8 -*-
+ * assets/js/okx_chart.js
  */
 (function(){
   // ---------- DOM ----------
@@ -7,11 +7,11 @@
   const elChart   = document.getElementById('chart');
   const elHint    = document.getElementById('hint');
 
-  // Док-строка (статус)
+  // Док-строка
   const elStatusDot  = document.getElementById('status-dot');
   const elStatusText = document.getElementById('status-text');
 
-  // Панель (настройки)
+  // Панель
   const elSym     = document.getElementById('sym');
   const elLastUpd = document.getElementById('last-upd');
   const elOkx     = document.getElementById('okx-link');
@@ -19,70 +19,61 @@
   const elCopy    = document.getElementById('btn-copy');
   const elFav     = document.getElementById('btn-fav');
 
-  // ---------- Telegram WebApp: корректная высота графика ----------
-  try {
-    if (window.Telegram && window.Telegram.WebApp) {
-      const wa = window.Telegram.WebApp;
-      wa.ready();
-      if (typeof wa.expand === 'function') wa.expand();
+  // ---------- URL + предпочтения ----------
+  const params  = new URLSearchParams(location.search);
 
-      const dock = document.getElementById('dock');
-      const header = document.getElementById('title');
+  // Алиасы: instId | inst | symbol
+  const qInstId = params.get('instId') || params.get('inst') || params.get('symbol');
+  const qCoin   = params.get('coin');
 
-      const resize = () => {
-        const vh = wa.viewportHeight || window.innerHeight || 600;
-        const head = header ? header.offsetHeight : 0;
-        const foot = dock ? dock.offsetHeight : 0;
-        const h = Math.max(220, vh - head - foot - 6);
-        elChart.style.height = h + 'px';
-      };
-      resize();
-      wa.onEvent('viewportChanged', resize);
-      window.addEventListener('resize', resize);
-      document.addEventListener('visibilitychange', resize);
-    }
-  } catch(e) { console.warn('WebApp init warn:', e); }
+  // Алиасы TF: interval (минуты) | tf (коды '1h','4h'...) | по дефолту 60
+  let qInterval = params.get('interval');
+  const qTf     = (params.get('tf')||'').toLowerCase();
 
-  // ---------- URL + сохранённые prefs ----------
-  const params    = new URLSearchParams(location.search);
-  const qInstId   = params.get('instId');           // приоритет
-  const qCoin     = params.get('coin');             // fallback
-  let   qInterval = params.get('interval');         // "15"|"60"|"240"|"1440"
-  let   qSrc      = (params.get('src')||'').toLowerCase(); // okx|tv
-
+  let qSrc = (params.get('src')||'').toLowerCase(); // okx|tv
   const LS_INT = 'LAST_INTERVAL';
   const LS_SRC = 'LAST_SRC';
 
-  if (!qInterval){ const s = localStorage.getItem(LS_INT); if (s) qInterval = s; }
-  if (!qSrc){ const s = localStorage.getItem(LS_SRC); if (s) qSrc = s; }
-  if (!qSrc) qSrc = 'okx';
+  // parse helpers
+  const clean = (s)=> (s||'').toUpperCase().replace(/[^A-Z0-9\-]/g,'').slice(0,48);
+  const cleanNum = (s,def)=> {
+    const n = parseInt(String(s||''),10);
+    return Number.isFinite(n) && n>0 ? n : def;
+  };
 
-  const clean = (s)=> (s||'').toUpperCase().replace(/[^A-Z0-9\-]/g,'').slice(0,30);
-  const cleanNum = (s,def)=> { const n = parseInt(String(s||''),10); return Number.isFinite(n) && n>0 ? n : def; };
+  // tf → minutes
+  const TF2MIN = { '15m':15, '1h':60, '4h':240, '8h':480, '12h':720, '24h':1440 };
+  let tfMin = TF2MIN[qTf];
 
-  let instId, coin, quote="USDT";
+  // interval из URL имеет приоритет, иначе из tf, иначе из localStorage, иначе дефолт 60
+  let intervalMin = cleanNum(qInterval, tfMin ?? cleanNum(localStorage.getItem(LS_INT), 60));
+
+  // источник
+  if (!qSrc) qSrc = localStorage.getItem(LS_SRC) || 'okx';
+
+  // instId/coin
+  let instId, coin, quote = "USDT";
   if (qInstId){
     instId = clean(qInstId);
     const p = instId.split('-');
-    coin = (p[0]||'BTC').replace(/[^A-Z0-9]/g,'');
-    quote = (p[1]||'USDT').replace(/[^A-Z0-9]/g,'') || "USDT";
+    coin  = (p[0]||'BTC').replace(/[^A-Z0-9]/g,'') || 'BTC';
+    quote = (p[1]||'USDT').replace(/[^A-Z0-9]/g,'') || 'USDT';
   } else {
-    coin = (qCoin||'BTC').toUpperCase().replace(/[^A-Z0-9]/g,'');
+    coin = (qCoin||'BTC').toUpperCase().replace(/[^A-Z0-9]/g,'') || 'BTC';
     instId = `${coin}-USDT-SWAP`;
   }
 
-  const intervalMin = cleanNum(qInterval, 60); // дефолт 1h
   const okxBar = intervalToOkxBar(intervalMin);
   const wsChan = intervalToWsChannel(intervalMin);
 
   // Подписи/ссылки
   elTitle.textContent = `${coin} • USDT-SWAP (OKX)`;
   elSym.textContent   = `${coin}-USDT-SWAP`;
-  elOkx.href          = `https://www.okx.com/trade-swap/${coin}-USDT-SWAP`;
+  elOkx.href = `https://www.okx.com/trade-swap/${coin}-USDT-SWAP`;
   const tvSymbol = `OKX:${coin}${quote}.P`;
-  elTV.href = `https://www.tradingview.com/chart/?symbol=${encodeURIComponent(tvSymbol)}`;
+  elTV.href  = `https://www.tradingview.com/chart/?symbol=${encodeURIComponent(tvSymbol)}`;
 
-  // Отметить активные ТФ и обработчики
+  // Отметить активные TF-кнопки
   document.querySelectorAll('#row-intervals .int').forEach(a=>{
     const v = parseInt(a.getAttribute('data-int')||'60',10);
     if (v === intervalMin) a.classList.add('active');
@@ -91,8 +82,8 @@
       if (v === intervalMin) return;
       localStorage.setItem(LS_INT, String(v));
       const url = new URL(location.href);
-      url.searchParams.set('instId', instId);
-      url.searchParams.set('interval', String(v));
+      url.searchParams.set('inst', instId);           // дружелюбный ключ
+      url.searchParams.set('tf', minutesToTf(v));     // дружелюбное значение
       url.searchParams.set('src', qSrc);
       location.replace(url.toString());
     });
@@ -106,17 +97,17 @@
       if (src === qSrc) return;
       localStorage.setItem(LS_SRC, src);
       const url = new URL(location.href);
-      url.searchParams.set('instId', instId);
-      url.searchParams.set('interval', String(intervalMin));
+      url.searchParams.set('inst', instId);
+      url.searchParams.set('tf', minutesToTf(intervalMin));
       url.searchParams.set('src', src);
       location.replace(url.toString());
     });
   });
 
-  // Общие действия UI
+  // Общие действия (избранное/копия ссылки)
   initCommonActions();
 
-  // ---------- Рендер по источнику ----------
+  // ---------- Рендер ----------
   if (qSrc === 'tv'){
     setStatus('degraded', 'Источник: TradingView (виджет)');
     elLastUpd.textContent = "последнее обновление: недоступно (виджет)";
@@ -126,9 +117,7 @@
     renderOkxChart();
   }
 
-  // =========================================================
-  // OKX: REST + WebSocket
-  // =========================================================
+  // =================== OKX (REST+WS) ===================
   function renderOkxChart(){
     const chart = LightweightCharts.createChart(elChart, {
       layout: { background: { color:'#0b0f14' }, textColor:'#e6e6e6' },
@@ -145,8 +134,7 @@
     let lastServerTsMs = 0;
     let ws = null, wsAlive=false, pingTimer=0, reconnTimer=0;
 
-    // интервалы REST-фолбэка
-    const REST_PLAN = { 15:120_000, 60:300_000, 240:900_000, 1440:1_800_000 };
+    const REST_PLAN = { 15:120_000, 60:300_000, 240:900_000, 480:1_200_000, 720:1_500_000, 1440:1_800_000 };
     const restIntervalMs = REST_PLAN[intervalMin] || 300_000;
 
     bootstrap().catch(err => showErr('Не удалось инициализировать график', err));
@@ -171,9 +159,8 @@
       }
       const diff = Math.max(0, Date.now() - lastServerTsMs);
       const sec = Math.floor(diff/1000);
-      elLastUpd.textContent = sec < 60
-        ? `последнее обновление: ${sec} сек назад`
-        : `последнее обновление: ${Math.floor(sec/60)} мин назад`;
+      elLastUpd.textContent = sec < 60 ? `последнее обновление: ${sec} сек назад`
+                                       : `последнее обновление: ${Math.floor(sec/60)} мин назад`;
     }
 
     async function loadHistoryREST(instId, bar, series){
@@ -266,9 +253,7 @@
     }
   }
 
-  // =========================================================
-  // TradingView (альтернатива)
-  // =========================================================
+  // =================== TradingView ===================
   function renderTradingView(tvSymbol, intervalMin){
     if (!window.TradingView){
       const s = document.createElement('script');
@@ -301,24 +286,18 @@
     }
   }
 
-  // =========================================================
-  // Индикатор состояния + общие действия
-  // =========================================================
+  // =================== Индикатор + общие действия ===================
   function setStatus(mode, text){
-    // mode: 'online' | 'degraded' | 'offline'
     elStatusDot.classList.remove('online','degraded','offline');
     elStatusDot.classList.add(mode);
-
-    let label = '';
-    if (mode === 'online')   label = '🟢 Онлайн (WS) — данные обновляются в реальном времени.';
-    if (mode === 'degraded') label = '🟡 Деградирован (REST) — WebSocket недоступен, данные периодически подгружаются.';
-    if (mode === 'offline')  label = '🔴 Оффлайн — нет связи с источниками.';
-
     elStatusText.textContent = text || (
       mode==='online' ? 'Онлайн (WS)' :
       mode==='degraded' ? 'Деградирован (REST)' : 'Оффлайн'
     );
-
+    const label =
+      mode==='online'   ? '🟢 Онлайн (WS) — данные обновляются в реальном времени.' :
+      mode==='degraded' ? '🟡 Деградирован (REST) — WebSocket временно недоступен.' :
+                          '🔴 Оффлайн — нет связи с источниками.';
     elStatusDot.title  = label;
     elStatusText.title = 'Нажмите i для справки';
   }
@@ -326,31 +305,31 @@
   function initCommonActions(){
     // Избранное (localStorage:fav_coins)
     const FAV_KEY = "fav_coins";
-    function favGet(){ try{ const x = JSON.parse(localStorage.getItem(FAV_KEY)||'[]'); return Array.isArray(x)?x:[]; }catch(_){return [];} }
-    function favSet(arr){ try{ localStorage.setItem(FAV_KEY, JSON.stringify(arr)); }catch(_){ } }
-    function favHas(){ return favGet().includes(coin); }
-    function favToggle(){
+    const favGet = ()=> { try{ const x = JSON.parse(localStorage.getItem(FAV_KEY)||'[]'); return Array.isArray(x)?x:[]; }catch(_){return [];} };
+    const favSet = (arr)=> { try{ localStorage.setItem(FAV_KEY, JSON.stringify(arr)); }catch(_){ } };
+    const favHas = ()=> favGet().includes(coin);
+    const favToggle = ()=>{
       const a = favGet(); const i = a.indexOf(coin);
       if (i>=0) a.splice(i,1); else a.push(coin);
       favSet(a); refreshFavUI();
-    }
-    function refreshFavUI(){
+    };
+    const refreshFavUI = ()=>{
       const active = favHas();
       elFav.classList.toggle('active', active);
       elFav.setAttribute('aria-pressed', String(active));
       elFav.textContent = active ? "⭐️ В избранном" : "⭐️ Добавить в избранное";
-    }
+    };
     elFav.addEventListener('click', favToggle);
     refreshFavUI();
 
-    // Копирование ссылки
+    // Копирование ссылки (дружелюбные параметры)
     elCopy.addEventListener('click', async ()=>{
       try{
         localStorage.setItem(LS_INT, String(intervalMin));
         localStorage.setItem(LS_SRC, qSrc);
         const u = new URL(location.href);
-        u.searchParams.set('instId', instId);
-        u.searchParams.set('interval', String(intervalMin));
+        u.searchParams.set('inst', instId);
+        u.searchParams.set('tf', minutesToTf(intervalMin));
         u.searchParams.set('src', qSrc);
         await navigator.clipboard.writeText(u.toString());
         elHint.textContent = "Ссылка скопирована.";
@@ -360,9 +339,16 @@
     });
   }
 
-  // =========================================================
-  // Утилиты интервалов
-  // =========================================================
+  // =================== Helpers ===================
+  function minutesToTf(min){
+    if (min===15) return '15m';
+    if (min===60) return '1h';
+    if (min===240) return '4h';
+    if (min===480) return '8h';
+    if (min===720) return '12h';
+    if (min>=1440) return '24h';
+    return '1h';
+  }
   function intervalToOkxBar(min){
     if (min<=1) return '1m';
     if (min===3) return '3m';
@@ -372,6 +358,8 @@
     if (min===60) return '1H';
     if (min===120) return '2H';
     if (min===240) return '4H';
+    if (min===480) return '8H';
+    if (min===720) return '12H';
     if (min>=1440) return '1D';
     return '1H';
   }
@@ -384,6 +372,8 @@
     if (min===60) return 'candle1H';
     if (min===120) return 'candle2H';
     if (min===240) return 'candle4H';
+    if (min===480) return 'candle8H';
+    if (min===720) return 'candle12H';
     if (min>=1440) return 'candle1D';
     return 'candle1H';
   }

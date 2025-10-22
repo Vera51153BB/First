@@ -1,89 +1,94 @@
 <!doctype html>
 <html lang="ru">
 <head>
-	<meta charset="utf-8" />
-	<meta name="viewport" content="width=device-width,initial-scale=1" />
-	<title>OKX SWAP Chart</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover" />
+  <title>OKX SWAP Chart</title>
 
-	<!-- Факт: CSP разрешает Telegram WebApp, OKX REST/WS, Lightweight-Charts, TradingView (для альтернативного источника) -->
-	<meta http-equiv="Content-Security-Policy"
-		content="default-src 'self' https://telegram.org https://s3.tradingview.com https://*.tradingview.com https://unpkg.com;
-		         img-src 'self' data: https:;
-		         style-src 'self';
-		         script-src 'self' https://telegram.org https://s3.tradingview.com https://unpkg.com;
-		         connect-src 'self' https://www.okx.com wss://ws.okx.com wss://wsaws.okx.com;">
+  <!-- CSP: WebApp, OKX REST/WS, Lightweight-Charts, TradingView -->
+  <meta http-equiv="Content-Security-Policy"
+        content="
+          default-src 'self' https://telegram.org https://unpkg.com https://s3.tradingview.com https://*.tradingview.com;
+          img-src 'self' data: https:;
+          style-src 'self' 'unsafe-inline';
+          script-src 'self' https://telegram.org https://unpkg.com https://s3.tradingview.com;
+          connect-src 'self' https://www.okx.com wss://ws.okx.com wss://wsaws.okx.com https://api.telegram.org;
+          frame-src https://s3.tradingview.com https://*.tradingview.com;
+        ">
 
-	<link rel="stylesheet" href="./css/chart.css">
+  <link rel="stylesheet" href="./css/chart.css">
 
-	<!-- Внешние скрипты: Telegram WebApp, Lightweight-Charts; TradingView подгружается по требованию -->
-	<script src="https://telegram.org/js/telegram-web-app.js"></script>
-	<script src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
-	<!-- Наши модули -->
-	<script defer src="./js/okx_chart.js"></script>
-	<script defer src="./js/ui_panel.js"></script> 
+  <!-- Внешние скрипты -->
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <script src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
+
+  <!-- Модули страницы -->
+  <script defer src="./js/okx_chart.js"></script>
+  <script defer src="./js/ui_panel.js"></script>
 </head>
 <body>
 <div id="wrap">
-	<header id="title">Chart</header>
-	<div id="chart"></div>
+  <header id="title">Chart</header>
+  <div id="chart"></div>
 
-	<!-- Узкая док-панель: только статус + стрелка (факт) -->
-<footer id="dock" aria-label="status bar">
-	<div id="status-dot" class="offline" aria-hidden="true" title="Индикатор состояния"></div>
-	<span id="status-text" title="Нажмите i для справки">Оффлайн</span>
-	<button id="btn-status-info" class="muted" type="button" aria-haspopup="dialog" aria-expanded="false" title="Что значит этот индикатор?">i</button>
-	<div class="spacer"></div>
-	<button id="btn-panel" aria-expanded="false" aria-controls="panel" title="Открыть настройки">▲</button>
-</footer>
-<!-- ВСПЛЫВАЮЩАЯ ПОДСКАЗКА С ОПИСАНИЕМ СТАТУСОВ (новый блок) -->
-<section id="status-popover" role="dialog" aria-modal="false" hidden>
-	<div class="tip-card">
-		<div class="tip-title">Что значит индикатор состояния?</div>
-		<ul class="tip-list">
-			<li>🟢 <b>Онлайн (WS)</b> — данные обновляются в реальном времени.</li>
-			<li>🟡 <b>Деградирован (REST)</b> — WebSocket временно недоступен, данные периодически подгружаются.</li>
-			<li>🔴 <b>Оффлайн</b> — нет связи с источниками (проверьте интернет или попробуйте позже/альтернативный источник).</li>
-		</ul>
-		<button id="btn-tip-close" type="button" class="muted" title="Закрыть">Понятно</button>
-	</div>
-</section>
+  <!-- Док-панель статуса -->
+  <footer id="dock" aria-label="status bar">
+    <div id="status-dot" class="offline" aria-hidden="true" title="Индикатор состояния"></div>
+    <span id="status-text" title="Нажмите i для справки">Оффлайн</span>
+    <button id="btn-status-info" class="muted" type="button" aria-haspopup="dialog" aria-expanded="false" title="Что значит этот индикатор?">i</button>
+    <div class="spacer"></div>
+    <button id="btn-panel" aria-expanded="false" aria-controls="panel" title="Открыть настройки">▲</button>
+  </footer>
 
-	<!-- Выезжающее окно с настройками — 3 строки (факт) -->
-	<section id="panel" role="dialog" aria-modal="true" aria-label="Настройки графика" hidden>
-		<div id="panel-head">
-			<div id="panel-title">Настройки</div>
-			<button id="btn-close" type="button" title="Закрыть">Закрыть</button>
-		</div>
-		<div id="panel-body">
-			<!-- 1 СТРОКА: Интервалы/ТФ -->
-			<div class="row" id="row-intervals">
-				<span class="muted">Таймфрейм:</span>
-				<a data-int="15"  class="int">15m</a>
-				<a data-int="60"  class="int">1h</a>
-				<a data-int="240" class="int">4h</a>
-				<a data-int="1440" class="int">1d</a>
-				<span id="last-upd" title="Последнее обновление">…</span>
-			</div>
+  <!-- Поповер-справка по статусу -->
+  <section id="status-popover" role="dialog" aria-modal="false" hidden>
+    <div class="tip-card">
+      <div class="tip-title">Что значит индикатор состояния?</div>
+      <ul class="tip-list">
+        <li>🟢 <b>Онлайн (WS)</b> — данные обновляются в реальном времени.</li>
+        <li>🟡 <b>Деградирован (REST)</b> — WebSocket временно недоступен, данные периодически подгружаются.</li>
+        <li>🔴 <b>Оффлайн</b> — нет связи с источниками.</li>
+      </ul>
+      <button id="btn-tip-close" type="button" class="muted" title="Закрыть">Понятно</button>
+    </div>
+  </section>
 
-			<!-- 2 СТРОКА: Переключение источника (главный OKX) -->
-			<div class="row" id="row-sources">
-				<span class="muted">Источник:</span>
-				<button type="button" class="src" data-src="okx">OKX (API/WS)</button>
-				<button type="button" class="src" data-src="tv">TradingView (виджет)</button>
-				<span id="sym" class="muted" style="margin-left:auto"></span>
-			</div>
+  <!-- Выезжающая панель (3 строки) -->
+  <section id="panel" role="dialog" aria-modal="true" aria-label="Настройки графика" hidden>
+    <div id="panel-head">
+      <div id="panel-title">Настройки</div>
+      <button id="btn-close" type="button" title="Закрыть">Закрыть</button>
+    </div>
+    <div id="panel-body">
+      <!-- 1: ТФ -->
+      <div class="row" id="row-intervals">
+        <span class="muted">Таймфрейм:</span>
+        <a data-int="15"  class="int">15m</a>
+        <a data-int="60"  class="int">1h</a>
+        <a data-int="240" class="int">4h</a>
+        <a data-int="1440" class="int">1d</a>
+        <span id="last-upd" title="Последнее обновление">…</span>
+      </div>
 
-			<!-- 3 СТРОКА: Избранное + прямые ссылки + копирование -->
-			<div class="row" id="row-actions">
-				<button id="btn-fav" class="star" type="button" aria-pressed="false">⭐️ Добавить в избранное</button>
-				<a id="okx-link" class="danger"   target="_blank" rel="noopener">Открыть на OKX</a>
-				<a id="tv-link"  class="muted"    target="_blank" rel="noopener">Открыть в TradingView</a>
-				<button id="btn-copy" class="muted" type="button">Скопировать ссылку</button>
-			</div>
-		</div>
-	</section>
+      <!-- 2: Источник -->
+      <div class="row" id="row-sources">
+        <span class="muted">Источник:</span>
+        <button type="button" class="src" data-src="okx">OKX (API/WS)</button>
+        <button type="button" class="src" data-src="tv">TradingView (виджет)</button>
+        <span id="sym" class="muted" style="margin-left:auto"></span>
+      </div>
 
-	<div class="hint" id="hint"></div>
+      <!-- 3: Действия -->
+      <div class="row" id="row-actions">
+        <button id="btn-fav" class="star" type="button" aria-pressed="false">⭐️ Добавить в избранное</button>
+        <a id="okx-link" class="danger" target="_blank" rel="noopener">Открыть на OKX</a>
+        <a id="tv-link"  class="muted"  target="_blank" rel="noopener">Открыть в TradingView</a>
+        <button id="btn-copy" class="muted" type="button">Скопировать ссылку</button>
+      </div>
+    </div>
+  </section>
+
+  <div class="hint" id="hint"></div>
 </div>
 </body>
 </html>

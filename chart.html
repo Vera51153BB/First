@@ -1,108 +1,116 @@
 <!doctype html>
 <html lang="ru">
 <head>
+  <!--
+    CHANGES:
+      • mobile-first: meta viewport + safe-area
+      • кнопка свернуть вынесена СЛЕВА от заголовка панели
+      • в док-баре добавлена кнопка "📊 Полки" (volume shelves)
+      • подключены отдельные CSS/JS файлы (никакого inline-стиля)
+  -->
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title>OKX SWAP Chart</title>
 
-  <!-- CSP: Telegram WebApp, OKX REST/WS, Lightweight-Charts, TradingView -->
-  <!-- CHANGE: пути оставлены максимально «узкими», соответствуют публичным CDN -->
+  <!-- CSP: только необходимые источники -->
   <meta http-equiv="Content-Security-Policy"
         content="default-src 'self' https://telegram.org https://s3.tradingview.com https://*.tradingview.com https://unpkg.com;
                  img-src 'self' data: https:;
                  style-src 'self';
                  script-src 'self' https://telegram.org https://s3.tradingview.com https://unpkg.com;
-                 connect-src 'self' https://www.okx.com wss://ws.okx.com wss://wsaws.okx.com">
+                 connect-src 'self' https://www.okx.com wss://ws.okx.com wss://wsaws.okx.com;">
 
-  <!-- CHANGE: используем фактическое расположение стилей/скриптов в /assets -->
-  <link rel="stylesheet" href="./assets/css/chart.css">
+  <!-- CSS -->
+  <link rel="stylesheet" href="assets/css/chart.css" />
 
-  <!-- Внешние скрипты -->
+  <!-- внешние библиотеки -->
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <script src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
 
-  <!-- Наш основной модуль -->
-  <script defer src="./assets/js/okx_chart.js"></script>
+  <!-- наш код -->
+  <script defer src="assets/js/okx_chart.js"></script>
+  <script defer src="assets/js/ui_panel.js"></script>
 </head>
 <body>
-<!-- <div id="wrap">
-  <!-- заголовок с тикером -->
-  <header id="title">BTC • USDT-SWAP (OKX)</header> -->
+<div id="wrap">
+  <header id="title">BTC • USDT-SWAP (OKX)</header>
 
-  <!-- сам канвас графика -->
-  <div id="chart"></div>
+  <!-- NOTE: отдельная обёртка под холст с “полками по объёму” -->
+  <div id="chart-wrap">
+    <div id="chart"></div>
+    <canvas id="shelves" width="0" height="0" aria-hidden="true"></canvas>
+  </div>
 
-  <!-- ДОК-СТРОКА: статус + стрелка открытия панели -->
-  <!-- CHANGE: «полки» из превью убраны по ТЗ -->
+  <!-- Док-бар (внизу) -->
   <footer id="dock" aria-label="status bar">
     <div id="status-dot" class="offline" aria-hidden="true" title="Индикатор состояния"></div>
     <span id="status-text" title="Нажмите i для справки">Оффлайн</span>
     <button id="btn-status-info" class="muted" type="button" aria-haspopup="dialog" aria-expanded="false" title="Что значит этот индикатор?">i</button>
     <div class="spacer"></div>
+    <!-- NOTE: новая кнопка “Полки” -->
+    <button id="btn-vol" type="button" title="Показать полки по объёму">📊 Полки</button>
     <button id="btn-panel" aria-expanded="false" aria-controls="panel" title="Открыть настройки">▲</button>
   </footer>
 
-  <!-- ПОПОВЕР: расшифровка индикатора статуса -->
+  <!-- Поповер со справкой о статусе -->
   <section id="status-popover" role="dialog" aria-modal="false" hidden>
     <div class="tip-card">
       <div class="tip-title">Что значит индикатор состояния?</div>
       <ul class="tip-list">
         <li>🟢 <b>Онлайн (WS)</b> — данные обновляются в реальном времени.</li>
-        <li>🟡 <b>Деградирован (REST)</b> — WebSocket недоступен, данные периодически подгружаются.</li>
-        <li>🔴 <b>Оффлайн</b> — нет связи с источниками (проверьте интернет или попробуйте позже).</li>
+        <li>🟡 <b>Деградирован (REST)</b> — WebSocket временно недоступен, данные периодически подгружаются.</li>
+        <li>🔴 <b>Оффлайн</b> — нет связи с источниками.</li>
       </ul>
       <button id="btn-tip-close" type="button" class="muted" title="Закрыть">Понятно</button>
     </div>
   </section>
 
-  <!-- ВЫЕЗЖАЮЩАЯ ПАНЕЛЬ НАСТРОЕК -->
-  <!-- CHANGE: кнопка сворачивания слева, треугольник вниз; панель не закрывается при выборе ТФ -->
+  <!-- Панель настроек -->
   <section id="panel" role="dialog" aria-modal="true" aria-label="Настройки графика" hidden>
     <div id="panel-head">
-      <button id="btn-collapse" type="button" title="Свернуть">▼</button>
+      <!-- NOTE: “Свернуть” слева -->
+      <button id="btn-close" type="button" title="Свернуть">Свернуть</button>
       <div id="panel-title">Настройки</div>
     </div>
 
     <div id="panel-body">
-      <!-- 1) Таймфреймы -->
+      <!-- строка 1: ТФ -->
       <div class="row" id="row-intervals">
-         <!-- <span class="muted">Таймфрейм:</span> -->
-        <a data-int="15"  class="int">15m</a>
-        <a data-int="60"  class="int">1h</a>
-        <a data-int="240" class="int">4h</a>
-        <a data-int="480" class="int">8h</a>
-        <a data-int="720" class="int">12h</a>
+        <span class="muted">Таймфрейм:</span>
+        <!-- NOTE: полный набор TF; data-int = минуты -->
+        <a data-int="15"   class="int">15m</a>
+        <a data-int="60"   class="int">1h</a>
+        <a data-int="240"  class="int">4h</a>
+        <a data-int="480"  class="int">8h</a>
+        <a data-int="720"  class="int">12h</a>
         <a data-int="1440" class="int">1d</a>
         <span id="last-upd" title="Последнее обновление">…</span>
       </div>
 
-      <!-- 2) Источник + Полки -->
-      <!-- CHANGE: «Полки» перенесены внутрь панели, справа от источников -->
+      <!-- строка 2: Источник -->
       <div class="row" id="row-sources">
-         <!-- <span class="muted">Источник:</span>  -->
+        <span class="muted">Источник:</span>
         <button type="button" class="src" data-src="okx">OKX (API/WS)</button>
         <button type="button" class="src" data-src="tv">TradingView (виджет)</button>
-        <button id="btn-shelves" type="button" class="muted shelves" title="Полки по объёму">📊 Полки</button>
         <span id="sym" class="muted" style="margin-left:auto"></span>
       </div>
 
-      <!-- 3) Избранное / Ссылки -->
-      <!-- CHANGE: текст кнопки — «➕ В избранное» или «⭐️ В избранном» -->
+      <!-- строка 3: Действия -->
       <div class="row" id="row-actions">
-        <button id="btn-fav" class="star" type="button" aria-pressed="false">➕ В избранное</button>
+        <button id="btn-fav"  class="star"  type="button" aria-pressed="false">⭐️ Добавить в избранное</button>
+        <a id="okx-link" class="danger" target="_blank" rel="noopener">Открыть на OKX</a>
+        <a id="tv-link"  class="muted"  target="_blank" rel="noopener">Открыть в TradingView</a>
         <button id="btn-copy" class="muted" type="button">Скопировать ссылку</button>
-        <button id="btn-snap" class="muted" type="button" disabled>Скрин</button>
-      </div>
-
-      <!-- 4) Прямые ссылки -->
-      <div class="links">
-        <a id="okx-link" class="danger"   target="_blank" rel="noopener">Открыть на OKX</a>
-        <a id="tv-link"  class="muted"    target="_blank" rel="noopener">Открыть в TradingView</a>
+        <!-- дубль “Полки” внутри панели -->
+        <button id="btn-vol2" class="ghost" type="button" title="Переключить полки">📊 Полки</button>
       </div>
     </div>
   </section>
 
   <div class="hint" id="hint"></div>
 </div>
+
+<!-- небольшая попытка развёрнуть WebApp на всю высоту -->
+<script>try{window.Telegram?.WebApp?.expand?.()}catch(e){}</script>
 </body>
 </html>

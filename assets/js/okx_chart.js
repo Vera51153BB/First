@@ -1,372 +1,255 @@
-/* Управление графиком. Мобильный UX: панель не «уезжает» при смене ТФ/источника. */
+/* -*- coding: utf-8 -*-
+ * OKX/TV/VP нижняя полоса + базовый рендер графика.
+ * В этом релизе фокус на «свёрнутой полосе»:
+ *  • три логотип-кнопки (OKX / TradingView / Volume Profile);
+ *  • квадратные кнопки «i» и «▲»;
+ *  • по умолчанию активен OKX (API/WS).
+ * Прежний функционал (REST+WS, виджет TV) оставлен. VP сейчас — заглушка.
+ */
+
 (function(){
-  // ------ DOM
+  // ───────── DOM ─────────
   const elTitle   = document.getElementById('title');
   const elChart   = document.getElementById('chart');
   const elHint    = document.getElementById('hint');
 
+  // Нижняя полоса
   const elStatusDot  = document.getElementById('status-dot');
-  const elStatusText = document.getElementById('status-text');
-
-  const elLastUpd = document.getElementById('last-upd');
-  const elOkx     = document.getElementById('okx-link');
-  const elTV      = document.getElementById('tv-link');
-  const elCopy    = document.getElementById('btn-copy');
-  const elFav     = document.getElementById('btn-fav');
-  const elShelves = document.getElementById('btn-shelves');
-
-  // Панель: сворачивание/разворачивание
-  const elPanel      = document.getElementById('panel');
+  const btnOKX       = document.getElementById('btn-okx');
+  const btnTV        = document.getElementById('btn-tv');
+  const btnVP        = document.getElementById('btn-vp');
+  const btnInfo      = document.getElementById('btn-status-info');
   const btnPanel     = document.getElementById('btn-panel');
-  const btnCollapse  = document.getElementById('btn-collapse');
-  const statusPop    = document.getElementById('status-popover');
-  const btnSInfo     = document.getElementById('btn-status-info');
-  const btnTipClose  = document.getElementById('btn-tip-close');
 
-  // ------ URL / предпочтения
+  // Поповер и панель
+  const popover      = document.getElementById('status-popover');
+  const tipClose     = document.getElementById('btn-tip-close');
+  const panel        = document.getElementById('panel');
+  const btnClose     = document.getElementById('btn-close');
+
+  // ───────── URL / Параметры / Хранилище ─────────
   const params  = new URLSearchParams(location.search);
-  const qInstId = params.get('instId');
-  const qCoin   = params.get('coin');
+  const qInstId = params.get('inst') || params.get('instId'); // поддержим оба ключа
+  const qTf     = (params.get('tf')||'').toLowerCase();
+  let qSrc      = (params.get('src')||'').toLowerCase();       // okx|tv|vp
 
-  // дефолты
-  let state = {
-    instId: qInstId ? sanitizeInst(qInstId) : `${sanitizeCoin(qCoin||'BTC')}-USDT-SWAP`,
-    interval: toInt(params.get('interval'), 60),        // minutes; default 1h
-    src: (params.get('src')||'okx').toLowerCase(),      // okx | tv
-  };
-  // enforced defaults per ТЗ:
-  if (!state.src) state.src = 'okx';
+  const LS_SRC = 'LAST_SRC';
+  // дефолт: OKX
+  if (!qSrc){ qSrc = localStorage.getItem(LS_SRC) || 'okx'; }
+  if (!['okx','tv','vp'].includes(qSrc)) qSrc = 'okx';
 
-  const coin  = state.instId.split('-')[0];
-  const quote = state.instId.split('-')[1] || 'USDT';
-  const tvSymbol = `OKX:${coin}${quote}.P`;
+  // Инструмент
+  const clean = s => (s||'').toUpperCase().replace(/[^A-Z0-9\-]/g,'').slice(0,40);
+  const instId = qInstId ? clean(qInstId) : 'BTC-USDT-SWAP';
+  const coin   = instId.split('-')[0] || 'BTC';
 
+  // Таймфрейм (для OKX) — 1h по умолчанию
+  const TF = (function mapTf(tf){
+    if (['15m','1h','4h','8h','12h','24h','1d'].includes(tf)) return tf;
+    return '1h';
+  })(qTf);
+
+  // Отрисуем заголовок
   elTitle.textContent = `${coin} • USDT-SWAP (OKX)`;
-  elOkx.href = `https://www.okx.com/trade-swap/${coin}-USDT-SWAP`;
-  elTV.href  = `https://www.tradingview.com/chart/?symbol=${encodeURIComponent(tvSymbol)}`;
 
-  // ------ runtime объекты графика
-  let lwChart = null;
-  let lwSeries = null;
-  let ws = null, wsAlive=false, pingTimer=0, reconnTimer=0;
-  let lastServerTsMs = 0;
-
-  // ------ helpers
-  function sanitizeInst(s){ return (s||'').toUpperCase().replace(/[^A-Z0-9\-]/g,'').slice(0,40) }
-  function sanitizeCoin(s){ return (s||'').toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,16) }
-  function toInt(s,def){ const n = parseInt(String(s||''),10); return Number.isFinite(n)&&n>0?n:def }
-
-  function okxBar(min){
-    if (min<=1) return '1m';
-    if (min===3) return '3m';
-    if (min===5) return '5m';
-    if (min===15) return '15m';
-    if (min===30) return '30m';
-    if (min===60) return '1H';
-    if (min===120) return '2H';
-    if (min===240) return '4H';
-    if (min===480) return '8H';
-    if (min===720) return '12H';
-    return '1D';
+  // ───────── Помощники ─────────
+  function setStatus(mode){
+    elStatusDot.classList.remove('online','degraded','offline');
+    elStatusDot.classList.add(mode);
   }
-  function wsChan(min){
-    if (min<=1) return 'candle1m';
-    if (min===3) return 'candle3m';
-    if (min===5) return 'candle5m';
-    if (min===15) return 'candle15m';
-    if (min===30) return 'candle30m';
-    if (min===60) return 'candle1H';
-    if (min===120) return 'candle2H';
-    if (min===240) return 'candle4H';
-    if (min===480) return 'candle8H';
-    if (min===720) return 'candle12H';
-    return 'candle1D';
+  function setActiveBrand(src){
+    [btnOKX,btnTV,btnVP].forEach(b=>b.classList.remove('active'));
+    if (src==='okx') btnOKX.classList.add('active');
+    if (src==='tv')  btnTV.classList.add('active');
+    if (src==='vp')  btnVP.classList.add('active');
+  }
+  function openPopover(){ popover.hidden = false; btnInfo.setAttribute('aria-expanded','true'); }
+  function closePopover(){ popover.hidden = true;  btnInfo.setAttribute('aria-expanded','false'); }
+  function togglePanel(open){
+    const willOpen = (open===undefined) ? !panel.classList.contains('open') : !!open;
+    panel.classList.toggle('open', willOpen);
+    panel.toggleAttribute('hidden', !willOpen);
+    btnPanel.setAttribute('aria-expanded', String(willOpen));
+    // Кнопка в шапке панели (стрелка вниз)
+    if (btnClose) btnClose.textContent = '▼';
   }
 
-  // ------ UI инициализация
-  markActiveInterval(state.interval);
-  markActiveSource(state.src);
-  wirePanelToggles();
-  wireIntervals();
-  wireSources();
-  wireCommonActions();
+  // ───────── Навешиваем обработчики «полосы» ─────────
+  btnOKX.addEventListener('click', ()=> switchSource('okx'));
+  btnTV .addEventListener('click', ()=> switchSource('tv'));
+  btnVP .addEventListener('click', ()=> switchSource('vp'));
 
-  // старт с текущими настройками
-  renderBySource();
+  btnInfo.addEventListener('click', ()=> popover.hidden ? openPopover() : closePopover());
+  tipClose.addEventListener('click', closePopover);
 
-  // =================== РЕНДЕР ===================
-  function renderBySource(){
+  btnPanel.addEventListener('click', ()=> togglePanel()); // открыть вверх
+  btnClose && btnClose.addEventListener('click', ()=> togglePanel(false));
+
+  // ───────── Стартовый источник ─────────
+  setActiveBrand(qSrc);
+  switchSource(qSrc, /*initial=*/true);
+
+  // ───────── Реализация переключения источника ─────────
+  let tvMounted = false;
+  let lwcChart  = null;
+  let wsHandle  = null;
+
+  async function switchSource(src, initial=false){
+    localStorage.setItem(LS_SRC, src);
+    setActiveBrand(src);
+    closePopover();      // подёжно прячем подсказку при переключениях
     destroyAll();
-    if (state.src === 'tv'){
-      setStatus('degraded','Источник: TradingView (виджет)');
-      mountTradingView();
-    }else{
-      setStatus('offline','Подключаемся к OKX…');
-      mountLightweight();
-      bootstrapOkx();
+
+    if (src === 'okx'){
+      setStatus('offline');
+      await renderOkxChart();   // REST+WS
+      return;
     }
-  }
-
-  function mountLightweight(){
-    lwChart = LightweightCharts.createChart(elChart, {
-      layout: { background:{ color:'#0b0f14' }, textColor:'#e6e6e6' },
-      grid:   { vertLines:{ color:'#1c232b' }, horzLines:{ color:'#1c232b' } },
-      crosshair:{ mode: 1 },
-      rightPriceScale:{ borderColor:'#2a3542' },
-      timeScale:{ borderColor:'#2a3542', timeVisible:true, secondsVisible:false },
-      handleScroll:true, handleScale:true,
-    });
-    lwSeries = lwChart.addCandlestickSeries({
-      upColor:'#26a69a', downColor:'#ef5350',
-      borderVisible:false, wickUpColor:'#26a69a', wickDownColor:'#ef5350',
-    });
-  }
-
-  async function bootstrapOkx(){
-    lastServerTsMs = 0;
-    await loadHistoryREST();
-    lwChart.timeScale().fitContent();
-    startClock();
-    connectWS();
-    startRestFallback();
-  }
-
-  async function loadHistoryREST(){
-    try{
-      const url = `https://www.okx.com/api/v5/market/candles?instId=${encodeURIComponent(state.instId)}&bar=${encodeURIComponent(okxBar(state.interval))}&limit=500`;
-      const res = await fetch(url, { method:'GET' });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const j = await res.json();
-      const arr = Array.isArray(j.data) ? j.data : [];
-      const candles = arr.slice().reverse().map(row=>{
-        const ts = Number(row[0]); // ms
-        return { time: Math.floor(ts/1000), open:+row[1], high:+row[2], low:+row[3], close:+row[4] };
-      });
-      lwSeries.setData(candles);
-      if (candles.length){
-        lastServerTsMs = Math.max(lastServerTsMs, candles.at(-1).time*1000);
-        touchTick();
-      }
-      if (!wsAlive) setStatus('degraded','История загружена (REST)');
-    }catch(err){
-      showErr("Ошибка загрузки исторических свечей (REST)", err);
+    if (src === 'tv'){
+      setStatus('degraded');    // считаем «деградированным» (виджет)
+      renderTradingView();
+      return;
     }
-  }
-
-  function connectWS(){
-    cleanupWS();
-    const url = 'wss://ws.okx.com/ws/v5/public';
-    ws = new WebSocket(url);
-    ws.addEventListener('open', ()=>{
-      wsAlive = true;
-      setStatus('online','Онлайн (WebSocket)');
-      sendWS({op:'subscribe', args:[{ channel: wsChan(state.interval), instId: state.instId }]});
-      pingTimer = setInterval(()=> sendWS({op:'ping'}), 20_000);
-    });
-    ws.addEventListener('message', (ev)=>{
-      try{
-        const m = JSON.parse(ev.data);
-        if (m.event === 'subscribe' || m.op === 'pong') return;
-        if (m.event === 'error') { showErr("WS error: "+(m.msg||'')); return; }
-        if (m.arg && Array.isArray(m.data)){
-          m.data.forEach(row=>{
-            const ts = Number(row[0]);
-            lwSeries.update({ time: Math.floor(ts/1000), open:+row[1], high:+row[2], low:+row[3], close:+row[4] });
-            lastServerTsMs = Math.max(lastServerTsMs, ts);
-            touchTick();
-          });
-        }
-      }catch(_){}
-    });
-    ws.addEventListener('close', ()=>{
-      wsAlive = false;
-      setStatus('degraded','WebSocket отключён, работаем по REST');
-      scheduleReconnect();
-    });
-    ws.addEventListener('error', ()=>{
-      wsAlive = false;
-      setStatus('degraded','Ошибка WebSocket, восстановление…');
-      try{ ws.close(); }catch(_){}
-    });
-  }
-  function sendWS(obj){ try{ ws && ws.readyState===1 && ws.send(JSON.stringify(obj)); }catch(_){ } }
-  function cleanupWS(){
-    try{ pingTimer && clearInterval(pingTimer); }catch(_){}
-    try{ reconnTimer && clearTimeout(reconnTimer); }catch(_){}
-    try{ ws && ws.close(); }catch(_){}
-    ws = null;
-  }
-  function scheduleReconnect(){ cleanupWS(); reconnTimer = setTimeout(connectWS, 5000) }
-
-  function startRestFallback(){
-    const REST_PLAN = { 15:120_000, 60:300_000, 240:900_000, 480:900_000, 720:1_200_000, 1440:1_800_000 };
-    const restIntervalMs = REST_PLAN[state.interval] || 300_000;
-    setInterval(async ()=>{ if (!wsAlive) await loadHistoryREST(); }, restIntervalMs);
-  }
-
-  function startClock(){ updateLastUpd(); setInterval(updateLastUpd, 1000) }
-  function touchTick(){ updateLastUpd(true) }
-  function updateLastUpd(){
-    if (!lastServerTsMs){ elLastUpd.textContent = "…"; return; }
-    const sec = Math.floor(Math.max(0, Date.now() - lastServerTsMs)/1000);
-    elLastUpd.textContent = sec<60 ? `обн. ${sec}s` : `обн. ${Math.floor(sec/60)}m`;
+    if (src === 'vp'){
+      // VP сейчас только как «кнопка в полосе». Сообщим пользователю.
+      setStatus('degraded');
+      elHint.innerHTML = 'Модуль <b>Volume Profile</b> появится в следующем релизе.';
+      return;
+    }
   }
 
   function destroyAll(){
-    cleanupWS();
-    try{ lwChart && lwChart.remove(); }catch(_){}
-    lwChart=null; lwSeries=null;
+    // демонтируем виджет TV, если стоял
+    if (tvMounted && window.TradingView){
+      try{
+        // TradingView.widget не даёт простого destroy — перерисуем контейнер
+        elChart.innerHTML = '';
+      }catch(_){}
+      tvMounted = false;
+    }
+    // убираем lightweight-charts
+    if (lwcChart){
+      try{ lwcChart.remove(); }catch(_){}
+      lwcChart = null;
+    }
+    // закрываем WS, если есть
+    if (wsHandle && wsHandle.close){
+      try{ wsHandle.close(); }catch(_){}
+      wsHandle = null;
+    }
+    elHint.textContent = '';
   }
 
-  // ------ TradingView (альтернативный источник)
-  function mountTradingView(){
+  // ───────── OKX (REST+WS, lightweight-charts) ─────────
+  async function renderOkxChart(){
+    // Создаём чарт
+    lwcChart = LightweightCharts.createChart(elChart, {
+      layout: { background: { color:'#0b0f14' }, textColor:'#e6e6e6' },
+      grid:   { vertLines:{ color:'#1c232b' }, horzLines:{ color:'#1c232b' } },
+      crosshair: { mode: 1 },
+      rightPriceScale: { borderColor:'#2a3542' },
+      timeScale: { borderColor:'#2a3542', timeVisible: true, secondsVisible: false },
+      handleScroll: true, handleScale: true,
+    });
+    const series = lwcChart.addCandlestickSeries({
+      upColor:'#26a69a', downColor:'#ef5350', borderVisible:false, wickUpColor:'#26a69a', wickDownColor:'#ef5350',
+    });
+
+    // REST история
+    try{
+      const bar = tfToOkxBar(TF);
+      const url = `https://www.okx.com/api/v5/market/candles?instId=${encodeURIComponent(instId)}&bar=${encodeURIComponent(bar)}&limit=500`;
+      const res = await fetch(url);
+      const j = await res.json();
+      const data = Array.isArray(j.data) ? j.data : [];
+      const candles = data.slice().reverse().map(row => ({
+        time:  Math.floor(Number(row[0]) / 1000),
+        open:  Number(row[1]),
+        high:  Number(row[2]),
+        low:   Number(row[3]),
+        close: Number(row[4]),
+      }));
+      series.setData(candles);
+      lwcChart.timeScale().fitContent();
+      setStatus('degraded'); // есть данные (REST), пока без WS
+    }catch(e){
+      setStatus('offline');
+      elHint.innerHTML = `<span class="err">Ошибка загрузки данных OKX</span>`;
+      return;
+    }
+
+    // WebSocket — обновления
+    try{
+      const chan = tfToWsChannel(TF);
+      const ws = new WebSocket('wss://ws.okx.com/ws/v5/public');
+      wsHandle = ws;
+      ws.addEventListener('open', ()=>{
+        setStatus('online');
+        ws.send(JSON.stringify({ op:'subscribe', args:[{ channel:chan, instId }] }));
+      });
+      ws.addEventListener('message', ev=>{
+        try{
+          const m = JSON.parse(ev.data);
+          if (!m || !m.data) return;
+          m.data.forEach(row=>{
+            const c = {
+              time:  Math.floor(Number(row[0]) / 1000),
+              open:  Number(row[1]), high: Number(row[2]),
+              low:   Number(row[3]), close:Number(row[4]),
+            };
+            series.update(c);
+          });
+        }catch(_){}
+      });
+      ws.addEventListener('close', ()=> setStatus('degraded'));
+      ws.addEventListener('error', ()=> setStatus('degraded'));
+    }catch(_){
+      // WS не критичен — остаёмся в REST-режиме
+      setStatus('degraded');
+    }
+  }
+
+  // ───────── TradingView виджет ─────────
+  function renderTradingView(){
+    function mount(){
+      try{
+        new TradingView.widget({
+          autosize: true,
+          symbol: `OKX:${coin}USDT.P`,
+          interval: tfToTvInterval(TF),
+          timezone: "Etc/UTC",
+          theme: "dark",
+          style: "1",
+          locale: "ru",
+          withdateranges: true,
+          allow_symbol_change: false,
+          save_image: false,
+          container_id: "chart",
+        });
+        tvMounted = true;
+      }catch(e){
+        elHint.innerHTML = '<span class="err">Ошибка инициализации TradingView</span>';
+      }
+    }
     if (!window.TradingView){
       const s = document.createElement('script');
       s.src = "https://s3.tradingview.com/tv.js";
-      s.onload = ()=> tvMount(tvSymbol, state.interval);
-      s.onerror= ()=> elHint.innerHTML = '<span class="err">Не удалось загрузить TradingView виджет</span>';
+      s.onload = mount;
+      s.onerror= ()=> elHint.innerHTML = '<span class="err">Не удалось загрузить TradingView</span>';
       document.head.appendChild(s);
-    } else {
-      tvMount(tvSymbol, state.interval);
-    }
-    function tvMount(symbol, intervalMin){
-      try{
-        new TradingView.widget({
-          autosize:true, symbol, interval:String(intervalMin),
-          timezone:"Etc/UTC", theme:"dark", style:"1", locale:"ru",
-          withdateranges:true, allow_symbol_change:false, save_image:false,
-          container_id:"chart",
-        });
-        elHint.textContent = "Источник графика: TradingView (виджет).";
-      }catch(e){
-        elHint.innerHTML = '<span class="err">Ошибка инициализации TradingView виджета</span>';
-      }
+    }else{
+      mount();
     }
   }
 
-  // =================== UI/STATUS ===================
-  function setStatus(mode, text){
-    elStatusDot.classList.remove('online','degraded','offline');
-    elStatusDot.classList.add(mode);
-    elStatusText.textContent = text || (mode==='online'?'Онлайн (WS)': mode==='degraded'?'Деградирован (REST)':'Оффлайн');
+  // ───────── Мелкие маппинги ─────────
+  function tfToOkxBar(tf){
+    return { '15m':'15m','1h':'1H','4h':'4H','8h':'8H','12h':'12H','24h':'1D','1d':'1D' }[tf] || '1H';
   }
-  function showErr(msg, err){
-    const s = (err && err.message) ? `${msg}: ${err.message}` : String(msg||'Ошибка');
-    elHint.innerHTML = `<span class="err">${s}</span>`;
-    setStatus('offline','Нет связи с источниками');
+  function tfToWsChannel(tf){
+    return { '15m':'candle15m','1h':'candle1H','4h':'candle4H','8h':'candle8H','12h':'candle12H','24h':'candle1D','1d':'candle1D' }[tf] || 'candle1H';
   }
-
-  function markActiveInterval(v){
-    document.querySelectorAll('#row-intervals .int').forEach(a=>{
-      const val = toInt(a.getAttribute('data-int'), 60);
-      a.classList.toggle('active', val===v);
-    });
-  }
-  function markActiveSource(src){
-    document.querySelectorAll('#row-sources .src').forEach(btn=>{
-      const val = (btn.getAttribute('data-src')||'').toLowerCase();
-      btn.classList.toggle('active', val===src);
-    });
-  }
-
-  function wireIntervals(){
-    document.querySelectorAll('#row-intervals .int').forEach(a=>{
-      a.addEventListener('click', (e)=>{
-        e.preventDefault();
-        const v = toInt(a.getAttribute('data-int'), state.interval);
-        if (v === state.interval) return;
-        state.interval = v;
-        markActiveInterval(v);
-        // обновим URL, но без перезагрузки
-        const u = new URL(location.href);
-        u.searchParams.set('instId', state.instId);
-        u.searchParams.set('interval', String(v));
-        u.searchParams.set('src', state.src);
-        history.replaceState(null,'',u);
-        // перерисовать источник
-        renderBySource();
-      });
-    });
-  }
-
-  function wireSources(){
-    document.querySelectorAll('#row-sources .src[data-src]').forEach(btn=>{
-      btn.addEventListener('click', ()=>{
-        const src = (btn.getAttribute('data-src')||'okx').toLowerCase();
-        if (src === state.src) return;
-        state.src = src || 'okx';
-        markActiveSource(state.src);
-        const u = new URL(location.href);
-        u.searchParams.set('instId', state.instId);
-        u.searchParams.set('interval', String(state.interval));
-        u.searchParams.set('src', state.src);
-        history.replaceState(null,'',u);
-        renderBySource();
-      });
-    });
-
-    // «Полки» — заглушка открытия панели/слайда; здесь просто тост
-    elShelves?.addEventListener('click', ()=>{
-      elHint.textContent = "Полки по объёму: прототип (визуал появится здесь).";
-      setTimeout(()=> elHint.textContent='', 2500);
-    });
-  }
-
-  function wirePanelToggles(){
-    const toggle = ()=>{
-      const closed = elPanel.classList.toggle('closed');
-      btnPanel.textContent   = closed ? '▴' : '▾';
-      btnCollapse.textContent= closed ? '▴' : '▾';
-      btnPanel.setAttribute('aria-expanded', String(!closed));
-      btnCollapse.setAttribute('aria-expanded', String(!closed));
-    };
-    btnPanel.addEventListener('click', toggle);
-    btnCollapse.addEventListener('click', toggle);
-
-    btnSInfo.addEventListener('click', ()=>{
-      const vis = statusPop.hasAttribute('hidden');
-      if (vis) statusPop.removeAttribute('hidden'); else statusPop.setAttribute('hidden','');
-      btnSInfo.setAttribute('aria-expanded', String(vis));
-    });
-    btnTipClose.addEventListener('click', ()=>{
-      statusPop.setAttribute('hidden','');
-      btnSInfo.setAttribute('aria-expanded','false');
-    });
-  }
-
-  function wireCommonActions(){
-    // локальное избранное: ключ fav_coins (интеграция с ботом — следующая итерация)
-    const FAV_KEY = "fav_coins";
-    const coinCode = coin;
-
-    const favGet = ()=> { try{const x=JSON.parse(localStorage.getItem(FAV_KEY)||'[]'); return Array.isArray(x)?x:[] }catch(_){return []} };
-    const favSet = (arr)=> { try{ localStorage.setItem(FAV_KEY, JSON.stringify(arr)); }catch(_){} };
-    const favHas = ()=> favGet().includes(coinCode);
-    const favUI  = ()=>{
-      const active = favHas();
-      elFav.classList.toggle('active', active);
-      elFav.setAttribute('aria-pressed', String(active));
-      elFav.textContent = active ? "⭐️ В избранном" : "➕ В избранное";
-    };
-    elFav.addEventListener('click', ()=>{
-      const a = favGet(); const i=a.indexOf(coinCode);
-      if (i>=0) a.splice(i,1); else a.push(coinCode);
-      favSet(a); favUI();
-    });
-    favUI();
-
-    elCopy.addEventListener('click', async ()=>{
-      try{
-        const u = new URL(location.href);
-        u.searchParams.set('instId', state.instId);
-        u.searchParams.set('interval', String(state.interval));
-        u.searchParams.set('src', state.src);
-        await navigator.clipboard.writeText(u.toString());
-        elHint.textContent = "Ссылка скопирована.";
-        setTimeout(()=> elHint.textContent='', 1800);
-      }catch(_){
-        elHint.innerHTML = '<span class="err">Не удалось скопировать ссылку.</span>';
-      }
-    });
+  function tfToTvInterval(tf){
+    return { '15m':'15', '1h':'60', '4h':'240','8h':'480','12h':'720','24h':'1D','1d':'1D' }[tf] || '60';
   }
 })();

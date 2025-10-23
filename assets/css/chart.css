@@ -1,18 +1,34 @@
-/* Основные переменные/раскладка под мобильный сценарий */
+/* -*- coding: utf-8 -*-
+ * Минимальный набор стилей для:
+ *  • базовой раскладки;
+ *  • нижней док-панели (с логотип-кнопками OKX/TV/VP);
+ *  • квадратных кнопок “i” и “▲”;
+ *  • поповера статуса;
+ *  • выезжающей панели (сворачивается вниз, открывается вверх).
+ */
+
 :root{
   --bg:#0b0f14; --text:#e6e6e6; --muted:#9aa4af; --accent:#ffd65c; --danger:#ff6b6b;
-  --pad: clamp(10px, 2.8vw, 16px);
-  --radius: 12px;
-  --dock-h: clamp(48px, 9vw, 56px);    /* статус-бар */
-  --panel-h: min(64vh, 480px);         /* высота панели */
+
+  --pad: clamp(10px, 2.5vw, 14px);
+  --radius: 10px;
+
+  /* док-панель снизу — одна строка */
+  --dock-h: clamp(48px, 9vw, 60px);
+
+  /* высота выезжающей панели */
+  --panel-h: min(60vh, 420px);
+
+  /* высота логотипов в «полосе» */
+  --brand-h: clamp(16px, 4.2vw, 22px);
 }
 
 html,body{height:100%;margin:0;background:var(--bg);color:var(--text);font-family:system-ui,Arial}
 #wrap{height:100%;display:flex;flex-direction:column}
 header{padding:10px 14px;font-weight:600;letter-spacing:.3px}
-#chart{flex:1;min-height:340px}
+#chart{flex:1;min-height:320px}
 
-/* Статус-бар */
+/* ─────────────────────────── Док-панель ─────────────────────────── */
 footer#dock{
   position: relative;
   height: var(--dock-h);
@@ -20,34 +36,95 @@ footer#dock{
   max-height: var(--dock-h);
   border-top: 1px solid rgba(255,255,255,.08);
   padding: 0 var(--pad);
-  display:flex; align-items:center; gap:10px;
+  display:flex;
+  align-items:flex-end; /* выравнивание по нижней линии — как просили */
+  gap: 10px;
   background: rgba(255,255,255,0.02);
 }
-#status-dot{ width:10px;height:10px;border-radius:50%; box-shadow:0 0 0 2px rgba(255,255,255,.06) inset }
-#status-dot.online{ background:#34c759 }     /* 🟢 */
-#status-dot.degraded{ background:#ffd60a }   /* 🟡 */
-#status-dot.offline{ background:#ff453a }    /* 🔴 */
-#status-text{ color:var(--muted); font-size:14px }
+
+/* Статусная точка */
+#status-dot{ width:10px; height:10px; border-radius:50%; box-shadow:0 0 0 2px rgba(255,255,255,.06) inset }
+#status-dot.online{   background:#34c759 }  /* 🟢 */
+#status-dot.degraded{ background:#ffd60a }  /* 🟡 */
+#status-dot.offline{  background:#ff453a }  /* 🔴 */
+
 .spacer{flex:1}
-#btn-panel{
-  background:transparent;color:var(--text);
+
+/* Группа логотип-кнопок */
+#brand-tabs{ display:flex; align-items:flex-end; gap:12px }
+#brand-tabs .brand{
+  background:transparent;
+  border:1px solid transparent;    /* без рамки по умолчанию */
+  border-radius: var(--radius);
+  padding: 6px 8px;                 /* небольшой внутренний отступ */
+  cursor: pointer;
+  line-height: 1;
+  display:flex; align-items:flex-end; justify-content:center;
+}
+#brand-tabs .brand img{
+  height: var(--brand-h);           /* ВСЕГДА одинаковая высота */
+  width: auto;                      /* ширина — как у логотипа */
+  display:block;
+  filter: drop-shadow(0 0 0 rgba(0,0,0,0)); /* чёткий логотип */
+  opacity: .85;
+}
+#brand-tabs .brand:hover img{ opacity: 1 }
+#brand-tabs .brand.active{
+  border-color: rgba(255,255,255,.35);      /* тонкая серая обводка для активного */
+  background: rgba(255,255,255,.03);
+}
+#brand-tabs .brand.active img{ opacity: 1 }
+
+/* Квадратные «чипы» справа (i, ▲) — тонкая серая обводка + радиус */
+.chip{
+  min-width: 36px; min-height: 32px;
+  padding: 0 10px;
+  display:inline-flex; align-items:center; justify-content:center;
+  font: inherit; color: var(--text);
+  background: transparent;
+  border-radius: var(--radius);
+  cursor: pointer;
+}
+.chip-ghost{
   border:1px solid rgba(255,255,255,.18);
-  border-radius:var(--radius);
-  padding:6px 10px; cursor:pointer; font:inherit; line-height:1.1;
+}
+.chip-ghost:hover{
+  border-color: rgba(255,255,255,.35);
 }
 
-/* Панель настроек (фиксирована, без подписи «Таймфрейм/Источник») */
-#panel{
+/* ────────────────────────── Поповер статуса ───────────────────────── */
+#status-popover{
   position: fixed;
-  left:0; right:0; bottom: var(--dock-h);
+  left: 12px;
+  right: 12px;
+  bottom: calc(var(--dock-h) + 12px);
+  z-index: 60;
+}
+#status-popover[hidden]{ display:none }
+#status-popover .tip-card{
+  background: rgba(15,20,26,.98);
+  border: 1px solid rgba(255,255,255,.08);
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0,0,0,.35);
+  padding: 12px;
+}
+#status-popover .tip-title{ font-weight:600; margin-bottom:8px }
+#status-popover .tip-list{ margin:0; padding-left:16px; color:var(--text) }
+#status-popover .tip-list li{ margin:6px 0 }
+
+/* ───────────────────────── Выезжающая панель ──────────────────────── */
+#panel{
+  position: fixed; left: 0; right: 0; bottom: 0;
   height: var(--panel-h);
   background: rgba(10,14,19,.98);
   border-top: 1px solid rgba(255,255,255,.08);
   box-shadow: 0 -10px 30px rgba(0,0,0,.35);
+  transform: translateY(100%);            /* скрыта под низом */
+  transition: transform .25s ease;
   display: grid; grid-template-rows: auto 1fr;
   z-index: 50;
 }
-#panel.closed{ height: 52px } /* компакт при свёрнутой панели */
+#panel.open{ transform: translateY(0%) }   /* открывается ВВЕРХ */
 
 #panel-head{
   display:flex; align-items:center; gap:10px;
@@ -55,44 +132,7 @@ footer#dock{
   border-bottom: 1px solid rgba(255,255,255,.08);
 }
 #panel-title{ font-weight:600 }
-#btn-collapse{
-  background:transparent;color:var(--text);
-  border:1px solid rgba(255,255,255,.18);
-  border-radius:var(--radius); padding:6px 10px; cursor:pointer; font:inherit;
-}
+#panel-body{ padding: var(--pad) }
 
-#panel-body{ padding: var(--pad); display:grid; gap:10px }
-
-/* Рядовые элементы */
-.row{display:flex; align-items:center; gap:10px; min-height:0; flex-wrap:wrap}
-.row a,.row button{
-  background:transparent;color:var(--text);
-  border:1px solid rgba(255,255,255,.18);
-  border-radius:var(--radius); padding:8px 12px;
-  cursor:pointer; text-decoration:none; font:inherit; line-height:1.1; white-space:nowrap;
-}
-.row a:hover,.row button:hover{ border-color: rgba(255,255,255,.35) }
-.row .muted{ color:var(--muted); border-color: rgba(255,255,255,.12) }
-.row .danger{ color:var(--danger); border-color: rgba(255,0,0,.25) }
-.row .light{ color:#cfe2ff; border-color: rgba(114,169,255,.35) }
-.row .star.active{ background: rgba(255,214,92,.08); border-color: rgba(255,214,92,.8); color: var(--accent) }
-.row .active{ border-color: rgba(255,255,255,.65) }
-#last-upd{ color:var(--muted); margin-left:auto }
-
-/* Поповер статуса */
-#status-popover{ position: fixed; left:12px; right:12px; bottom: calc(var(--dock-h) + 12px); z-index:60 }
-#status-popover[hidden]{ display:none }
-#status-popover .tip-card{
-  background: rgba(15,20,26,.98);
-  border:1px solid rgba(255,255,255,.08);
-  border-radius:12px; box-shadow:0 10px 30px rgba(0,0,0,.35);
-  padding:12px;
-}
-#status-popover .tip-title{ font-weight:600; margin-bottom:8px }
-#status-popover .tip-list{ margin:0; padding-left:16px; color:var(--text) }
-#status-popover .tip-list li{ margin:6px 0 }
-#status-popover #btn-tip-close{ margin-top:10px }
-
-/* Подсказки/ошибки */
-.hint{ position:fixed; left:12px; right:12px; bottom: calc(var(--dock-h) + var(--panel-h) + 10px); color:var(--muted); font-size:13px }
-.hint .err{ color:#ff8a8a }
+.hint{ padding:8px 12px; color:var(--muted) }
+.hint .err{ color: var(--danger) }

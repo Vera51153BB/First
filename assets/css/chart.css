@@ -54,8 +54,8 @@ footer#dock{
 
 #btn-status-info,
 #btn-panel{
-  height: var(--sq);
-  width:  var(--sq);
+  height: 10px;
+  width:  10px;
   border-radius: 10px;
   border: 1px solid rgba(255,255,255,.18);
   background: transparent;
@@ -66,7 +66,7 @@ footer#dock{
 }
 #btn-status-info{
   /* маленькая 'i' — на нижней кромке логотипа и меньше в 3 раза */
-  font-size: 12px;
+  font-size: 8px;
   color: var(--muted);
   margin-left: .6rem; /* «две пробельные ширины» от логотипа */
 }

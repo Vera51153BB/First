@@ -52,10 +52,9 @@ footer#dock{
 #status-dot.degraded{ background:#ffd60a }  /* 🟡 */
 #status-dot.offline{ background:#ff453a }   /* 🔴 */
 
-#btn-status-info,
 #btn-panel{
-  height: 10px;
-  width:  10px;
+  height: var(--sq);
+  width:  var(--sq);
   border-radius: 10px;
   border: 1px solid rgba(255,255,255,.18);
   background: transparent;
@@ -66,10 +65,23 @@ footer#dock{
 }
 #btn-status-info{
   /* маленькая 'i' — на нижней кромке логотипа и меньше в 3 раза */
-  font-size: 8px;
-  color: var(--muted);
+  background:transparent; color:var(--muted);
+  border:1px solid rgba(255,255,255,.18);
+  border-radius:10px;
+  /* высота = 1/2 высоты лого */
+  height: calc(var(--brand-h) / 2);
+  /* квадратная форма, ширина под высоту */
+  width:  calc(var(--brand-h) / 2);
+  display:flex; align-items:center; justify-content:center;
+  font: 600 0.75rem/1 system-ui,Arial;   /* компактная метка "i" */
+  cursor:pointer;
+  /* прижимаем к нижней кромке логотипа */  align-self:flex-end;
+
+  /* отступ от лого ~ «два пробела» */
   margin-left: .6rem; /* «две пробельные ширины» от логотипа */
+  /* margin-left: 2ch; */
 }
+
 #btn-status-info:hover{ border-color: rgba(255,255,255,.35) }
 
 #btn-panel{

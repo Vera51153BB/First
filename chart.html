@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>OKX SWAP Chart</title>
 
-  <!-- CSP: Telegram WebApp, OKX REST/WS, Lightweight-Charts, TradingView CDN -->
+  <!-- CSP: Telegram WebApp, OKX REST/WS, Lightweight-Charts, TradingView -->
   <meta http-equiv="Content-Security-Policy"
         content="default-src 'self' https://telegram.org https://s3.tradingview.com https://*.tradingview.com https://unpkg.com;
                  img-src 'self' data: https:;
@@ -20,8 +20,7 @@
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <script src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
 
-  <!-- Наш код -->
-  <!-- ВНИМАНИЕ: логика панели/дока теперь в одном модуле okx_chart.js -->
+  <!-- Наш код (и график, и логика панели/полосы) -->
   <script defer src="./assets/js/okx_chart.js"></script>
 </head>
 <body>
@@ -29,52 +28,44 @@
   <header id="title">BTC • USDT-SWAP (OKX)</header>
   <div id="chart" aria-label="chart area"></div>
 
-  <!-- Д о к - п а н е л ь  (свернутая полоса) -->
-  <!-- Показываем РОВНО ОДИН логотип (источник), слева индикатор, справа маленькая 'i' и стрелка ▲ -->
+  <!-- ПОЛОСА (одна строка: индикатор • логотип выбранного источника • i • стрелка) -->
   <footer id="dock" aria-label="switch bar">
-    <!-- Индикатор статуса — по центру относительно логотипа -->
     <span id="status-dot" class="offline" aria-hidden="true"></span>
 
-    <!-- Выбранный источник: одна картинка; высота подстраивается через CSS -->
-    <!-- src меняем из JS: okx|tv|vp -->
-    <img id="dock-logo"
-         src="./images/okx-logotype-light.png"
-         alt="OKX"
-         decoding="async"
-         fetchpriority="low" />
+    <!-- логотип источника; src меняем из JS при выборе OKX|TV|VP -->
+    <img id="dock-logo" src="./images/okx-logotype-light.png" alt="OKX" decoding="async" />
 
-    <!-- маленькая квадратная 'i' (тонкая серая обводка), на нижней кромке логотипа -->
     <button id="btn-status-info" class="muted" type="button"
             aria-haspopup="dialog" aria-expanded="false" title="Что значит индикатор?">i</button>
 
     <div class="spacer" aria-hidden="true"></div>
 
-    <!-- квадратная кнопка с белым треугольником вверх; открывает панель -->
-    <!-- текст — символ; поворот/смена ▲/▼ управляется из JS -->
+    <!-- пустая кнопка — стрелку рисуем в CSS (::before), чтобы не было дубликатов -->
     <button id="btn-panel" aria-expanded="false" aria-controls="panel" aria-label="Открыть настройки"></button>
   </footer>
 
-  <!-- Поповер со справкой по индикатору (i) -->
+  <!-- Поповер «i» -->
   <section id="status-popover" role="dialog" aria-modal="false" hidden>
     <div class="tip-card">
       <div class="tip-title">Что значит индикатор состояния?</div>
       <ul class="tip-list">
         <li>🟢 <b>Онлайн (WS)</b> — данные обновляются в реальном времени.</li>
-        <li>🟡 <b>Деградирован (REST)</b> — WebSocket временно недоступен, данные периодически подгружаются.</li>
+        <li>🟡 <b>Деградирован (REST)</b> — WebSocket недоступен, берём REST периодически.</li>
         <li>🔴 <b>Оффлайн</b> — нет связи с источниками.</li>
       </ul>
-      <button id="btn-tip-close" type="button" class="muted" title="Закрыть">Понятно</button>
+      <button id="btn-tip-close" type="button" class="muted">Понятно</button>
     </div>
   </section>
 
-  <!-- П а н е л ь  н а с т р о е к  (открывается вверх из низа) -->
-  <!-- Содержимое не меняли: 1 — TF, 2 — источник (OKX/TV/VP), 3 — действия -->
+  <!-- Панель настроек (фиксированная, открывается вверх) -->
   <section id="panel" role="dialog" aria-modal="true" aria-label="Настройки" hidden>
     <div id="panel-head">
       <button id="btn-collapse" type="button" title="Свернуть">▼</button>
-      <div id="panel-title">Настройки</div>      
+      <div id="panel-title">Настройки</div>
     </div>
+
     <div id="panel-body">
+      <!-- 1. TF -->
       <div class="row" id="row-intervals">
         <a data-int="15"  class="int">15m</a>
         <a data-int="60"  class="int">1h</a>
@@ -85,13 +76,14 @@
         <span id="last-upd" title="Последнее обновление">…</span>
       </div>
 
+      <!-- 2. Источник (дефолт: OKX) -->
       <div class="row" id="row-sources">
-        <!-- Кнопки-источники: OKX (дефолт), TradingView, Volume Profile -->
         <button type="button" class="src" data-src="okx">OKX (API/WS)</button>
         <button type="button" class="src" data-src="tv">TradingView (виджет)</button>
         <button type="button" class="src" data-src="vp">Полки</button>
       </div>
 
+      <!-- 3. Действия -->
       <div class="row" id="row-actions">
         <button id="btn-fav" class="star" type="button" aria-pressed="false">➕ В избранное</button>
         <a id="okx-link" target="_blank" rel="noopener" class="danger">Открыть на OKX</a>

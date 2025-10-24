@@ -100,12 +100,11 @@ footer#dock{
   border-bottom: 1px solid rgba(255,255,255,.08);
 }
 #panel-title{ font-weight:600 }
-#btn-close{
-  margin-left:auto;
-  background: transparent; color: var(--text);
-  border: 1px solid rgba(255,255,255,.18);
-  border-radius: var(--radius);
-  padding: 6px 10px; cursor: pointer; font: inherit;
+/* CHANGE: кнопка «свернуть» слева, в виде треугольника вниз */
+#btn-collapse{
+  background:transparent;color:var(--text);
+  border:1px solid rgba(255,255,255,.18);
+  border-radius:var(--radius);padding:6px 10px;cursor:pointer;font:inherit;
 }
 #panel-body{
   display:grid; grid-template-rows: repeat(3, 1fr);

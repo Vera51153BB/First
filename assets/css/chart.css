@@ -68,51 +68,59 @@ footer#dock{
    — компактная «таблетка» с тонкой обводкой
    — по умолчанию треугольник ВВЕРХ (открыть/развернуть)
    — при aria-expanded="true" треугольник ВНИЗ (закрыть/свернуть) */
+/* КНОПКА СТРЕЛКИ — фикс для iOS/WebKit
+   Центрируем контент через absolute+translate вместо Grid */
 #btn-panel{
-  /* размеры не привязаны к лого; адаптив через clamp */
-  --ctl-size: clamp(34px, 6.2vw, 38px);
-
+  --ctl-size: clamp(30px, 6.2vw, 38px);
   height: var(--ctl-size);
   width:  var(--ctl-size);
-
+  box-sizing: border-box;
+  padding: 0;
   background: transparent;
   color: var(--text);
-  border: 1px solid rgba(255,255,255,.18);   /* тонкая серая окантовка */
-  border-radius: 10px;                       /* квадрат с мягкими углами */
-
-  display: grid;
-  place-items: center;                       /* треугольник ровно по центру */
-
+  border: 1px solid rgba(255,255,255,.18);
+  border-radius: 10px;
   cursor: pointer;
-  outline: none;                             /* управляем фокусом сами */
+  outline: none;
+  /* БЫЛО: display:grid; place-items:center;  — удалили из-за бага iOS */
+  display: inline-block;       /* стабильнее для WebKit */
+  line-height: 0;              /* убираем базовую линию текста */
+  position: relative;          /* якорь для ::before */
   transition: border-color .15s ease, background-color .15s ease;
+  -webkit-tap-highlight-color: transparent;
+  aspect-ratio: 1 / 1;         /* 1:1 на всякий случай (поддерживается Safari 15+) */
 }
 
-/* Белый треугольник (вверх по умолчанию) */
+/* Сам «бордер-треугольник» — позиционируем абсолютно по центру */
 #btn-panel::before{
   content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%); /* Жёсткое центрирование без субпикселей */
+  display: block;
   width: 0; height: 0;
-  border-left:  8px solid transparent;
-  border-right: 8px solid transparent;
-  border-bottom: 14px solid #fff;            /* ▲ вверх */
+
+  /* Используем ЧЁТНЫЕ значения — меньше шансов на «полпикселя» */
+  --tri-w: 8px;   /* половина основания */
+  --tri-h: 12px;  /* высота */
+
+  border-left:  var(--tri-w) solid transparent;
+  border-right: var(--tri-w) solid transparent;
+  border-bottom: var(--tri-h) solid #fff;   /* ▲ вверх по умолчанию */
 }
 
-/* При открытой панели (aria-expanded="true") рисуем треугольник вниз */
+/* При открытой панели переворачиваем треугольник */
 #btn-panel[aria-expanded="true"]::before{
   border-bottom: 0;
-  border-top: 14px solid #fff;               /* ▼ вниз */
+  border-top: var(--tri-h) solid #fff;      /* ▼ вниз */
 }
 
-/* Ховер/фокус — аккуратное подсветление границы */
 #btn-panel:hover,
-#btn-panel:focus-visible{
-  border-color: rgba(255,255,255,.35);
-}
+#btn-panel:focus-visible{ border-color: rgba(255,255,255,.35) }
 
-/* Состояние active — лёгкая заливка для тактильности */
-#btn-panel:active{
-  background: rgba(255,255,255,.06);
-}
+#btn-panel:active{ background: rgba(255,255,255,.06) }
+
 
 #btn-status-info{
   /* маленькая 'i' — на нижней кромке логотипа и меньше в 3 раза */

@@ -70,7 +70,7 @@ footer#dock{
    — при aria-expanded="true" треугольник ВНИЗ (закрыть/свернуть) */
 #btn-panel{
   /* размеры не привязаны к лого; адаптив через clamp */
-  --ctl-size: clamp(30px, 6.2vw, 38px);
+  --ctl-size: clamp(34px, 6.2vw, 38px);
 
   height: var(--ctl-size);
   width:  var(--ctl-size);
@@ -113,7 +113,6 @@ footer#dock{
 #btn-panel:active{
   background: rgba(255,255,255,.06);
 }
-
 
 #btn-status-info{
   /* маленькая 'i' — на нижней кромке логотипа и меньше в 3 раза */

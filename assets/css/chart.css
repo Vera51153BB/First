@@ -27,11 +27,12 @@
 html,body{height:100%;margin:0;background:var(--bg);color:var(--text);font-family:system-ui,Arial}
 
 /* ВАЖНО: полоса fixed — даём контенту «просвет» снизу, чтобы график не перекрывался */
+/* Контент не должен перекрываться полосой */
 #wrap{
   height: 100%;
   display: flex;
   flex-direction: column;
-  padding-bottom: var(--dock-h);  /* ← просвет под фиксированную полосу */
+  padding-bottom: calc(var(--dock-h) + env(safe-area-inset-bottom, 0px)); /* ← просвет */
 }
 
 header{padding:10px 14px;font-weight:600;letter-spacing:.3px}
@@ -83,42 +84,37 @@ footer#dock{
 
 /* КНОПКА СТРЕЛКИ — размер зависит от высоты полосы, квадрат со скошенными углами
    и отступом 10px от правого края. Стрелка одна (через ::before) и строго по центру. */
+/* квадрат = высота полосы минус вертикальные паддинги */
 #btn-panel{
-  /* квадрат = высота полосы минус вертикальные паддинги */
-  --side: calc(var(--dock-h) - var(--dock-vpad)*2);
+  --side: calc(var(--dock-h) - var(--dock-vpad)*2);  /* высота полосы минус вертикальные паддинги */
 
   height: var(--side);
   width:  var(--side);
-  box-sizing: border-box;
-
-  background: transparent;
-  color: var(--text);
   border: 1px solid rgba(255,255,255,.18);
   border-radius: 10px;
+  background: transparent;
   cursor: pointer;
+  position: relative;
+  margin-right: 10px;                       /* сдвиг влево на 10px от правого края */
   outline: none;
-
-  position: relative;                      /* якорь для ::before */
-  margin-right: 10px;                      /* ← «сдвиг влево на 10px» от правого края */
-
   -webkit-tap-highlight-color: transparent;
-  transition: border-color .15s ease, background-color .15s ease;
 }
-/* Единственный белый треугольник. translate(-50%,-50%) надёжно центрирует даже на iOS. */
 #btn-panel::before{
-  content: "";
-  position: absolute; left:50%; top:50%;
-  transform: translate(-50%, -50%);
-  width: 0; height: 0;
-  --tri-w: 8px;              /* половина основания */
-  --tri-h: 12px;             /* высота */
+  content:"";
+  position:absolute; left:50%; top:50%;
+  transform: translate(-50%,-50%);          /* идеальное центрирование (даже на iOS) */
+  width:0; height:0;
+  --tri-w: 8px;
+  --tri-h: 12px;
   border-left:  var(--tri-w) solid transparent;
   border-right: var(--tri-w) solid transparent;
-  border-bottom: var(--tri-h) solid #fff; /* ▲ вверх (по умолчанию) */
+  border-bottom: var(--tri-h) solid #fff;    /* ▲ вверх */
 }
 #btn-panel[aria-expanded="true"]::before{
-  border-bottom: 0;
-  border-top: var(--tri-h) solid #fff;     /* ▼ при открытой панели */
+  border-bottom:0;
+  border-top: var(--tri-h) solid #fff;       /* ▼ когда панель открыта */
+}
+
 }
 #btn-panel:hover,
 #btn-panel:focus-visible{ border-color: rgba(255,255,255,.35) }
@@ -130,7 +126,7 @@ footer#dock{
 #panel{
   position: fixed;
   left: 0; right: 0;
-  bottom: var(--dock-h);                   /* панель сразу НАД полосой */
+  bottom: calc(var(--dock-h) + env(safe-area-inset-bottom, 0px));   /* панель сразу НАД полосой */
   height: var(--panel-h);
   background: rgba(10,14,19,.98);
   border-top: 1px solid rgba(255,255,255,.08);

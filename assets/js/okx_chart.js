@@ -11,6 +11,7 @@
   // полоса
   const elDockLogo   = document.getElementById('dock-logo');
   const elDot        = document.getElementById('status-dot');
+  const btn          = document.getElementById('btn-panel'); 
   const btnInfo      = document.getElementById('btn-status-info');
   const btnPanel     = document.getElementById('btn-panel');
   const popover      = document.getElementById('status-popover');
@@ -26,6 +27,10 @@
   const elTvLink     = document.getElementById('tv-link');
   const elFav        = document.getElementById('btn-fav');
   const btnCopy      = document.getElementById('btn-copy');
+  btn?.addEventListener('click', () => {
+  const isOpen = panel.classList.toggle('open');
+  btn.setAttribute('aria-expanded', String(isOpen));
+});
 
   // ---- параметры/предпочтения ----
   const params  = new URLSearchParams(location.search);

@@ -1,75 +1,84 @@
 /* -*- coding: utf-8 -*-  First/assets/css/chart.css
-   Ключевые моменты этой версии:
-   • «Полоса» (footer#dock) — только ОДИН логотип (OKX|TV|VP)
-   • Индикатор слева вертикально центрируется относительно логотипа
-   • Маленькая квадратная кнопка `i` у нижней кромки логотипа
-   • Справа квадратная кнопка-стрелка ▲ (открывает панель)
-   • Панель снизу открывается вверх (как раньше), наполнение оставлено
+   ВЕРСИЯ: fixed-dock + mobile-first
+   Что изменено:
+   • Док-полоса (#dock) теперь FIXED у низа экрана и не «уезжает».
+   • Контенту добавлен «просвет» снизу (padding-bottom), чтобы полоса не перекрывала график.
+   • Кнопка со стрелкой (#btn-panel): квадрат, размер зависит от высоты полосы, от правого края отступ 10px.
+   • Стрелка рисуется как ::before (одна, центрируем через translate) — без дублирования символом.
+   • Кнопка «i» маленькая, на нижней кромке логотипа, в ~двух «пробелах» от него.
+   • Панель (#panel) фиксируется над полосой и открывается ВВЕРХ.
 */
+
 :root{
   --bg:#0b0f14; --text:#e6e6e6; --muted:#9aa4af; --accent:#ffd65c; --danger:#ff6b6b;
   --pad: clamp(10px, 2.5vw, 14px);
   --radius: 12px;
 
-  /* высоты */     
-  --dock-h: clamp(44px, 7.2vh, 58px);   /* полоса, док-панель снизу (1 строка) */
-  --panel-h: min(60vh, 420px);          /* высота выезжающей панели */
-  --dock-vpad: 3px;                   /* ВЕРТИКАЛЬНЫЕ отступы внутри полосы */
+  /* высоты */
+  --dock-h: clamp(44px, 7.2vh, 58px);    /* высота полосы внизу */
+  --dock-vpad: 3px;                      /* вертикальные отступы внутри полосы */
+  --panel-h: min(60vh, 420px);           /* высота выезжающей панели */
 
   /* размеры элементов в полосе */
-  --logo-h: clamp(20px, 4.8vh, 30px);   /* высота логотипа */
-  --dot: 10px;                          /* индикатор */
-  --sq: 28px;                           /* квадратные кнопки */
+  --logo-h: clamp(20px, 4.8vh, 30px);    /* высота логотипа (OKX/TV/VP) */
+  --dot: 10px;                           /* индикатор слева */
 }
+
 html,body{height:100%;margin:0;background:var(--bg);color:var(--text);font-family:system-ui,Arial}
-/* полоса: fixed; поэтому даём контенту «просвет» под неё */
+
+/* ВАЖНО: полоса fixed — даём контенту «просвет» снизу, чтобы график не перекрывался */
 #wrap{
   height: 100%;
   display: flex;
   flex-direction: column;
-  padding-bottom: var(--dock-h); /* ← добавили */
+  padding-bottom: var(--dock-h);  /* ← просвет под фиксированную полосу */
 }
 
 header{padding:10px 14px;font-weight:600;letter-spacing:.3px}
 #chart{flex:1;min-height:320px}
 
-/* ---------- полоса (док) ---------- */
+/* ---------- ПОЛОСА (ДОК) ---------- */
 footer#dock{
-  position: fixed;                     /* фиксируем у низа экрана */
+  position: fixed;              /* закрепляем снизу */
   left: 0; right: 0; bottom: 0;
   z-index: 100;
   height: var(--dock-h);
+  padding: var(--dock-vpad) var(--pad);          /* 3px сверху/снизу */
   border-top: 1px solid rgba(255,255,255,.08);
-  padding: var(--dock-vpad) var(--pad);/* 3px сверху/снизу */
-  display:flex; align-items:center; gap:10px;
   background: rgba(255,255,255,0.02);
+  display:flex; align-items:center; gap:10px;
   box-sizing: border-box;
 }
-
-#dock-logo{
-  height: var(--logo-h);
-  width: auto;
-  display:block;
-}
+#dock-logo{ height: var(--logo-h); width:auto; display:block }
 #status-dot{
-  width: var(--dot);
-  height: var(--dot);
-  border-radius: 50%;
+  width: var(--dot); height: var(--dot); border-radius: 50%;
   box-shadow: 0 0 0 2px rgba(255,255,255,.06) inset;
-  align-self: center; /* ВАЖНО: индикатор по центру относительно логотипа */
+  align-self: center;                       /* выравниваем по центру логотипа */
 }
 #status-dot.online{ background:#34c759 }    /* 🟢 */
 #status-dot.degraded{ background:#ffd60a }  /* 🟡 */
 #status-dot.offline{ background:#ff453a }   /* 🔴 */
 
-/* Кнопка сворачивания/разворачивания док-панели
-   — компактная «таблетка» с тонкой обводкой
-   — по умолчанию треугольник ВВЕРХ (открыть/развернуть)
-   — при aria-expanded="true" треугольник ВНИЗ (закрыть/свернуть) */
-/* КНОПКА СТРЕЛКИ — размер зависит от полосы; квадрат с радиусом; от правого края 10px */
+/* Кнопка «i» — маленький квадрат у нижней кромки логотипа */
+#btn-status-info{
+  background:transparent; color:var(--muted);
+  border:1px solid rgba(255,255,255,.18);
+  border-radius:10px;
+  height: calc(var(--logo-h) / 2);         /* половина высоты лого */
+  width:  calc(var(--logo-h) / 2);
+  display:flex; align-items:center; justify-content:center;
+  font: 600 0.70rem/1 system-ui,Arial;     /* компактная "i" */
+  cursor:pointer;
+  align-self:flex-end;                     /* к нижней кромке полосы */
+  margin-left: .6rem;                      /* ~ два «пробела» от лого */
+}
+#btn-status-info:hover{ border-color: rgba(255,255,255,.35) }
+
+/* КНОПКА СТРЕЛКИ — размер зависит от высоты полосы, квадрат со скошенными углами
+   и отступом 10px от правого края. Стрелка одна (через ::before) и строго по центру. */
 #btn-panel{
-  /* квадрат фиксируем из самой полосы: высота минус 2*вертикальные паддинги */
-  --side: calc(var(--dock-h) - (var(--dock-vpad) * 2));
+  /* квадрат = высота полосы минус вертикальные паддинги */
+  --side: calc(var(--dock-h) - var(--dock-vpad)*2);
 
   height: var(--side);
   width:  var(--side);
@@ -82,77 +91,47 @@ footer#dock{
   cursor: pointer;
   outline: none;
 
-  display: inline-block;     /* стабильнее для WebKit, чем grid */
-  line-height: 0;
-  position: relative;        /* якорь для ::before */
-  margin-right: 10px;        /* ← смещаем кнопку влево от правого края на 10px */
+  position: relative;                      /* якорь для ::before */
+  margin-right: 10px;                      /* ← «сдвиг влево на 10px» от правого края */
 
-  transition: border-color .15s ease, background-color .15s ease;
   -webkit-tap-highlight-color: transparent;
+  transition: border-color .15s ease, background-color .15s ease;
 }
-
-/* Белый равносторонний треугольник по центру (фикc для iOS) */
+/* Единственный белый треугольник. translate(-50%,-50%) надёжно центрирует даже на iOS. */
 #btn-panel::before{
   content: "";
-  position: absolute; left: 50%; top: 50%;
+  position: absolute; left:50%; top:50%;
   transform: translate(-50%, -50%);
-
   width: 0; height: 0;
-  /* чётные пиксели уменьшают артефакты субпикселей */
-  --tri-w: 8px;  /* половина основания */
-  --tri-h: 12px; /* высота */
+  --tri-w: 8px;              /* половина основания */
+  --tri-h: 12px;             /* высота */
   border-left:  var(--tri-w) solid transparent;
   border-right: var(--tri-w) solid transparent;
-  border-bottom: var(--tri-h) solid #fff;    /* ▲ вверх по умолчанию */
+  border-bottom: var(--tri-h) solid #fff; /* ▲ вверх (по умолчанию) */
 }
 #btn-panel[aria-expanded="true"]::before{
   border-bottom: 0;
-  border-top: var(--tri-h) solid #fff;       /* ▼ при открытом состоянии */
+  border-top: var(--tri-h) solid #fff;     /* ▼ при открытой панели */
 }
 #btn-panel:hover,
 #btn-panel:focus-visible{ border-color: rgba(255,255,255,.35) }
 #btn-panel:active{ background: rgba(255,255,255,.06) }
 
-#btn-status-info{
-  /* маленькая 'i' — на нижней кромке логотипа и меньше в 3 раза */
-  background:transparent; color:var(--muted);
-  border:1px solid rgba(255,255,255,.18);
-  border-radius:10px;
-  /* высота = 1/2 высоты лого */
-  height: calc(var(--brand-h) / 2);
-  /* квадратная форма, ширина под высоту */
-  width:  calc(var(--brand-h) / 2);
-  display:flex; align-items:center; justify-content:center;
-  font: 600 0.75rem/1 system-ui,Arial;   /* компактная метка "i" */
-  cursor:pointer;
-  /* прижимаем к нижней кромке логотипа  align-self:flex-end;  */
-  /* выравниваем по верхнему краю логотипа с отступом 5px */ 
-  align-self:flex-start;
-  margin-top: 5px; 
-  /* отступ от лого ~ «два пробела» */
-  margin-left: .2rem; /* отступ от логотипа, .6rem = «две пробельные ширины» от логотипа */
-  /* margin-left: 2ch; */
-}
+.spacer{ flex:1 }
 
-#btn-status-info:hover{ border-color: rgba(255,255,255,.35) }
-
-#btn-panel[aria-expanded="true"]{ border-color: rgba(255,255,255,.65) }
-
-.spacer{flex:1}
-
+/* ---------- ПАНЕЛЬ НАСТРОЕК (снизу, открывается вверх) ---------- */
 #panel{
   position: fixed;
   left: 0; right: 0;
-  bottom: var(--dock-h);    /* панель открывается сразу над полосой */
+  bottom: var(--dock-h);                   /* панель сразу НАД полосой */
   height: var(--panel-h);
   background: rgba(10,14,19,.98);
   border-top: 1px solid rgba(255,255,255,.08);
   box-shadow: 0 -10px 30px rgba(0,0,0,.35);
-  transform: translateY(100%);
+  transform: translateY(100%);             /* скрыта */
   transition: transform .25s ease;
-  display: grid;
-  grid-template-rows: auto 1fr;
-  z-index: 120;             /* выше полосы */
+  display: grid; grid-template-rows: auto 1fr;
+  z-index: 120;                            /* над полосой */
 }
 #panel.open{ transform: translateY(0%) }
 
@@ -162,17 +141,16 @@ footer#dock{
   border-bottom: 1px solid rgba(255,255,255,.08);
 }
 #panel-title{ font-weight:600 }
-/* CHANGE: кнопка «свернуть» слева, в виде треугольника вниз */
+/* «Свернуть» — обычная кнопка, треугольник вниз символом */
 #btn-collapse{
-  background:transparent;color:var(--text);
+  background:transparent; color:var(--text);
   border:1px solid rgba(255,255,255,.18);
-  border-radius:var(--radius);padding:6px 10px;cursor:pointer;font:inherit;
+  border-radius:var(--radius);
+  padding:6px 10px; cursor:pointer; font:inherit;
 }
-#panel-body{
-  display:grid; grid-template-rows: repeat(3, 1fr);
-  padding: var(--pad); gap: 8px;
-}
-.row{display:flex;align-items:center;gap:10px;min-height:0}
+
+#panel-body{ display:grid; grid-template-rows: repeat(3,1fr); padding: var(--pad); gap: 8px }
+.row{ display:flex; align-items:center; gap:10px; min-height:0 }
 .row a,.row button{
   background: transparent; color: var(--text);
   border: 1px solid rgba(255,255,255,.18);
@@ -185,12 +163,18 @@ footer#dock{
 .row .star.active{ background: rgba(255,214,92,.08); border-color: rgba(255,214,92,.8); color: var(--accent) }
 #last-upd{ color: var(--muted); margin-left:auto }
 
-/* поповер 'i' */
-#status-popover{ position: fixed; left: 12px; right: 12px; bottom: calc(var(--dock-h) + 12px); z-index: 60; }
+/* Поповер «i» (справка по индикатору) — над полосой */
+#status-popover{
+  position: fixed; left: 12px; right: 12px; bottom: calc(var(--dock-h) + 12px); z-index: 130;
+}
 #status-popover[hidden]{ display:none }
-#status-popover .tip-card{ background: rgba(15,20,26,.98); border: 1px solid rgba(255,255,255,.08);
-  border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,.35); padding: 12px; }
+#status-popover .tip-card{
+  background: rgba(15,20,26,.98);
+  border: 1px solid rgba(255,255,255,.08);
+  border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,.35);
+  padding: 12px;
+}
 #status-popover .tip-title{ font-weight: 600; margin-bottom: 8px }
-#status-popover .tip-list{ margin: 0; padding-left: 16px; color: var(--text) }
+#status-popover .tip-list{ margin:0; padding-left:16px; color:var(--text) }
 #status-popover .tip-list li{ margin: 6px 0 }
-#status-popover #btn-tip-close{ margin-top: 10px }
+#status-popover #btn-tip-close{ margin-top:10px }

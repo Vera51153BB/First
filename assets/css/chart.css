@@ -11,8 +11,8 @@
   --pad: clamp(10px, 2.5vw, 14px);
   --radius: 12px;
 
-  /* высоты */
-  --dock-h: clamp(44px, 7.2vh, 58px);   /* полоса */
+  /* высоты */     
+  --dock-h: clamp(44px, 7.2vh, 58px);   /* полоса, док-панель снизу (1 строка) */
   --panel-h: min(60vh, 420px);          /* высота выезжающей панели */
 
   /* размеры элементов в полосе */
@@ -33,7 +33,7 @@ footer#dock{
   max-height: var(--dock-h);
   border-top: 1px solid rgba(255,255,255,.08);
   padding: 0 var(--pad);
-  display:flex; align-items:flex-end; gap:10px; /* ВАЖНО: нижняя линия для выравнивания 'i' */
+  display:flex; align-items:center; gap:10px;   /* center - надписи лого и стрелка */
   background: rgba(255,255,255,0.02);
 }
 #dock-logo{

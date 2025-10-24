@@ -32,11 +32,12 @@ html,body{
   overscroll-behavior: none;             /* на iOS жесты панели не «крадутся» системой */
 }
 
+/* было: #wrap{ height:100%; display:flex; flex-direction:column } */
 #wrap{
   height:100%;
   display:flex;
   flex-direction:column;
-  /* ПРОСВЕТ под фиксированную полосу (чтобы график не перекрывался) */
+  /* фикс-полоса перекрывает низ — добавляем «просвет» */
   padding-bottom: calc(var(--dock-h) + env(safe-area-inset-bottom, 0px));
 }
 
@@ -53,17 +54,19 @@ header{padding:10px 14px;font-weight:600;letter-spacing:.3px}
 
 /* ====== ФИКСИРОВАННАЯ НИЖНЯЯ ПОЛОСА ====== */
 footer#dock{
-  position: fixed;
-  z-index: var(--z-dock);
+  position: fixed;            /* <— было relative */
   left: 0; right: 0; bottom: 0;
   height: var(--dock-h);
   min-height: var(--dock-h);
   max-height: var(--dock-h);
-  padding: 0 calc(var(--pad) + 10px) env(safe-area-inset-bottom, 0px) var(--pad); /* справа оставляем место кнопке */
-  display:flex; align-items:center; gap:10px;
+  z-index: 1000;              /* поверх контента */
+
+  padding: 0 var(--pad);
   border-top: 1px solid rgba(255,255,255,.08);
   background: rgba(255,255,255,0.02);
+  display:flex; align-items:center; gap:10px;
 }
+
 
 #dock-logo{
   height: var(--logo-h);
@@ -101,35 +104,37 @@ footer#dock{
 /* Единственная кнопка со стрелкой.
    Размер = высоте полосы минус 6px сверху и снизу (по 3px), квадратная.
    Сдвинута влево от правого края на 10px. */
+/* ЗАМЕНИ правило #btn-panel целиком на это */
 #btn-panel{
+  /* высота == высоте полосы минус 6px (по 3px сверху/снизу) */
   --ctl: calc(var(--dock-h) - 6px);
+
   position: absolute;
-  right: 10px;
-  bottom: calc(env(safe-area-inset-bottom, 0px) + 3px);
+  right: 10px;                                   /* ← как просил: сдвиг на 10px */
+  bottom: calc(env(safe-area-inset-bottom,0px) + 3px);
   width: var(--ctl);
   height: var(--ctl);
-  border-radius: 10px;
-  border: 1px solid rgba(255,255,255,.18);
-  background: transparent;
-  cursor: pointer;
+
   display:grid; place-items:center;
+  border:1px solid rgba(255,255,255,.18);
+  border-radius: 10px;
+  background: transparent;
+  cursor:pointer;
   padding:0;
-  outline: none;
-  transition: border-color .15s ease, background-color .15s ease;
+  outline:none;
 }
-/* ОДИН белый треугольник по центру (▲ вверх по умолчанию) */
 #btn-panel::before{
   content:"";
-  width: 0; height: 0;
-  border-left:  8px solid transparent;
-  border-right: 8px solid transparent;
-  border-bottom: 12px solid #fff; /* ▲ */
+  width:0; height:0;
+  border-left:8px solid transparent;
+  border-right:8px solid transparent;
+  border-bottom:12px solid #fff;       /* ▲ вверх по умолчанию */
 }
-/* Когда панель открыта — ▼ */
 #btn-panel[aria-expanded="true"]::before{
-  border-bottom: 0;
-  border-top: 12px solid #fff;  /* ▼ */
+  border-bottom:0;
+  border-top:12px solid #fff;          /* ▼ когда панель открыта */
 }
+
 #btn-panel:hover,
 #btn-panel:focus-visible{ border-color: rgba(255,255,255,.35) }
 #btn-panel:active{ background: rgba(255,255,255,.06) }
@@ -157,23 +162,24 @@ footer#dock{
 #status-popover .tip-list li{ margin:6px 0; }
 
 /* ====== ВЫЕЗЖАЮЩАЯ ПАНЕЛЬ ====== */
+/* ДОБАВЬ (или замени) эти правила для #panel */
 #panel{
   position: fixed;
-  z-index: var(--z-panel);
   left: 0; right: 0;
-  bottom: calc(var(--dock-h) + env(safe-area-inset-bottom, 0px));
-  height: var(--panel-h);
+  bottom: calc(var(--dock-h) + env(safe-area-inset-bottom,0px));
+  height: min(62vh, 440px);
   background: rgba(10,14,19,.98);
   border-top: 1px solid rgba(255,255,255,.08);
   box-shadow: 0 -10px 30px rgba(0,0,0,.35);
+  z-index: 1100;                         /* ← поверх фикс-полосы */
 
-  transform: translateY(100%);
-  transition: transform .25s ease;
-
+  transform: translateY(100%);           /* спрятана */
+  transition: transform .25s ease;       /* мягкий выезд */
   display: grid;
   grid-template-rows: auto 1fr;
 }
-#panel.open{ transform: translateY(0%) }
+#panel.open{ transform: translateY(0%) } /* показ */
+#panel[hidden]{ display:none; }          /* когда реально скрываем */
 
 #panel-head{
   display:flex; align-items:center; gap:10px;

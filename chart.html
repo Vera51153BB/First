@@ -1,93 +1,95 @@
 <!doctype html>
 <html lang="ru">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>OKX SWAP Chart</title>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+	<title>Charts — OKX & TV</title>
 
-  <!-- Жёсткая CSP остаётся; работаем только с публичными API -->
-  <meta http-equiv="Content-Security-Policy"
-        content="default-src 'self' https://telegram.org https://s3.tradingview.com https://*.tradingview.com https://unpkg.com;
-                 img-src 'self' data: https:;
-                 style-src 'self';
-                 script-src 'self' https://telegram.org https://s3.tradingview.com https://unpkg.com;
-                 connect-src 'self' https://www.okx.com wss://ws.okx.com wss://wsaws.okx.com;">
+	<!-- Telegram WebApp SDK (не критично, просто если открыто в боте) -->
+	<script src="https://telegram.org/js/telegram-web-app.js"></script>
 
-  <link rel="stylesheet" href="./assets/css/chart.css">
-
-  <!-- Внешние либы -->
-  <script src="https://telegram.org/js/telegram-web-app.js"></script>
-  <script src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
-
-  <!-- Наши модули -->
-  <script defer src="./assets/js/okx_chart.js"></script>
-  <script defer src="./assets/js/ui_panel.js"></script>
+	<link rel="stylesheet" href="assets/css/chart.css" />
 </head>
 <body>
-<div id="wrap">
-  <header id="title">BTC • USDT-SWAP (OKX)</header>
-  <div id="chart" aria-live="polite"></div>
+	<!-- Основная область контента -->
+	<main id="app">
+		<!-- Шапка (можно скрыть в WebApp) -->
+		<header class="topbar" id="topbar">
+			<div class="brand">
+				<span class="dot"></span>
+				<span class="title">Charts</span>
+			</div>
+			<div class="spacer"></div>
+			<button id="btn-status" class="status ok" title="Статус соединения: OK">●</button>
+		</header>
 
-  <!-- ФИКСИРОВАННАЯ НИЖНЯЯ ПОЛОСА (видна всегда) -->
-  <footer id="dock" aria-label="status bar">
-    <div id="status-dot" class="offline" aria-hidden="true" title="Индикатор состояния"></div>
-    <img id="dock-logo" alt="OKX" src="./images/okx-logotype-light.png" />
-    <button id="btn-status-info" class="muted" type="button" aria-haspopup="dialog" aria-expanded="false" title="Что значит этот индикатор?">i</button>
-    <div class="spacer" aria-hidden="true"></div>
-    <!-- Единственная квадратная кнопка со стрелкой. Треугольник рисуется ::before  -->
-    <button id="btn-panel" type="button" aria-expanded="false" aria-controls="panel" title="Открыть настройки"></button>
-  </footer>
+		<!-- Рабочая зона с двумя слоями: OKX Canvas и TradingView контейнер -->
+		<section class="chart-area" id="chart-area">
+			<!-- OKX: холст с легкой заглушкой -->
+			<canvas id="okxCanvas" class="chart-layer" aria-label="OKX BTC-USDT-SWAP"></canvas>
 
-  <!-- Поповер-справка по индикатору -->
-  <section id="status-popover" role="dialog" aria-modal="false" hidden>
-    <div class="tip-card">
-      <div class="tip-title">Что значит индикатор состояния?</div>
-      <ul class="tip-list">
-        <li>🟢 <b>Онлайн (WS)</b> — данные обновляются в реальном времени.</li>
-        <li>🟡 <b>Деградирован (REST)</b> — WebSocket временно недоступен, данные периодически подгружаются.</li>
-        <li>🔴 <b>Оффлайн</b> — нет связи с источниками.</li>
-      </ul>
-      <button id="btn-tip-close" type="button" class="muted" title="Закрыть">Понятно</button>
-    </div>
-  </section>
+			<!-- TradingView: лениво создаём виджет внутри этого контейнера -->
+			<div id="tvContainer" class="chart-layer" hidden aria-label="TradingView ETH-USDT-SWAP">
+				<!-- сюда динамически вставится виджет TradingView -->
+				<div id="tvWidgetRoot" class="tv-root"></div>
+			</div>
 
-  <!-- ВЫЕЗЖАЮЩАЯ ВВЕРХ ПАНЕЛЬ (поверх контента и полосы) -->
-  <section id="panel" role="dialog" aria-modal="true" aria-label="Настройки графика" hidden>
-    <div id="panel-head">
-      <button id="btn-close" type="button" title="Свернуть" aria-label="Свернуть панель">Закрыть</button>
-      <div id="panel-title">Настройки</div>
-      <span id="last-upd" title="Последнее обновление">…</span>
-    </div>
+			<!-- Полки объёма: заглушка -->
+			<div id="shelvesPlaceholder" class="chart-layer shelves" hidden>
+				<div class="shelves-box">
+					<div class="shelves-title">Полки объёма</div>
+					<div class="shelves-sub">Заглушка (в разработке)</div>
+				</div>
+			</div>
+		</section>
+	</main>
 
-    <div id="panel-body">
-      <!-- 1: ТФ -->
-      <div class="row" id="row-intervals">
-        <a data-int="15"  class="int">15m</a>
-        <a data-int="60"  class="int">1h</a>
-        <a data-int="240" class="int">4h</a>
-        <a data-int="480" class="int">8h</a>
-        <a data-int="720" class="int">12h</a>
-        <a data-int="1440" class="int">1d</a>
-      </div>
+	<!-- Нижняя панель (фиксированная) -->
+	<footer class="bottombar" id="bottombar">
+		<div class="bottom-left">
+			<div class="status-led" id="status-led" title="Статус">●</div>
+			<div class="chart-name" id="chart-name">OKX · BTC-USDT-SWAP</div>
+		</div>
 
-      <!-- 2: Источник (OKX/TV/VP) -->
-      <div class="row" id="row-sources">
-        <button type="button" class="src" data-src="okx">OKX (API/WS)</button>
-        <button type="button" class="src" data-src="tv">TradingView (виджет)</button>
-        <button type="button" class="src" data-src="vp">Полки</button>
-      </div>
+		<div class="bottom-right">
+			<button id="btn-info" class="btn-info" title="Информация">i</button>
+			<button id="btn-menu" class="btn-menu" aria-expanded="false" title="Меню">▲</button>
+		</div>
 
-      <!-- 3: Действия -->
-      <div class="row" id="row-actions">
-        <button id="btn-fav" class="star" type="button" aria-pressed="false">➕ В избранное</button>
-        <a id="okx-link" class="danger" target="_blank" rel="noopener">Открыть на OKX</a>
-        <a id="tv-link"  class="muted"  target="_blank" rel="noopener">Открыть в TradingView</a>
-        <button id="btn-copy" class="muted" type="button">Скопировать ссылку</button>
-      </div>
-    </div>
-  </section>
+		<!-- Выезжающее меню 3×3 -->
+		<nav id="slide-menu" class="slide-menu" aria-hidden="true">
+			<div class="menu-grid">
+				<button class="menu-btn" data-key="1">1</button>
+				<button class="menu-btn" data-key="2">2</button>
+				<button class="menu-btn" data-key="3">3</button>
 
-  <div class="hint" id="hint" aria-live="polite"></div>
-</div>
+				<button class="menu-btn emph" data-action="okx">ОКХ</button>
+				<button class="menu-btn emph" data-action="tv">ТВ</button>
+				<button class="menu-btn emph" data-action="shelves">Полки</button>
+
+				<button class="menu-btn" data-key="4">4</button>
+				<button class="menu-btn" data-key="5">5</button>
+				<button class="menu-btn" data-key="6">6</button>
+			</div>
+		</nav>
+
+		<!-- Всплывающее окно информации -->
+		<div id="info-pop" class="info-pop" role="dialog" aria-modal="false" aria-hidden="true">
+			<div class="info-card">
+				<div class="info-head">
+					<div>Информация</div>
+					<button id="info-close" class="x">✕</button>
+				</div>
+				<div class="info-body">
+					<p><b>OKX</b>: локальная заглушка на Canvas (BTC-USDT-SWAP). Позже сюда подключим реальное API.</p>
+					<p><b>TradingView</b>: ленивый виджет для ETH-USDT-SWAP, грузится по кнопке «ТВ».</p>
+					<p>Работает внутри Telegram WebApp и в обычном браузере (десктоп/мобайл).</p>
+				</div>
+			</div>
+		</div>
+	</footer>
+
+	<script src="assets/js/okx_chart.js"></script>
+	<script src="assets/js/ui_panel.js"></script>
 </body>
 </html>

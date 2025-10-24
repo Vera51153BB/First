@@ -1,215 +1,218 @@
-/* -*- coding: utf-8 -*-  First/assets/css/chart.css
-   Ключевое:
-   • Фиксированная нижняя полоса (видна всегда)
-   • Панель открывается ВВЕРХ поверх контента и полосы
-   • Строгий z-index план, safe-area для iOS
-   • ОДИН треугольник в кнопке, «i» маленькая у нижней кромки логотипа
-*/
+/* ===== chart.css — базовые стили (тёмная тема), адаптив + безопасная нижняя панель ===== */
 
-/* ====== БАЗОВЫЕ ПЕРЕМЕННЫЕ ====== */
 :root{
-  --bg:#0b0f14; --text:#e6e6e6; --muted:#9aa4af; --accent:#ffd65c; --danger:#ff6b6b;
+	--bg:#0b0e14;
+	--panel:#11151c;
+	--panel-2:#0f1319;
+	--text:#e5e7eb;
+	--muted:#93a3b8;
+	--accent:#4fa3ff;
+	--ok:#65d16f;
+	--warn:#ffcc66;
+	--bad:#ff6b6b;
 
-  --pad: clamp(10px, 2.5vw, 14px);
-  --radius: 12px;
+	--radius:16px;
+	--gap: clamp(10px, 2.2vw, 18px);
 
-  /* высоты */
-  --dock-h: clamp(44px, 7.2vh, 58px);    /* фиксированная полоса снизу */
-  --panel-h: min(62vh, 440px);           /* высота выезжающей панели */
+	--bottom-h: 68px;
+	--menu-h: 220px;
 
-  /* размеры элементов внутри полосы */
-  --logo-h: clamp(20px, 4.8vh, 30px);    /* высота логотипа */
-  --dot: 10px;                            /* индикатор */
+	/* учёт безопасной зоны на iOS */
+	--safe-bottom: env(safe-area-inset-bottom, 0px);
+	--safe-top: env(safe-area-inset-top, 0px);
 }
 
-/* ====== БАЗА/СБРОС ====== */
+*{box-sizing:border-box}
 html,body{
-  height:100%;
-  margin:0;
-  background:var(--bg);
-  color:var(--text);
-  font-family:system-ui,Arial;
-  overscroll-behavior: none;             /* на iOS жесты панели не «крадутся» системой */
+	height:100%;
+	background:var(--bg);
+	color:var(--text);
+	margin:0;
+	font: 14px/1.45 system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
 }
 
-/* было: #wrap{ height:100%; display:flex; flex-direction:column } */
-#wrap{
-  height:100%;
-  display:flex;
-  flex-direction:column;
-  /* фикс-полоса перекрывает низ — добавляем «просвет» */
-  padding-bottom: calc(var(--dock-h) + env(safe-area-inset-bottom, 0px));
+/* Телеграм-вебвью: иногда убираем внешние отступы */
+body.tg{ background:var(--bg); }
+
+#app{
+	min-height:100%;
+	display:flex;
+	flex-direction:column;
 }
 
-header{padding:10px 14px;font-weight:600;letter-spacing:.3px}
-#chart{flex:1;min-height:320px}
+/* ---------- Topbar ---------- */
+.topbar{
+	position:sticky;
+	top:0;
+	z-index:20;
+	display:flex;
+	align-items:center;
+	gap:12px;
+	padding:10px 14px;
+	background:linear-gradient(180deg, rgba(15,19,25,.88), rgba(15,19,25,.66));
+	backdrop-filter: blur(6px);
+	border-bottom:1px solid rgba(255,255,255,.06);
+}
+.topbar .brand{ display:flex; align-items:center; gap:10px; }
+.topbar .dot{ width:10px; height:10px; border-radius:50%; background:var(--accent); box-shadow:0 0 12px rgba(79,163,255,.6); }
+.topbar .title{ font-weight:600; letter-spacing:.2px; }
+.topbar .spacer{ flex:1 1 auto; }
+#btn-status.status{
+	width:24px; height:24px; border-radius:50%;
+	border:none; cursor:default; background:transparent; color:var(--ok); font-size:18px; line-height:1;
+}
+#btn-status.ok{ color:var(--ok); }
+#btn-status.warn{ color:var(--warn); }
+#btn-status.bad{ color:var(--bad); }
 
-/* ====== Z-INDEX ПЛАН ======
-   контент (auto) < док-полоса (1000) < панель (1100) < поповер (1200) */
-:root{
-  --z-dock: 1000;
-  --z-panel: 1100;
-  --z-pop: 1200;
+/* ---------- Chart area ---------- */
+.chart-area{
+	position:relative;
+	flex:1 1 auto;
+	min-height: 300px;
+}
+.chart-layer{
+	position:absolute;
+	inset:0;
+	display:block;
+	width:100%;
+	height:100%;
 }
 
-/* ====== ФИКСИРОВАННАЯ НИЖНЯЯ ПОЛОСА ====== */
-footer#dock{
-  position: fixed;            /* <— было relative */
-  left: 0; right: 0; bottom: 0;
-  height: var(--dock-h);
-  min-height: var(--dock-h);
-  max-height: var(--dock-h);
-  z-index: 1000;              /* поверх контента */
-
-  padding: 0 var(--pad);
-  border-top: 1px solid rgba(255,255,255,.08);
-  background: rgba(255,255,255,0.02);
-  display:flex; align-items:center; gap:10px;
+/* TradingView root контейнер (заполняет слой) */
+.tv-root{
+	position:absolute; inset:0;
 }
 
+/* Заглушка "Полки объёма" */
+.shelves{
+	display:flex;
+	align-items:center;
+	justify-content:center;
+}
+.shelves-box{
+	border:1px dashed rgba(255,255,255,.2);
+	border-radius:var(--radius);
+	padding: 24px 28px;
+	text-align:center;
+	background: rgba(255,255,255,.02);
+}
+.shelves-title{ font-size:16px; margin-bottom:6px; opacity:.9; }
+.shelves-sub{ color:var(--muted); }
 
-#dock-logo{
-  height: var(--logo-h);
-  width: auto;
-  display:block;
+/* ---------- Bottom bar ---------- */
+.bottombar{
+	position: sticky; /* на случай, если внутри прокрутки; далее — фикс закреплением */
+	position:fixed;
+	left:0; right:0; bottom:0;
+	height: calc(var(--bottom-h) + var(--safe-bottom));
+	padding-bottom: var(--safe-bottom);
+	background: linear-gradient(0deg, rgba(15,19,25,.96), rgba(15,19,25,.88));
+	backdrop-filter: blur(8px);
+	border-top:1px solid rgba(255,255,255,.06);
+	display:flex;
+	align-items:center;
+	justify-content:space-between;
+	padding: 10px 14px;
+	z-index: 50;
 }
 
-/* индикатор слева, центрируем по логотипу */
-#status-dot{
-  width: var(--dot);
-  height: var(--dot);
-  border-radius: 50%;
-  box-shadow: 0 0 0 2px rgba(255,255,255,.06) inset;
-  align-self: center;
+/* левая часть */
+.bottom-left{ display:flex; align-items:center; gap:10px; }
+.status-led{
+	width:12px; height:12px; border-radius:50%;
+	background: var(--ok);
+	box-shadow: 0 0 10px rgba(101,209,111,.7);
 }
-#status-dot.online{ background:#34c759 }    /* 🟢 */
-#status-dot.degraded{ background:#ffd60a }  /* 🟡 */
-#status-dot.offline{ background:#ff453a }   /* 🔴 */
+.chart-name{ font-weight:600; color:var(--text); opacity:.92; }
 
-/* маленькая квадратная «i» — 1/2 высоты логотипа, возле нижней кромки */
-#btn-status-info{
-  background:transparent; color:var(--muted);
-  border:1px solid rgba(255,255,255,.18);
-  border-radius:10px;
-  height: calc(var(--logo-h) / 2);
-  width:  calc(var(--logo-h) / 2);
-  display:flex; align-items:center; justify-content:center;
-  font: 600 0.70rem/1 system-ui,Arial;
-  cursor:pointer;
-  align-self:flex-end;          /* у нижней кромки логотипа */
-  margin-left: .6rem;           /* «две пробельные ширины» от логотипа */
+/* правая часть */
+.bottom-right{ display:flex; align-items:center; gap:10px; }
+.btn-info,.btn-menu{
+	height: 38px; min-width: 38px;
+	padding: 0 12px;
+	border-radius: 10px;
+	border:1px solid rgba(255,255,255,.15);
+	background: linear-gradient(180deg, var(--panel), var(--panel-2));
+	color: var(--text);
+	font-weight:600;
+	cursor:pointer;
 }
-#btn-status-info:hover{ border-color: rgba(255,255,255,.35) }
+.btn-info{ width:38px; padding:0; display:flex; align-items:center; justify-content:center; font-size:14px; }
+.btn-menu{ font-size:13px; letter-spacing:.3px; }
 
-/* Единственная кнопка со стрелкой.
-   Размер = высоте полосы минус 6px сверху и снизу (по 3px), квадратная.
-   Сдвинута влево от правого края на 10px. */
-/* ЗАМЕНИ правило #btn-panel целиком на это */
-#btn-panel{
-  /* высота == высоте полосы минус 6px (по 3px сверху/снизу) */
-  --ctl: calc(var(--dock-h) - 6px);
-
-  position: absolute;
-  right: 10px;                                   /* ← как просил: сдвиг на 10px */
-  bottom: calc(env(safe-area-inset-bottom,0px) + 3px);
-  width: var(--ctl);
-  height: var(--ctl);
-
-  display:grid; place-items:center;
-  border:1px solid rgba(255,255,255,.18);
-  border-radius: 10px;
-  background: transparent;
-  cursor:pointer;
-  padding:0;
-  outline:none;
+/* ---------- Slide menu ---------- */
+.slide-menu{
+	position: fixed;
+	left:0; right:0;
+	bottom: calc(var(--bottom-h) * -1 - var(--menu-h)); /* спрятано ниже экрана */
+	height: calc(var(--menu-h) + var(--safe-bottom));
+	padding-bottom: var(--safe-bottom);
+	background: linear-gradient(0deg, rgba(15,19,25,.98), rgba(15,19,25,.92));
+	border-top:1px solid rgba(255,255,255,.08);
+	box-shadow: 0 -30px 60px rgba(0,0,0,.35);
+	transition: transform .28s ease, box-shadow .28s ease;
+	transform: translateY(0);
+	z-index: 60;
 }
-#btn-panel::before{
-  content:"";
-  width:0; height:0;
-  border-left:8px solid transparent;
-  border-right:8px solid transparent;
-  border-bottom:12px solid #fff;       /* ▲ вверх по умолчанию */
+.slide-menu.open{
+	transform: translateY(calc(-1 * (var(--menu-h) + var(--bottom-h))));
 }
-#btn-panel[aria-expanded="true"]::before{
-  border-bottom:0;
-  border-top:12px solid #fff;          /* ▼ когда панель открыта */
+.menu-grid{
+	display:grid;
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+	gap: 10px;
+	padding: 14px;
 }
-
-#btn-panel:hover,
-#btn-panel:focus-visible{ border-color: rgba(255,255,255,.35) }
-#btn-panel:active{ background: rgba(255,255,255,.06) }
-
-.spacer{flex:1}
-
-/* ====== ПОПОВЕР СТАТУСА ====== */
-#status-popover{
-  position: fixed;
-  z-index: var(--z-pop);
-  left: 12px;
-  right: 12px;
-  bottom: calc(var(--dock-h) + 12px + env(safe-area-inset-bottom, 0px));
+.menu-btn{
+	height:48px;
+	border-radius: 12px;
+	border:1px solid rgba(255,255,255,.12);
+	background: radial-gradient(120% 120% at 50% 0%, rgba(255,255,255,.06), rgba(255,255,255,.02));
+	color:var(--text);
+	font-weight:700;
+	letter-spacing:.2px;
+	cursor:pointer;
 }
-#status-popover[hidden]{ display:none; }
-#status-popover .tip-card{
-  background: rgba(15,20,26,.98);
-  border: 1px solid rgba(255,255,255,.08);
-  border-radius: 12px;
-  box-shadow: 0 10px 30px rgba(0,0,0,.35);
-  padding: 12px;
-}
-#status-popover .tip-title{ font-weight:600; margin-bottom:8px; }
-#status-popover .tip-list{ margin:0; padding-left:16px; color:var(--text) }
-#status-popover .tip-list li{ margin:6px 0; }
-
-/* ====== ВЫЕЗЖАЮЩАЯ ПАНЕЛЬ ====== */
-/* ДОБАВЬ (или замени) эти правила для #panel */
-#panel{
-  position: fixed;
-  left: 0; right: 0;
-  bottom: calc(var(--dock-h) + env(safe-area-inset-bottom,0px));
-  height: min(62vh, 440px);
-  background: rgba(10,14,19,.98);
-  border-top: 1px solid rgba(255,255,255,.08);
-  box-shadow: 0 -10px 30px rgba(0,0,0,.35);
-  z-index: 1100;                         /* ← поверх фикс-полосы */
-
-  transform: translateY(100%);           /* спрятана */
-  transition: transform .25s ease;       /* мягкий выезд */
-  display: grid;
-  grid-template-rows: auto 1fr;
-}
-#panel.open{ transform: translateY(0%) } /* показ */
-#panel[hidden]{ display:none; }          /* когда реально скрываем */
-
-#panel-head{
-  display:flex; align-items:center; gap:10px;
-  padding: 10px var(--pad);
-  border-bottom: 1px solid rgba(255,255,255,.08);
-}
-#panel-title{ font-weight:600 }
-#btn-close{
-  order: -1;
-  background: transparent; color: var(--text);
-  border: 1px solid rgba(255,255,255,.18);
-  border-radius: var(--radius);
-  padding: 6px 10px; cursor: pointer; font: inherit;
+.menu-btn.emph{
+	border-color: rgba(79,163,255,.35);
+	box-shadow: inset 0 0 0 1px rgba(79,163,255,.25);
 }
 
-#panel-body{
-  display: grid;
-  grid-template-rows: repeat(3, 1fr);
-  padding: var(--pad);
-  gap: 8px;
+/* ---------- Info popup ---------- */
+.info-pop{
+	position: fixed;
+	inset:0;
+	display:none;
+	align-items:flex-end;
+	justify-content:center;
+	background: rgba(0,0,0,.35);
+	z-index: 70;
 }
-.row{display:flex;align-items:center;gap:10px;min-height:0}
-.row a,.row button{
-  background: transparent; color: var(--text);
-  border: 1px solid rgba(255,255,255,.18);
-  border-radius: var(--radius); padding: 6px 10px;
-  cursor: pointer; text-decoration: none; font: inherit; line-height: 1.1; white-space: nowrap;
+.info-pop.show{ display:flex; }
+.info-card{
+	width:min(680px, 96vw);
+	background: linear-gradient(180deg, var(--panel), var(--panel-2));
+	border:1px solid rgba(255,255,255,.1);
+	border-radius: 16px 16px calc(16px + var(--safe-bottom)) calc(16px + var(--safe-bottom));
+	margin: 0 0 var(--bottom-h) 0;
+	padding: 14px;
+	color: var(--text);
 }
-.row a:hover,.row button:hover{border-color: rgba(255,255,255,.35)}
-.row .muted{color: var(--muted);border-color: rgba(255,255,255,.12)}
-.row .danger{color: var(--danger);border-color: rgba(255,0,0,.25)}
-.row .star.active{background: rgba(255,214,92,.08);border-color: rgba(255,214,92,.8);color: var(--accent)}
-.row .active{border-color: rgba(255,255,255,.65)}
+.info-head{
+	display:flex; align-items:center; justify-content:space-between;
+	font-weight:700;
+	margin-bottom:8px;
+}
+.info-head .x{
+	border:none; background:transparent; color:var(--muted);
+	font-size:18px; cursor:pointer; line-height:1;
+}
+.info-body p{ margin:.5em 0; color:var(--muted); }
+
+/* ---------- Адаптив ---------- */
+@media (max-width: 720px){
+	.topbar{ padding:8px 12px; }
+	.menu-grid{ gap:8px; padding:12px; }
+	.menu-btn{ height:46px; }
+}

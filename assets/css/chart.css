@@ -75,10 +75,12 @@ footer#dock{
   display:flex; align-items:center; justify-content:center;
   font: 600 0.75rem/1 system-ui,Arial;   /* компактная метка "i" */
   cursor:pointer;
-  /* прижимаем к нижней кромке логотипа */  align-self:flex-end;
-
+  /* прижимаем к нижней кромке логотипа  align-self:flex-end;  */
+  /* выравниваем по верхнему краю логотипа с отступом 5px */ 
+  align-self:flex-start;
+  margin-top: 5px; 
   /* отступ от лого ~ «два пробела» */
-  margin-left: .6rem; /* «две пробельные ширины» от логотипа */
+  margin-left: .4rem; /* отступ от логотипа, .6rem = «две пробельные ширины» от логотипа */
   /* margin-left: 2ch; */
 }
 

@@ -53,8 +53,8 @@ footer#dock{
 #status-dot.offline{ background:#ff453a }   /* 🔴 */
 
 #btn-panel{
-  height: var(--sq);
-  width:  var(--sq);
+  height: calc(var(--sq) / 1.1);
+  width:  calc(var(--sq) / 1.1);
   border-radius: 10px;
   border: 1px solid rgba(255,255,255,.18);
   background: transparent;
@@ -80,7 +80,7 @@ footer#dock{
   align-self:flex-start;
   margin-top: 5px; 
   /* отступ от лого ~ «два пробела» */
-  margin-left: .4rem; /* отступ от логотипа, .6rem = «две пробельные ширины» от логотипа */
+  margin-left: .2rem; /* отступ от логотипа, .6rem = «две пробельные ширины» от логотипа */
   /* margin-left: 2ch; */
 }
 

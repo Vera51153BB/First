@@ -18,7 +18,7 @@
 
   // панель
   const panel        = document.getElementById('panel');
-  const btnClose     = document.getElementById('btn-close');
+  const btnClose     = document.getElementById('btn-collapse');
   const elLastUpd    = document.getElementById('last-upd');
   const rowIntervals = document.getElementById('row-intervals');
   const rowSources   = document.getElementById('row-sources');

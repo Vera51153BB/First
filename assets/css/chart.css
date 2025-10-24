@@ -38,17 +38,24 @@ header{padding:10px 14px;font-weight:600;letter-spacing:.3px}
 #chart{flex:1;min-height:320px}
 
 /* ---------- ПОЛОСА (ДОК) ---------- */
+/* ПОЛОСА всегда поверх, на всём вьюпорте, с учётом safe-area */
 footer#dock{
-  position: fixed;              /* закрепляем снизу */
-  left: 0; right: 0; bottom: 0;
-  z-index: 100;
+  position: fixed !important;                  /* железно фиксируем */
+  left: 0;
+  right: 0;
+  bottom: calc(env(safe-area-inset-bottom, 0px));  /* не упираемся в «чёлку» */
+  width: 100vw;                                /* не зависим от родителя */
+  z-index: 2147483647;                         /* поверх всего в webview */
+
   height: var(--dock-h);
-  padding: var(--dock-vpad) var(--pad);          /* 3px сверху/снизу */
+  padding: var(--dock-vpad) var(--pad);
   border-top: 1px solid rgba(255,255,255,.08);
   background: rgba(255,255,255,0.02);
   display:flex; align-items:center; gap:10px;
   box-sizing: border-box;
+  -webkit-transform: translateZ(0);            /* iOS: «защелкиваем» к GPU-слою */
 }
+
 #dock-logo{ height: var(--logo-h); width:auto; display:block }
 #status-dot{
   width: var(--dot); height: var(--dot); border-radius: 50%;

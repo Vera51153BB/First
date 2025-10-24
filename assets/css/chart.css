@@ -38,24 +38,24 @@
   :root{ --winH: 100dvh; }
 }
 
+/* базовые */
 html,body{
   height:100%;
   margin:0;
   background:var(--bg);
   color:var(--text);
   font-family:system-ui,Arial;
-
-  /* чтобы iOS не «резиновал» страницу и жест свайпа не воровал панель */
-  overscroll-behavior: none;
+  overscroll-behavior: none; /* iOS: жест не «крадётся» браузером */
 }
 
-/* ВАЖНО: полоса fixed — даём контенту «просвет» снизу, чтобы график не перекрывался */
-/* контент никогда не залезает под фиксированную полосу, не должен перекрываться полосой */
+/* ВАЖНО: даём «просвет» = высота полосы */
+:root{ --safe-bottom: env(safe-area-inset-bottom, 0px); }
+
 #wrap{
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  padding-bottom: var(--dock-total); /* ← вот этот отступ убирает наложение текстов */
+  height:100%;
+  display:flex;
+  flex-direction:column;
+  padding-bottom: calc(var(--dock-h) + var(--safe-bottom));
 }
 
 header{padding:10px 14px;font-weight:600;letter-spacing:.3px}

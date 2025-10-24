@@ -24,38 +24,73 @@
   --dot: 10px;                           /* индикатор слева */
 }
 
-html,body{height:100%;margin:0;background:var(--bg);color:var(--text);font-family:system-ui,Arial}
+/* --- iOS safe-area + реальная высота окна --- */
+:root{
+  /* было: --dock-h, --panel-h и т.д. — оставляем */
+  --safe: env(safe-area-inset-bottom, 0px);
+  --dock-total: calc(var(--dock-h) + var(--safe)); /* суммарная высота нижней полосы с «подбородком» iOS */
+
+  /* по умолчанию классический vh */
+  --winH: 100vh;
+}
+/* если есть новые единицы dvh (iOS 16+), берём их — это реальная видимая высота */
+@supports (height: 100dvh){
+  :root{ --winH: 100dvh; }
+}
+
+html,body{
+  height:100%;
+  margin:0;
+  background:var(--bg);
+  color:var(--text);
+  font-family:system-ui,Arial;
+
+  /* чтобы iOS не «резиновал» страницу и жест свайпа не воровал панель */
+  overscroll-behavior: none;
+}
 
 /* ВАЖНО: полоса fixed — даём контенту «просвет» снизу, чтобы график не перекрывался */
-/* Контент не должен перекрываться полосой */
+/* контент никогда не залезает под фиксированную полосу, не должен перекрываться полосой */
 #wrap{
   height: 100%;
   display: flex;
   flex-direction: column;
-  padding-bottom: calc(var(--dock-h) + env(safe-area-inset-bottom, 0px)); /* ← просвет */
+  padding-bottom: var(--dock-total); /* ← вот этот отступ убирает наложение текстов */
 }
 
 header{padding:10px 14px;font-weight:600;letter-spacing:.3px}
 #chart{flex:1;min-height:320px}
+#status-text{
+  color: var(--muted);
+  font-size: 14px;
+  min-width: 0;                 /* позволяем flex ужиматься */
+  overflow: hidden;
+  text-overflow: ellipsis;      /* если не помещается — три точки, без налезания */
+  white-space: nowrap;
+}
 
 /* ---------- ПОЛОСА (ДОК) ---------- */
 /* ПОЛОСА всегда поверх, на всём вьюпорте, с учётом safe-area */
 footer#dock{
-  position: fixed !important;                  /* железно фиксируем */
-  left: 0;
-  right: 0;
-  bottom: calc(env(safe-area-inset-bottom, 0px));  /* не упираемся в «чёлку» */
-  width: 100vw;                                /* не зависим от родителя */
-  z-index: 2147483647;                         /* поверх всего в webview */
-
+  position: fixed;   /* было relative — из-за этого полоса «уезжала» и перекрывалась */
+  left: 0; right: 0; bottom: 0;
+  z-index: 1000;     /* гарантированно поверх контента */
   height: var(--dock-h);
-  padding: var(--dock-vpad) var(--pad);
+  min-height: var(--dock-h);
+  max-height: var(--dock-h);
+
+  /* базовая стилистика */
   border-top: 1px solid rgba(255,255,255,.08);
   background: rgba(255,255,255,0.02);
-  display:flex; align-items:center; gap:10px;
-  box-sizing: border-box;
-  -webkit-transform: translateZ(0);            /* iOS: «защелкиваем» к GPU-слою */
+  padding: 0 var(--pad);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  -webkit-tap-highlight-color: transparent;  /* убирает синюю «вспышку» на iOS */
 }
+footer#dock *:focus{ outline: none; } /* ещё один «анти-синий-бордер» на фокусах */
+
 
 #dock-logo{ height: var(--logo-h); width:auto; display:block }
 #status-dot{
@@ -69,74 +104,83 @@ footer#dock{
 
 /* Кнопка «i» — маленький квадрат у нижней кромки логотипа */
 #btn-status-info{
-  background:transparent; color:var(--muted);
-  border:1px solid rgba(255,255,255,.18);
-  border-radius:10px;
-  height: calc(var(--logo-h) / 2);         /* половина высоты лого */
-  width:  calc(var(--logo-h) / 2);
-  display:flex; align-items:center; justify-content:center;
-  font: 600 0.70rem/1 system-ui,Arial;     /* компактная "i" */
-  cursor:pointer;
-  align-self:flex-end;                     /* к нижней кромке полосы */
-  margin-left: .6rem;                      /* ~ два «пробела» от лого */
+  background: transparent;
+  color: var(--muted);
+  border: 1px solid rgba(255,255,255,.18);
+  border-radius: 10px;
+  height: calc(var(--logo-h) / 1.5);  /* 1/2 логотипа */
+  width:  calc(var(--logo-h) / 1.5);
+  display: flex; align-items: center; justify-content: center;
+  font: 600 0.72rem/1 system-ui,Arial;
+  cursor: pointer;
+
+  align-self: flex-end;     /* вниз относительно логотипа */
+  margin-left: .6rem;       /* «два пробела» от логотипа */
 }
 #btn-status-info:hover{ border-color: rgba(255,255,255,.35) }
+
 
 /* КНОПКА СТРЕЛКИ — размер зависит от высоты полосы, квадрат со скошенными углами
    и отступом 10px от правого края. Стрелка одна (через ::before) и строго по центру. */
 /* квадрат = высота полосы минус вертикальные паддинги */
+/* сама «таблетка» — размер от высоты полосы, сверху/снизу одинаковые отступы */
 #btn-panel{
-  --side: calc(var(--dock-h) - var(--dock-vpad)*2);  /* высота полосы минус вертикальные паддинги */
+  --ctl: calc(var(--dock-h) - 6px); /* отступы по 3px сверху/снизу → высота = h-6 */
+  height: var(--ctl);
+  width:  var(--ctl);
+  margin-right: 10px;              /* ← сместили влево от правого края на 10px */
 
-  height: var(--side);
-  width:  var(--side);
-  border: 1px solid rgba(255,255,255,.18);
-  border-radius: 10px;
   background: transparent;
+  color: var(--text);
+  border: 1px solid rgba(255,255,255,.18);
+  border-radius: 10px;              /* «скошенные» углы */
+  display: grid;
+  place-items: center;
   cursor: pointer;
-  position: relative;
-  margin-right: 10px;                       /* сдвиг влево на 10px от правого края */
-  outline: none;
-  -webkit-tap-highlight-color: transparent;
+
+  outline: none;                    /* убираем синюю линию на фокусе */
+  transition: border-color .15s ease, background-color .15s ease;
 }
+/* белый равносторонний треугольник, всегда ровно по центру */
 #btn-panel::before{
-  content:"";
-  position:absolute; left:50%; top:50%;
-  transform: translate(-50%,-50%);          /* идеальное центрирование (даже на iOS) */
-  width:0; height:0;
-  --tri-w: 8px;
-  --tri-h: 12px;
-  border-left:  var(--tri-w) solid transparent;
-  border-right: var(--tri-w) solid transparent;
-  border-bottom: var(--tri-h) solid #fff;    /* ▲ вверх */
+  content: "";
+  width: 0; height: 0;
+  border-left:  8px solid transparent;
+  border-right: 8px solid transparent;
+  border-bottom: 12px solid #fff;  /* ▲ вверх */
 }
 #btn-panel[aria-expanded="true"]::before{
-  border-bottom:0;
-  border-top: var(--tri-h) solid #fff;       /* ▼ когда панель открыта */
+  border-bottom: 0;
+  border-top: 12px solid #fff;     /* ▼ вниз */
 }
-
-}
-#btn-panel:hover,
-#btn-panel:focus-visible{ border-color: rgba(255,255,255,.35) }
+#btn-panel:hover{ border-color: rgba(255,255,255,.35) }
 #btn-panel:active{ background: rgba(255,255,255,.06) }
 
 .spacer{ flex:1 }
 
 /* ---------- ПАНЕЛЬ НАСТРОЕК (снизу, открывается вверх) ---------- */
+/* закрытая панель — за нижним краем */
 #panel{
   position: fixed;
   left: 0; right: 0;
-  bottom: calc(var(--dock-h) + env(safe-area-inset-bottom, 0px));   /* панель сразу НАД полосой */
-  height: var(--panel-h);
+  bottom: var(--dock-total);              /* учитываем полосу + safe-area */
+  z-index: 1100;
+
+  height: min(calc(var(--winH) * 0.60), 420px); /* 60% видимой высоты окна, но не выше 420px */
+  transform: translateY(100%);            /* скрыта полностью */
+  transition: transform .25s ease;
+
   background: rgba(10,14,19,.98);
   border-top: 1px solid rgba(255,255,255,.08);
   box-shadow: 0 -10px 30px rgba(0,0,0,.35);
-  transform: translateY(100%);             /* скрыта */
-  transition: transform .25s ease;
-  display: grid; grid-template-rows: auto 1fr;
-  z-index: 120;                            /* над полосой */
+
+  display: grid;
+  grid-template-rows: auto 1fr;
+
+  will-change: transform;                 /* сглаживает анимацию на iOS */
+  backface-visibility: hidden;
 }
-#panel.open{ transform: translateY(0%) }
+#panel.open{ transform: translateY(0%); } /* открыта — доезжает до упора */
 
 #panel-head{
   display:flex; align-items:center; gap:10px;

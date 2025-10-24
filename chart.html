@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>OKX SWAP Chart</title>
 
-  <!-- CSP: Telegram WebApp, OKX REST/WS, Lightweight-Charts, TradingView -->
+  <!-- Жёсткая CSP остаётся; работаем только с публичными API -->
   <meta http-equiv="Content-Security-Policy"
         content="default-src 'self' https://telegram.org https://s3.tradingview.com https://*.tradingview.com https://unpkg.com;
                  img-src 'self' data: https:;
@@ -13,59 +13,54 @@
                  script-src 'self' https://telegram.org https://s3.tradingview.com https://unpkg.com;
                  connect-src 'self' https://www.okx.com wss://ws.okx.com wss://wsaws.okx.com;">
 
-  <!-- Стили -->
   <link rel="stylesheet" href="./assets/css/chart.css">
 
-  <!-- Внешние скрипты -->
+  <!-- Внешние либы -->
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <script src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
 
-  <!-- Наш код (и график, и логика панели/полосы) -->
+  <!-- Наши модули -->
   <script defer src="./assets/js/okx_chart.js"></script>
+  <script defer src="./assets/js/ui_panel.js"></script>
 </head>
 <body>
 <div id="wrap">
   <header id="title">BTC • USDT-SWAP (OKX)</header>
-  <div id="chart" aria-label="chart area"></div>
-</div>
-  <!-- ПОЛОСА (одна строка: индикатор • логотип выбранного источника • i • стрелка) -->
-  <footer id="dock" aria-label="switch bar">
-    <span id="status-dot" class="offline" aria-hidden="true"></span>
+  <div id="chart" aria-live="polite"></div>
 
-    <!-- логотип источника; src меняем из JS при выборе OKX|TV|VP -->
-    <img id="dock-logo" src="./images/okx-logotype-light.png" alt="OKX" decoding="async" />
-
-    <button id="btn-status-info" class="muted" type="button"
-            aria-haspopup="dialog" aria-expanded="false" title="Что значит индикатор?">i</button>
-
+  <!-- ФИКСИРОВАННАЯ НИЖНЯЯ ПОЛОСА (видна всегда) -->
+  <footer id="dock" aria-label="status bar">
+    <div id="status-dot" class="offline" aria-hidden="true" title="Индикатор состояния"></div>
+    <img id="dock-logo" alt="OKX" src="./images/okx-logotype-light.png" />
+    <button id="btn-status-info" class="muted" type="button" aria-haspopup="dialog" aria-expanded="false" title="Что значит этот индикатор?">i</button>
     <div class="spacer" aria-hidden="true"></div>
-
-    <!-- пустая кнопка — стрелку рисуем в CSS (::before), чтобы не было дубликатов -->
-    <button id="btn-panel" aria-expanded="false" aria-controls="panel" aria-label="Открыть настройки"></button>
+    <!-- Единственная квадратная кнопка со стрелкой. Треугольник рисуется ::before  -->
+    <button id="btn-panel" type="button" aria-expanded="false" aria-controls="panel" title="Открыть настройки"></button>
   </footer>
 
-  <!-- Поповер «i» -->
+  <!-- Поповер-справка по индикатору -->
   <section id="status-popover" role="dialog" aria-modal="false" hidden>
     <div class="tip-card">
       <div class="tip-title">Что значит индикатор состояния?</div>
       <ul class="tip-list">
         <li>🟢 <b>Онлайн (WS)</b> — данные обновляются в реальном времени.</li>
-        <li>🟡 <b>Деградирован (REST)</b> — WebSocket недоступен, берём REST периодически.</li>
+        <li>🟡 <b>Деградирован (REST)</b> — WebSocket временно недоступен, данные периодически подгружаются.</li>
         <li>🔴 <b>Оффлайн</b> — нет связи с источниками.</li>
       </ul>
-      <button id="btn-tip-close" type="button" class="muted">Понятно</button>
+      <button id="btn-tip-close" type="button" class="muted" title="Закрыть">Понятно</button>
     </div>
   </section>
 
-  <!-- Панель настроек (фиксированная, открывается вверх) -->
-  <section id="panel" role="dialog" aria-modal="true" aria-label="Настройки" hidden>
+  <!-- ВЫЕЗЖАЮЩАЯ ВВЕРХ ПАНЕЛЬ (поверх контента и полосы) -->
+  <section id="panel" role="dialog" aria-modal="true" aria-label="Настройки графика" hidden>
     <div id="panel-head">
-      <button id="btn-collapse" type="button" title="Свернуть">▼</button>
+      <button id="btn-close" type="button" title="Свернуть" aria-label="Свернуть панель">Закрыть</button>
       <div id="panel-title">Настройки</div>
+      <span id="last-upd" title="Последнее обновление">…</span>
     </div>
 
     <div id="panel-body">
-      <!-- 1. TF -->
+      <!-- 1: ТФ -->
       <div class="row" id="row-intervals">
         <a data-int="15"  class="int">15m</a>
         <a data-int="60"  class="int">1h</a>
@@ -73,23 +68,23 @@
         <a data-int="480" class="int">8h</a>
         <a data-int="720" class="int">12h</a>
         <a data-int="1440" class="int">1d</a>
-        <span id="last-upd" title="Последнее обновление">…</span>
       </div>
 
-      <!-- 2. Источник (дефолт: OKX) -->
+      <!-- 2: Источник (OKX/TV/VP) -->
       <div class="row" id="row-sources">
         <button type="button" class="src" data-src="okx">OKX (API/WS)</button>
         <button type="button" class="src" data-src="tv">TradingView (виджет)</button>
         <button type="button" class="src" data-src="vp">Полки</button>
       </div>
 
-      <!-- 3. Действия -->
+      <!-- 3: Действия -->
       <div class="row" id="row-actions">
         <button id="btn-fav" class="star" type="button" aria-pressed="false">➕ В избранное</button>
-        <a id="okx-link" target="_blank" rel="noopener" class="danger">Открыть на OKX</a>
-        <a id="tv-link"  target="_blank" rel="noopener" class="muted">Открыть в TradingView</a>
+        <a id="okx-link" class="danger" target="_blank" rel="noopener">Открыть на OKX</a>
+        <a id="tv-link"  class="muted"  target="_blank" rel="noopener">Открыть в TradingView</a>
         <button id="btn-copy" class="muted" type="button">Скопировать ссылку</button>
       </div>
+    </div>
   </section>
 
   <div class="hint" id="hint" aria-live="polite"></div>

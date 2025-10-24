@@ -92,15 +92,15 @@ footer#dock{
 #btn-panel::before{
   content: "";
   width: 0; height: 0;
-  border-left:  7px solid transparent;
-  border-right: 7px solid transparent;
-  border-bottom: 10px solid #fff;            /* ▲ вверх */
+  border-left:  8px solid transparent;
+  border-right: 8px solid transparent;
+  border-bottom: 14px solid #fff;            /* ▲ вверх */
 }
 
 /* При открытой панели (aria-expanded="true") рисуем треугольник вниз */
 #btn-panel[aria-expanded="true"]::before{
   border-bottom: 0;
-  border-top: 10px solid #fff;               /* ▼ вниз */
+  border-top: 14px solid #fff;               /* ▼ вниз */
 }
 
 /* Ховер/фокус — аккуратное подсветление границы */
@@ -138,9 +138,9 @@ footer#dock{
 
 #btn-status-info:hover{ border-color: rgba(255,255,255,.35) }
 
-#btn-panel{
+/* #btn-panel{
   font-size: 18px; /* крупный белый ▲/▼ */
-}
+} */
 #btn-panel[aria-expanded="true"]{ border-color: rgba(255,255,255,.65) }
 
 .spacer{flex:1}

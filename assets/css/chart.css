@@ -52,7 +52,7 @@ footer#dock{
 #status-dot.degraded{ background:#ffd60a }  /* 🟡 */
 #status-dot.offline{ background:#ff453a }   /* 🔴 */
 
-#btn-panel{
+/* #btn-panel{
   height: calc(var(--sq) / 1.1);
   width:  calc(var(--sq) / 1.1);
   border-radius: 10px;
@@ -62,7 +62,59 @@ footer#dock{
   cursor: pointer;
   display:inline-flex; align-items:center; justify-content:center;
   line-height: 1;
+}  */
+
+/* Кнопка сворачивания/разворачивания док-панели
+   — компактная «таблетка» с тонкой обводкой
+   — по умолчанию треугольник ВВЕРХ (открыть/развернуть)
+   — при aria-expanded="true" треугольник ВНИЗ (закрыть/свернуть) */
+#btn-panel{
+  /* размеры не привязаны к лого; адаптив через clamp */
+  --ctl-size: clamp(30px, 6.2vw, 38px);
+
+  height: var(--ctl-size);
+  width:  var(--ctl-size);
+
+  background: transparent;
+  color: var(--text);
+  border: 1px solid rgba(255,255,255,.18);   /* тонкая серая окантовка */
+  border-radius: 10px;                       /* квадрат с мягкими углами */
+
+  display: grid;
+  place-items: center;                       /* треугольник ровно по центру */
+
+  cursor: pointer;
+  outline: none;                             /* управляем фокусом сами */
+  transition: border-color .15s ease, background-color .15s ease;
 }
+
+/* Белый треугольник (вверх по умолчанию) */
+#btn-panel::before{
+  content: "";
+  width: 0; height: 0;
+  border-left:  7px solid transparent;
+  border-right: 7px solid transparent;
+  border-bottom: 10px solid #fff;            /* ▲ вверх */
+}
+
+/* При открытой панели (aria-expanded="true") рисуем треугольник вниз */
+#btn-panel[aria-expanded="true"]::before{
+  border-bottom: 0;
+  border-top: 10px solid #fff;               /* ▼ вниз */
+}
+
+/* Ховер/фокус — аккуратное подсветление границы */
+#btn-panel:hover,
+#btn-panel:focus-visible{
+  border-color: rgba(255,255,255,.35);
+}
+
+/* Состояние active — лёгкая заливка для тактильности */
+#btn-panel:active{
+  background: rgba(255,255,255,.06);
+}
+
+
 #btn-status-info{
   /* маленькая 'i' — на нижней кромке логотипа и меньше в 3 раза */
   background:transparent; color:var(--muted);

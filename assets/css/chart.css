@@ -1,248 +1,63 @@
-/* ==========================================================================
-   chart.css — ТЁМНАЯ ТЕМА. Вёрстка без прокрутки, нижняя панель фиксирована.
-   Все «кружочки» — со свечением (как на скрине).
-   ========================================================================== */
-
 :root{
-  --bg:#0b0e14;
-  --panel:#11151c;
-  --panel-2:#0f1319;
-  --text:#e5e7eb;
-  --muted:#93a3b8;
-  --accent:#4fa3ff;
-
-  --ok:#65d16f;      /* зелёный — онлайн */
-  --warn:#ffcc66;    /* жёлтый — деградирован */
-  --bad:#ff6b6b;     /* красный — оффлайн */
-
-  --radius:16px;
-  --gap: clamp(10px, 2.2vw, 18px);
-
-  --bottom-h: 68px;          /* высота нижней панели */
-  --safe-bottom: env(safe-area-inset-bottom, 0px);
-  --safe-top: env(safe-area-inset-top, 0px);
+--muted:#93a1b3; /* вторичный текст */
+--accent:#5bbcff; /* акцент/границы */
+--bar:#0f1524cc; /* фон панелей */
+--btn:#1a2135; /* фон кнопок */
+--btn-hover:#232c46; /* наведение */
+--safe: env(safe-area-inset-bottom, 0px);
 }
-
 *{box-sizing:border-box}
-html,body{
-  height:100%;
-  margin:0;
-  background:var(--bg);
-  color:var(--text);
-  font:14px/1.45 system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-  overflow:hidden; /* ВАЖНО: без прокрутки */
-}
+html,body{height:100%; margin:0; background:var(--bg); color:var(--fg);}
 
-#app{
-  height:100vh;
-  height:100svh;             /* мобильные браузеры */
-  display:flex;
-  flex-direction:column;
-  /* Чтобы низ всегда совпадал с линией панели */
-}
 
-/* ---------- Topbar (необязательный) ---------- */
-.topbar{
-  position:sticky; top:0; z-index:10;
-  display:flex; align-items:center; gap:12px;
-  padding:8px 14px;
-  background:linear-gradient(180deg, rgba(15,19,25,.88), rgba(15,19,25,.66));
-  border-bottom:1px solid rgba(255,255,255,.06);
-  backdrop-filter: blur(6px);
-}
-.topbar .brand{ display:flex; align-items:center; gap:10px; }
-.topbar .title{ font-weight:600; letter-spacing:.2px; }
-.topbar .spacer{ flex:1 1 auto; }
-.topbar .dot{
-  width:10px;height:10px;border-radius:50%;
-  background:var(--accent); box-shadow:0 0 12px rgba(79,163,255,.6);
-}
-#btn-status.status{
-  width:22px;height:22px;border-radius:50%;
-  border:none;background:transparent;color:var(--ok);
-  font-size:16px;line-height:1;cursor:default;
-}
-#btn-status.ok{ color:var(--ok); }
-#btn-status.warn{ color:var(--warn); }
-#btn-status.bad{ color:var(--bad); }
+/* Фикс 100vh для мобильных/iOS: js пишет --vh */
+#app{height:calc(var(--vh, 1vh) * 100); display:flex; flex-direction:column;}
 
-/* ---------- Chart area (заполняет всё между topbar и bottombar) ---------- */
-.chart-area{
-  position:relative;
-  flex:1 1 auto;
-  min-height:0;                 /* ключ: без переполнения */
-  overflow:hidden;
-}
 
-/* Слои-заглушки */
-.layer{
-  position:absolute; inset:0;
-  display:flex; align-items:center; justify-content:center;
-  border:1px solid rgba(255,255,255,.06);
-  border-radius:0;
-  background:
-    radial-gradient(120% 120% at 50% 0%, rgba(255,255,255,.02), rgba(255,255,255,.01)),
-    #0b0e14;
-}
-.layer-title{ opacity:.7; letter-spacing:.2px; }
+.bar{display:flex; align-items:center; justify-content:space-between; gap:.5rem; padding:.5rem .75rem; background:var(--bar); border-bottom:1px solid #101626;}
+#footerbar{border-top:1px solid #101626; border-bottom:none; padding-bottom:calc(.5rem + var(--safe));}
 
-/* ---------- Bottom bar ---------- */
-.bottombar{
-  position:fixed; left:0; right:0; bottom:0;
-  height: calc(var(--bottom-h) + var(--safe-bottom));
-  padding: 10px 16px calc(10px + var(--safe-bottom)) 14px;
-  background: linear-gradient(0deg, rgba(15,19,25,.96), rgba(15,19,25,.88));
-  border-top:1px solid rgba(255,255,255,.08);
-  display:flex; align-items:center; justify-content:space-between;
-  z-index:20;
-}
 
-/* слева */
-.bottom-left{ display:flex; align-items:center; gap:10px; min-width:0; }
+.status-left .title{font:600 0.95rem/1.2 system-ui, -apple-system, Segoe UI, Roboto, Arial; letter-spacing:.2px}
+.status-right{display:flex; gap:.5rem}
+.icon{display:inline-flex; align-items:center; justify-content:center; width:34px; height:28px; border-radius:10px; background:var(--btn); border:1px solid rgba(255,255,255,.1); color:var(--muted); cursor:pointer}
+.icon:hover{background:var(--btn-hover)}
 
-/* зелёный светящийся кружок */
-.status-led{
-  width:14px; height:14px; border-radius:50%;
-  background:var(--ok);
-  box-shadow: 0 0 10px rgba(101,209,111,.85), 0 0 22px rgba(101,209,111,.35);
-  flex: 0 0 auto;
-}
 
-/* название + кнопки справа от названия */
-.chart-name-wrap{
-  display:flex; align-items:center; gap:2px; /* 1–2px, как просили */
-  min-width:0;
-}
-.chart-name{
-  white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
-  font-weight:700; color:var(--text); opacity:.95;
-}
+#stage{position:relative; flex:1 1 auto; min-height:0;}
+#chart-host{position:absolute; inset:0;}
+#chart-host iframe, #chart-host .tv-wrap{position:absolute; inset:0; width:100%; height:100%; border:0;}
 
-/* кнопка "i" — по высоте как стрелка меню */
-.btn-info{
-  height:38px; min-width:38px;
-  display:flex; align-items:center; justify-content:center;
-  border-radius:10px;
-  border:1px solid rgba(255,255,255,.15);
-  background:linear-gradient(180deg, var(--panel), var(--panel-2));
-  color:var(--text); font-weight:700;
-}
 
-/* маленькая ² в рамке — открывает подсказку о статусе */
-.btn-tip{
-  height:22px; min-width:22px;
-  padding:0 6px;
-  border-radius:8px;
-  border:1px solid rgba(255,255,255,.2);
-  background:linear-gradient(180deg, rgba(255,255,255,.12), rgba(255,255,255,.06));
-  color:var(--text); font-weight:700; font-size:12px; line-height:1;
-  margin-left:4px;
-}
+/* Заглушка VP */
+#vp-placeholder{position:absolute; inset:0; display:grid; place-items:center;}
+.vp-card{background:#121a2d; border:1px dashed var(--accent); border-radius:16px; padding:24px; max-width:560px; text-align:center}
+.vp-card h2{margin:0 0 8px; font-size:20px}
+.vp-card p{margin:0; color:var(--muted)}
+.vp-card a{color:#9ed1ff}
 
-/* справа — стрелка меню. Отступ справа ≥15px достигается общим padding .bottombar */
-.bottom-right{ display:flex; align-items:center; gap:10px; }
-.btn-menu{
-  height:38px; min-width:42px; padding:0 12px;
-  border-radius:12px;
-  border:1px solid rgba(255,255,255,.15);
-  background:linear-gradient(180deg, var(--panel), var(--panel-2));
-  color:var(--text); font-weight:700;
-}
 
-/* ---------- POP ART (уведомление) ---------- */
-.pop-backdrop{
-  position:fixed; inset:0; z-index:30;
-  background: rgba(0,0,0,.45);
-  display:none; align-items:flex-end; justify-content:center;
-}
-.pop-backdrop.show{ display:flex; }
-.pop-card{
-  width:min(840px, 98vw);
-  background:linear-gradient(180deg, var(--panel), var(--panel-2));
-  border:1px solid rgba(255,255,255,.12);
-  border-radius: 16px 16px calc(16px + var(--safe-bottom)) calc(16px + var(--safe-bottom));
-  margin: 0 0 calc(var(--bottom-h) + 6px) 0;
-  padding: 14px;
-  box-shadow: 0 -18px 40px rgba(0,0,0,.35);
-}
+/* Нижние вкладки */
+.tabs{display:flex; gap:.5rem; width:100%;}
+.tab{flex:1 1 0; padding:.6rem .8rem; border-radius:12px; background:var(--btn); color:var(--fg); border:1px solid rgba(255,255,255,.08); cursor:pointer; font:600 0.95rem/1 system-ui}
+.tab:hover{background:var(--btn-hover)}
+.tab.is-active{outline:2px solid var(--accent)}
 
-/* строки уведомления */
-.pop-row{ display:grid; gap:12px; }
-.pop-row-buttons{
-  grid-template-columns: repeat(3, minmax(0,1fr));
-  margin-bottom: 10px;
-}
-.pop-row-links{
-  grid-template-columns: repeat(3, minmax(0,1fr));
-}
 
-/* кнопки с «эффектом сечения» */
-.pop-btn{
-  height:52px;
-  border-radius:12px;
-  border:1px solid rgba(255,255,255,.12);
-  color:var(--text); font-weight:800; letter-spacing:.2px;
-  background:
-    linear-gradient(135deg, rgba(255,255,255,.08) 0%, rgba(255,255,255,.02) 55%),
-    radial-gradient(120% 120% at 50% 0%, rgba(255,255,255,.06), rgba(255,255,255,.02));
-  transition: transform .08s ease, box-shadow .12s ease, border-color .12s ease, background-position .08s ease;
-  background-size: 200% 200%, 100% 100%;
-}
-.pop-btn:active{
-  transform: translateY(1px);
-  border-color: rgba(79,163,255,.35);
-  background-position: 40% 60%, 0 0; /* имитация «сечения» при нажатии */
-  box-shadow: inset 0 0 10px rgba(0,0,0,.25);
-}
+/* Popover/уведомление (dialog) */
+dialog{border:none; padding:0; background:transparent}
+dialog::backdrop{background:rgba(0,0,0,.45)}
+.sheet{background:#0b1224; border:1px solid #1c2340; border-radius:16px; padding:16px; min-width:min(92vw,680px)}
+.sheet-row{display:flex; gap:8px; flex-wrap:wrap;}
+.pill{flex:1 1 0; padding:.8rem 1rem; border-radius:999px; background:#141c36; color:var(--fg); border:1px solid rgba(255,255,255,.08); cursor:pointer; font:600 0.95rem/1}
+.pill:hover{background:#1a2446}
+.links{margin-top:10px}
+.links a{flex:1 1 0; display:inline-block; text-align:center; padding:.6rem .8rem; border-radius:10px; background:#10172d; border:1px solid rgba(255,255,255,.08); color:#b7c8e6; text-decoration:none}
+.sheet-actions{margin-top:10px; display:flex; justify-content:flex-end}
+.ghost{background:transparent; border:1px solid rgba(255,255,255,.2); color:var(--muted); padding:.4rem .8rem; border-radius:8px; cursor:pointer}
 
-/* ссылки и избранное */
-.pop-link, .pop-fav{
-  height:48px; display:flex; align-items:center; justify-content:center;
-  border-radius:12px; text-decoration:none;
-  border:1px solid rgba(255,255,255,.12);
-  background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
-  color:var(--text); font-weight:800; letter-spacing:.2px;
-  transition: transform .12s ease, border-color .12s ease, box-shadow .12s ease;
-}
-.pop-link:hover, .pop-fav:hover{
-  transform: translateY(-1px);
-  border-color: rgba(79,163,255,.35);
-  box-shadow: 0 6px 18px rgba(0,0,0,.18);
-}
-.pop-fav:active{ transform: translateY(0); }
 
-/* ---------- TIP (подсказка про статусы) ---------- */
-.tip-backdrop{
-  position:fixed; inset:0; z-index:40;
-  background: rgba(0,0,0,.45);
-  display:none; align-items:center; justify-content:center;
-  padding: 10px;
-}
-.tip-backdrop.show{ display:flex; }
-.tip-card{
-  width:min(620px, 96vw);
-  background:linear-gradient(180deg, var(--panel), var(--panel-2));
-  border:1px solid rgba(255,255,255,.12);
-  border-radius:16px;
-  padding:16px;
-  box-shadow: 0 18px 40px rgba(0,0,0,.35);
-}
-.tip-title{ font-weight:800; margin-bottom:10px; }
-.tip-list{ margin:0; padding-left:0; list-style:none; }
-.tip-list li{ display:flex; align-items:center; gap:8px; padding:6px 0; color:var(--text); }
-.dot-lg{
-  width:14px;height:14px;border-radius:50%; display:inline-block; flex:0 0 auto;
-  box-shadow: 0 0 10px rgba(255,255,255,.3), 0 0 20px rgba(255,255,255,.18) inset;
-}
-.dot-lg.ok  { background:var(--ok);   box-shadow: 0 0 12px rgba(101,209,111,.9); }
-.dot-lg.warn{ background:var(--warn); box-shadow: 0 0 12px rgba(255,204,102,.9); }
-.dot-lg.bad { background:var(--bad);  box-shadow: 0 0 12px rgba(255,107,107,.9); }
-
-/* ---------- Адаптив ---------- */
-@media (max-width: 720px){
-  .topbar{ padding:6px 12px; }
-  .btn-info{ height:36px; min-width:36px; }
-  .btn-menu{ height:36px; min-width:40px; }
-  .pop-btn{ height:48px; }
-  .pop-link, .pop-fav{ height:46px; }
+/* Мелкие адаптивы */
+@media (max-width: 480px){
+.status-left .title{font-size:.9rem}
 }

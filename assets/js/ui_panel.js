@@ -157,6 +157,9 @@
 		$('#btn-info')?.addEventListener('click', openInfo);
 		$('#info-close')?.addEventListener('click', closeInfo);
 		$('#slide-menu')?.addEventListener('click', onMenuClick);
+				// Клики по кнопкам-иконкам в инфо-окне
+		$('#info-pop')?.addEventListener('click', onInfoIconClick);
+
 
 		// Клик по фоне info-pop закрывает окно
 		$('#info-pop')?.addEventListener('click', (e) => {

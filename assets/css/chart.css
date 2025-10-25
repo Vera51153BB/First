@@ -1,134 +1,273 @@
-/* -*- coding: utf-8 -*-  First/assets/css/chart.css
-   Минимальный UX:
-   • Фиксированная нижняя полоса с тремя логотипами-кнопками (OKX / TV / VP)
-   • Без выезжающих окон
-   • Учтён iOS safe-area, отключён «резиновый» скролл, график не перекрывается
-*/
+/* ===== chart.css — базовые стили (тёмная тема), адаптив + безопасная нижняя панель ===== */
 
-/* ===== базовые переменные ===== */
 :root{
-  --bg:#0b0f14; --text:#e6e6e6; --muted:#9aa4af;
-  --accent:#ffd65c; --danger:#ff6b6b;
+	--bg:#0b0e14;
+	--panel:#11151c;
+	--panel-2:#0f1319;
+	--text:#e5e7eb;
+	--muted:#93a3b8;
+	--accent:#4fa3ff;
+	--ok:#65d16f;
+	--warn:#ffcc66;
+	--bad:#ff6b6b;
 
-  /* размеры */
-  --pad: clamp(10px, 2.5vw, 14px);
-  --radius: 12px;
+	--radius:16px;
+	--gap: clamp(10px, 2.2vw, 18px);
 
-  /* высота фиксированной полосы (учитываем компактность на мобиле) */
-  --dock-h: clamp(48px, 7.2vh, 60px);
+	--bottom-h: 68px;
+	--menu-h: 220px;
 
-  /* высота логотипов */
-  --logo-h: clamp(18px, 4.6vh, 28px);
-
-  /* размеры служебных кнопок */
-  --dot: 10px;
-  --ctl: 36px;
+	/* учёт безопасной зоны на iOS */
+	--safe-bottom: env(safe-area-inset-bottom, 0px);
+	--safe-top: env(safe-area-inset-top, 0px);
 }
 
-/* ===== базовые стили / iOS улучшения ===== */
+*{box-sizing:border-box}
 html,body{
-  height:100%;
-  margin:0;
-  background:var(--bg);
-  color:var(--text);
-  font-family:system-ui,Arial;
-  -webkit-text-size-adjust:100%;
-  overscroll-behavior: none; /* чтобы жесты не «крались» у контента */
+	height:100%;
+	background:var(--bg);
+	color:var(--text);
+	margin:0;
+	font: 14px/1.45 system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
 }
 
-#wrap{
-  min-height: 100svh; /* использовать современную высоту вьюпорта (лучше для iOS) */
-  display:flex;
-  flex-direction:column;
+/* Телеграм-вебвью: иногда убираем внешние отступы */
+body.tg{ background:var(--bg); }
 
-  /* резерв под фиксированную полосу, с учётом нижнего выреза iOS */
-  padding-bottom: calc(var(--dock-h) + env(safe-area-inset-bottom));
+#app{
+	min-height:100%;
+	display:flex;
+	flex-direction:column;
 }
 
-header{
-  padding:10px var(--pad);
-  font-weight:600;
-  letter-spacing:.3px;
+/* ---------- Topbar ---------- */
+.topbar{
+	position:sticky;
+	top:0;
+	z-index:20;
+	display:flex;
+	align-items:center;
+	gap:12px;
+	padding:10px 14px;
+	background:linear-gradient(180deg, rgba(15,19,25,.88), rgba(15,19,25,.66));
+	backdrop-filter: blur(6px);
+	border-bottom:1px solid rgba(255,255,255,.06);
+}
+.topbar .brand{ display:flex; align-items:center; gap:10px; }
+.topbar .dot{ width:10px; height:10px; border-radius:50%; background:var(--accent); box-shadow:0 0 12px rgba(79,163,255,.6); }
+.topbar .title{ font-weight:600; letter-spacing:.2px; }
+.topbar .spacer{ flex:1 1 auto; }
+#btn-status.status{
+	width:24px; height:24px; border-radius:50%;
+	border:none; cursor:default; background:transparent; color:var(--ok); font-size:18px; line-height:1;
+}
+#btn-status.ok{ color:var(--ok); }
+#btn-status.warn{ color:var(--warn); }
+#btn-status.bad{ color:var(--bad); }
+
+/* ---------- Chart area ---------- */
+.chart-area{
+	position:relative;
+	flex:1 1 auto;
+	min-height: 300px;
+}
+.chart-layer{
+	position:absolute;
+	inset:0;
+	display:block;
+	width:100%;
+	height:100%;
 }
 
-#chart{
-  flex:1;
-  min-height: 320px;
-  /* иногда Safari считает высоту иначе — помогаем */
-  min-height: 50dvh;
+/* TradingView root контейнер (заполняет слой) */
+.tv-root{
+	position:absolute; inset:0;
 }
 
-/* ===== нижняя фиксированная полоса ===== */
-footer#dock{
-  position: fixed;
-  left: 0; right: 0; bottom: 0;
-  height: calc(var(--dock-h) + env(safe-area-inset-bottom));
-  padding:
-    0 var(--pad)
-    env(safe-area-inset-bottom) var(--pad); /* снизу — отступ под safe-area */
-  display:flex; align-items:center; gap:14px;
+/* Заглушка "Полки объёма" */
+.shelves{
+	display:flex;
+	align-items:center;
+	justify-content:center;
+}
+.shelves-box{
+	border:1px dashed rgba(255,255,255,.2);
+	border-radius:var(--radius);
+	padding: 24px 28px;
+	text-align:center;
+	background: rgba(255,255,255,.02);
+}
+.shelves-title{ font-size:16px; margin-bottom:6px; opacity:.9; }
+.shelves-sub{ color:var(--muted); }
 
-  border-top: 1px solid rgba(255,255,255,.08);
-  background: rgba(255,255,255,.02);
-  z-index: 999; /* поверх любого контента страницы */
-}
-
-#status-dot{
-  width: var(--dot);
-  height: var(--dot);
-  border-radius: 50%;
-  box-shadow: 0 0 0 2px rgba(255,255,255,.06) inset;
-}
-#status-dot.online{   background:#34c759 }  /* 🟢 */
-#status-dot.degraded{ background:#ffd60a }  /* 🟡 */
-#status-dot.offline{  background:#ff453a }  /* 🔴 */
-
-/* кнопки-логотипы */
-button.brand{
-  appearance:none; -webkit-appearance:none;
-  background: transparent;
-  border: 1px solid transparent; /* чтобы при фокусе не прыгала верстка */
-  border-radius: 10px;
-  padding: 6px 8px;
-  cursor: pointer;
-  display:flex; align-items:center; justify-content:center;
-}
-button.brand[aria-pressed="true"]{
-  border-color: rgba(255,255,255,.35);
-  background: rgba(255,255,255,.04);
-}
-button.brand img{
-  display:block;
-  height: var(--logo-h);
-  width: auto;
+/* ---------- Bottom bar ---------- */
+.bottombar{
+	position: sticky; /* на случай, если внутри прокрутки; далее — фикс закреплением */
+	position:fixed;
+	left:0; right:0; bottom:0;
+	height: calc(var(--bottom-h) + var(--safe-bottom));
+	padding-bottom: var(--safe-bottom);
+	background: linear-gradient(0deg, rgba(15,19,25,.96), rgba(15,19,25,.88));
+	backdrop-filter: blur(8px);
+	border-top:1px solid rgba(255,255,255,.06);
+	display:flex;
+	align-items:center;
+	justify-content:space-between;
+	padding: 10px 14px;
+	z-index: 50;
 }
 
-/* «к началу» — квадрат с треугольником вверх */
-#btn-to-top{
-  --size: calc(var(--dock-h) - 6px); /* на 3px отступ сверху/снизу, сохраняем квадрат */
-  width: var(--size);
-  height: var(--size);
-  margin-left: auto;
-  border-radius: 10px;
-  border: 1px solid rgba(255,255,255,.18);
-  background: transparent;
-  display:grid; place-items:center;
-  cursor:pointer;
+/* левая часть */
+.bottom-left{ display:flex; align-items:center; gap:10px; }
+.status-led{
+	width:12px; height:12px; border-radius:50%;
+	background: var(--ok);
+	box-shadow: 0 0 10px rgba(101,209,111,.7);
 }
-#btn-to-top::before{
-  content:"";
-  width:0; height:0;
-  border-left: 7px solid transparent;
-  border-right:7px solid transparent;
-  border-bottom:10px solid #fff; /* ▲ */
+.chart-name{ font-weight:600; color:var(--text); opacity:.92; }
+
+/* правая часть */
+.bottom-right{ display:flex; align-items:center; gap:10px; }
+.btn-info,.btn-menu{
+	height: 38px; min-width: 38px;
+	padding: 0 12px;
+	border-radius: 10px;
+	border:1px solid rgba(255,255,255,.15);
+	background: linear-gradient(180deg, var(--panel), var(--panel-2));
+	color: var(--text);
+	font-weight:600;
+	cursor:pointer;
 }
-#btn-to-top:hover{ border-color: rgba(255,255,255,.35); }
+.btn-info{ width:38px; padding:0; display:flex; align-items:center; justify-content:center; font-size:14px; }
+.btn-menu{ font-size:13px; letter-spacing:.3px; }
 
-.spacer{ flex:1; }
+/* ---------- Slide menu ---------- */
+.slide-menu{
+	position: fixed;
+	left:0; right:0;
+	bottom: calc(var(--bottom-h) * -1 - var(--menu-h)); /* спрятано ниже экрана */
+	height: calc(var(--menu-h) + var(--safe-bottom));
+	padding-bottom: var(--safe-bottom);
+	background: linear-gradient(0deg, rgba(15,19,25,.98), rgba(15,19,25,.92));
+	border-top:1px solid rgba(255,255,255,.08);
+	box-shadow: 0 -30px 60px rgba(0,0,0,.35);
+	transition: transform .28s ease, box-shadow .28s ease;
+	transform: translateY(0);
+	z-index: 60;
+}
+.slide-menu.open{
+	transform: translateY(calc(-1 * (var(--menu-h) + var(--bottom-h))));
+}
+.menu-grid{
+	display:grid;
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+	gap: 10px;
+	padding: 14px;
+}
+.menu-btn{
+	height:48px;
+	border-radius: 12px;
+	border:1px solid rgba(255,255,255,.12);
+	background: radial-gradient(120% 120% at 50% 0%, rgba(255,255,255,.06), rgba(255,255,255,.02));
+	color:var(--text);
+	font-weight:700;
+	letter-spacing:.2px;
+	cursor:pointer;
+}
+.menu-btn.emph{
+	border-color: rgba(79,163,255,.35);
+	box-shadow: inset 0 0 0 1px rgba(79,163,255,.25);
+}
 
-/* для скринридеров */
-.sr-only{
-  position:absolute!important;
-  width:1px;height:1px;
-  margin:-1px;border:0;padding:0;overflow:hidden;clip:rect(0 0 0 0);
+/* ---------- Info popup ---------- */
+.info-pop{
+	position: fixed;
+	inset:0;
+	display:none;
+	align-items:flex-end;
+	justify-content:center;
+	background: rgba(0,0,0,.35);
+	z-index: 70;
+}
+.info-pop.show{ display:flex; }
+.info-card{
+	width:min(680px, 96vw);
+	background: linear-gradient(180deg, var(--panel), var(--panel-2));
+	border:1px solid rgba(255,255,255,.1);
+	border-radius: 16px 16px calc(16px + var(--safe-bottom)) calc(16px + var(--safe-bottom));
+	margin: 0 0 var(--bottom-h) 0;
+	padding: 14px;
+	color: var(--text);
+}
+.info-head{
+	display:flex; align-items:center; justify-content:space-between;
+	font-weight:700;
+	margin-bottom:8px;
+}
+.info-head .x{
+	border:none; background:transparent; color:var(--muted);
+	font-size:18px; cursor:pointer; line-height:1;
+}
+.info-body p{ margin:.5em 0; color:var(--muted); }
+
+/* ---------- Адаптив ---------- */
+@media (max-width: 720px){
+	.topbar{ padding:8px 12px; }
+	.menu-grid{ gap:8px; padding:12px; }
+	.menu-btn{ height:46px; }
+}
+/* --- Info icons row (кнопки-логотипы) --- */
+.info-icons{
+	display: grid;
+	grid-template-columns: repeat(3, minmax(0,1fr));
+	gap: 16px;
+	align-items: center;
+	justify-items: center;
+	padding: 8px 0 2px;
+}
+
+.info-icon-btn{
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: min(160px, 28vw);
+	height: min(110px, 20vw);
+	border-radius: 14px;
+	border: 1px solid rgba(255,255,255,.12);
+	background: radial-gradient(120% 120% at 50% 0%, rgba(255,255,255,.06), rgba(255,255,255,.02));
+	cursor: pointer;
+	transition: transform .12s ease, box-shadow .12s ease, border-color .12s ease;
+}
+
+.info-icon-btn:hover{
+	transform: translateY(-1px);
+	box-shadow: 0 6px 18px rgba(0,0,0,.25);
+	border-color: rgba(79,163,255,.35);
+}
+
+.info-icon-btn:active{
+	transform: translateY(0);
+	box-shadow: 0 2px 8px rgba(0,0,0,.25) inset;
+}
+
+.info-icon-btn img{
+	display:block;
+	max-width: 90%;
+	max-height: 80%;
+	object-fit: contain;
+	filter: none; /* логотипы уже "light" */
+}
+
+/* мобильная коррекция */
+@media (max-width: 720px){
+	.info-icons{ gap: 12px; }
+	.info-icon-btn{
+		width: min(140px, 40vw);
+		height: min(90px, 26vw);
+		border-radius: 12px;
+	}
+	.info-icon-btn img{
+		max-width: 88%;
+		max-height: 78%;
+	}
 }

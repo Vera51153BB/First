@@ -1,191 +1,162 @@
-/* okx_chart.js
-   Лёгкая отрисовка свечей на Canvas (заглушка для OKX BTC-USDT-SWAP).
-   Позже сюда подключим реальное API OKX. Сделано максимально нетяжело.
-
-   Публичные функции:
-   - initOkxCanvas(canvasEl)
-   - showOkxLayer(), showTvLayer(), showShelves()
-   - setChartName(name)
+/* -*- coding: utf-8 -*-  First/assets/js/okx_chart.js
+   Что делает:
+   • Рисует график OKX (Lightweight-Charts) либо встраивает TradingView виджет
+   • Третья «кнопка» (VP) — просто открывает внешнюю ссылку
+   • Нижняя полоса фиксирована; только три логотипа-кнопки
+   • Сохраняет выбранный источник в localStorage
 */
 
-(() => {
-	// ----------- Состояние -----------
-	let canvas, ctx, dpi = 1;
-	let currentLayer = 'okx'; // okx | tv | shelves
-	let rafId = null;
+(function () {
+  // DOM
+  const elTitle  = document.getElementById('title');
+  const elChart  = document.getElementById('chart');
+  const elDot    = document.getElementById('status-dot');
+  const toTopBtn = document.getElementById('btn-to-top');
 
-	// Генерация фейковых свечей (N точек)
-	function genFakeCandles(n = 120, start = 68000) {
-		const out = [];
-		let price = start;
-		for (let i = 0; i < n; i++) {
-			const drift = (Math.random() - 0.5) * 400;
-			const open = price;
-			const close = price + drift;
-			const high = Math.max(open, close) + Math.random() * 120;
-			const low  = Math.min(open, close) - Math.random() * 120;
-			out.push({ o: open, h: high, l: low, c: close });
-			price = close + (Math.random() - 0.5) * 100;
-		}
-		return out;
-	}
+  // кнопки-логотипы
+  const brandBtns = Array.from(document.querySelectorAll('button.brand'));
 
-	const data = genFakeCandles();
+  // истоки (OKX — дефолт)
+  const LS_SRC = 'LAST_SRC_SIMPLE';
+  let source = (localStorage.getItem(LS_SRC) || 'okx').toLowerCase();
+  if (!['okx','tv','vp'].includes(source)) source = 'okx';
 
-	// ----------- Рендер -----------
-	function resizeCanvas() {
-		if (!canvas) return;
-		const rect = canvas.getBoundingClientRect();
-		dpi = window.devicePixelRatio || 1;
-		canvas.width = Math.max(1, Math.floor(rect.width * dpi));
-		canvas.height = Math.max(1, Math.floor(rect.height * dpi));
-		ctx = canvas.getContext('2d');
-		ctx.setTransform(dpi, 0, 0, dpi, 0, 0); // логические координаты в CSS-пикселях
-	}
+  // помечаем активную кнопку
+  setActiveBrand(source);
 
-	function findMinMax(arr) {
-		let lo = Infinity, hi = -Infinity;
-		for (const k of arr) {
-			if (k.l < lo) lo = k.l;
-			if (k.h > hi) hi = k.h;
-		}
-		return [lo, hi];
-	}
+  // заголовок
+  elTitle.textContent = 'BTC • USDT-SWAP (OKX)';
 
-	function yScaleFactory(lo, hi, h, pad = 10) {
-		const span = Math.max(1, hi - lo);
-		return (price) => {
-			const t = (price - lo) / span;
-			return Math.round((h - pad) - (h - pad * 2) * t);
-		};
-	}
+  // обработчики
+  brandBtns.forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const next = btn.getAttribute('data-src');
+      if (next === 'vp') {
+        // просто ссылка (как просили)
+        openVP();
+        return;
+      }
+      if (next === source) return;
+      source = next;
+      localStorage.setItem(LS_SRC, source);
+      setActiveBrand(source);
+      mountBySource(source);
+    });
+  });
 
-	function render() {
-		if (!canvas || !ctx) return;
+  toTopBtn.addEventListener('click', ()=>{
+    try { window.scrollTo({ top:0, behavior:'smooth' }); }
+    catch { window.scrollTo(0,0); }
+  });
 
-		const w = canvas.clientWidth;
-		const h = canvas.clientHeight;
+  // первое построение
+  mountBySource(source);
 
-		// bg
-		ctx.clearRect(0, 0, w, h);
-		ctx.fillStyle = '#0b0e14';
-		ctx.fillRect(0, 0, w, h);
 
-		// рамка
-		ctx.strokeStyle = 'rgba(255,255,255,.08)';
-		ctx.strokeRect(0.5, 0.5, w - 1, h - 1);
+  /* ===== helpers ===== */
 
-		// сетка
-		ctx.strokeStyle = 'rgba(255,255,255,.06)';
-		ctx.lineWidth = 1;
-		const rows = 5;
-		for (let i = 1; i < rows; i++) {
-			const y = Math.round((h / rows) * i) + 0.5;
-			ctx.beginPath();
-			ctx.moveTo(0, y);
-			ctx.lineTo(w, y);
-			ctx.stroke();
-		}
+  function setActiveBrand(src){
+    brandBtns.forEach(b => b.setAttribute('aria-pressed', String(b.getAttribute('data-src')===src)));
+  }
 
-		// свечи
-		const [lo, hi] = findMinMax(data);
-		const y = yScaleFactory(lo, hi, h, 12);
+  function setStatus(mode){
+    elDot.classList.remove('online','degraded','offline');
+    elDot.classList.add(mode); // online | degraded | offline
+  }
 
-		const cw = Math.max(3, Math.floor(w / Math.max(30, data.length))); // ширина свечи
-		const gap = Math.max(1, Math.floor(cw * 0.25));
-		const bodyW = Math.max(1, cw - gap);
+  function clearChart(){
+    // если был TradingView — просто зачистим контейнер
+    elChart.innerHTML = '';
+  }
 
-		let x = Math.max(2, w - (data.length * cw) - 6); // прижимаем к правому краю
-		for (const k of data) {
-			const openY = y(k.o);
-			const closeY = y(k.c);
-			const highY = y(k.h);
-			const lowY = y(k.l);
-			const up = k.c >= k.o;
+  function openVP(){
+    // в Telegram есть tg.openLink; в обычном браузере — window.open
+    const tg = window.Telegram?.WebApp;
+    const url = 'https://www.restmebel.ru/';
+    try {
+      if (tg && typeof tg.openLink==='function') { tg.openLink(url); return; }
+    } catch {}
+    window.open(url, '_blank', 'noopener');
+  }
 
-			// тень
-			ctx.strokeStyle = 'rgba(255,255,255,.35)';
-			ctx.beginPath();
-			ctx.moveTo(x + Math.floor(bodyW / 2), highY);
-			ctx.lineTo(x + Math.floor(bodyW / 2), lowY);
-			ctx.stroke();
+  function mountBySource(src){
+    if (src === 'tv') {
+      setStatus('degraded'); // виджет не WS
+      mountTradingView();
+    } else { // OKX
+      setStatus('offline');
+      mountOkx();
+    }
+  }
 
-			// тело
-			ctx.fillStyle = up ? '#65d16f' : '#ff6b6b';
-			const top = Math.min(openY, closeY);
-			const bh = Math.max(1, Math.abs(openY - closeY));
-			ctx.fillRect(x, top, bodyW, bh);
+  /* ====== OKX (Lightweight-Charts + REST демо) ====== */
+  function mountOkx(){
+    clearChart();
 
-			x += cw;
-		}
+    const chart = LightweightCharts.createChart(elChart, {
+      layout: { background: { color:'#0b0f14' }, textColor:'#e6e6e6' },
+      grid:   { vertLines:{ color:'#1c232b' }, horzLines:{ color:'#1c232b' } },
+      rightPriceScale: { borderColor:'#2a3542' },
+      timeScale: { borderColor:'#2a3542', timeVisible:true, secondsVisible:false },
+      handleScroll:true, handleScale:true,
+    });
+    const series = chart.addCandlestickSeries({
+      upColor:'#26a69a', downColor:'#ef5350', borderVisible:false,
+      wickUpColor:'#26a69a', wickDownColor:'#ef5350',
+    });
 
-		// инфо-текст
-		ctx.fillStyle = 'rgba(255,255,255,.5)';
-		ctx.font = '12px system-ui, -apple-system, Segoe UI, Roboto, Arial';
-		ctx.fillText('OKX · BTC-USDT-SWAP (demo)', 10, 18);
-	}
+    fetch('https://www.okx.com/api/v5/market/candles?instId=BTC-USDT-SWAP&bar=1H&limit=500')
+      .then(r=>r.json())
+      .then(j=>{
+        const rows = (j.data||[]).slice().reverse().map(r => ({
+          time:  Math.floor(Number(r[0])/1000),
+          open:  Number(r[1]),
+          high:  Number(r[2]),
+          low:   Number(r[3]),
+          close: Number(r[4]),
+        }));
+        series.setData(rows);
+        chart.timeScale().fitContent();
+        setStatus('online');
+      })
+      .catch(()=>{
+        setStatus('offline');
+      });
+  }
 
-	function loop() {
-		render();
-		// легкая анимация: «дышит» последняя свеча как будто тикает
-		const last = data[data.length - 1];
-		last.c += (Math.random() - 0.5) * 8;
-		last.h = Math.max(last.h, last.c);
-		last.l = Math.min(last.l, last.c);
-		rafId = requestAnimationFrame(loop);
-	}
+  /* ====== TradingView виджет ====== */
+  function mountTradingView(){
+    clearChart();
 
-	// ----------- Публичные функции -----------
-	function initOkxCanvas(canvasEl) {
-		canvas = canvasEl;
-		resizeCanvas();
-		window.addEventListener('resize', resizeCanvas, { passive:true });
-		loop();
-	}
+    function init(){
+      // символ OKX perpetual (как раньше)
+      const symbol = 'OKX:BTCUSDT.P';
+      try{
+        new TradingView.widget({
+          autosize: true,
+          symbol,
+          interval: "60",
+          timezone: "Etc/UTC",
+          theme: "dark",
+          style: "1",
+          locale: "ru",
+          allow_symbol_change: false,
+          save_image: false,
+          container_id: "chart",
+        });
+      }catch(e){
+        elChart.textContent = 'Не удалось инициализировать TradingView';
+      }
+    }
 
-	function setChartName(name) {
-		const el = document.getElementById('chart-name');
-		if (el) el.textContent = name;
-	}
-
-	function showLayer(which) {
-		currentLayer = which;
-		const $okx = document.getElementById('okxCanvas');
-		const $tv  = document.getElementById('tvContainer');
-		const $sh  = document.getElementById('shelvesPlaceholder');
-
-		if (!$okx || !$tv || !$sh) return;
-
-		$okx.hidden = which !== 'okx';
-		$tv.hidden  = which !== 'tv';
-		$sh.hidden  = which !== 'shelves';
-
-		if (which === 'okx') setChartName('OKX · BTC-USDT-SWAP');
-		if (which === 'tv')  setChartName('TV · ETH-USDT-SWAP');
-		if (which === 'shelves') setChartName('Полки объёма · заглушка');
-	}
-
-	// Упрощённые публичные алиасы
-	window.showOkxLayer = () => showLayer('okx');
-	window.showTvLayer  = () => showLayer('tv');
-	window.showShelves  = () => showLayer('shelves');
-	window.setChartName = setChartName;
-
-	// Инициализация при загрузке DOM
-	document.addEventListener('DOMContentLoaded', () => {
-		const canvasEl = document.getElementById('okxCanvas');
-		if (canvasEl) initOkxCanvas(canvasEl);
-
-		// Если открыто в Telegram WebApp — можно чуть скорректировать UI
-		if (window.Telegram && window.Telegram.WebApp) {
-			document.body.classList.add('tg');
-			try {
-				window.Telegram.WebApp.ready();
-				// выставим цвет темы под тёмный фон
-				window.Telegram.WebApp.setBackgroundColor('#0b0e14');
-				window.Telegram.WebApp.setHeaderColor('secondary_bg_color');
-			} catch(e){}
-		}
-	});
-
+    if (!window.TradingView){
+      const s = document.createElement('script');
+      s.src = 'https://s3.tradingview.com/tv.js';
+      s.onload = init;
+      s.onerror = ()=> elChart.textContent = 'Ошибка загрузки TradingView';
+      document.head.appendChild(s);
+    } else {
+      init();
+    }
+  }
 })();

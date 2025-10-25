@@ -3,106 +3,31 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-  <title>OKX SWAP Chart</title>
+  <title>OKX Redirect</title>
 
-  <!-- CSP: Telegram, OKX REST/WS, TradingView, unpkg -->
+  <!-- Никакого UI: только безопасный редирект на OKX -->
   <meta http-equiv="Content-Security-Policy"
-        content="
-      default-src 'self' https://telegram.org https://s3.tradingview.com https://*.tradingview.com https://unpkg.com;
-      img-src 'self' data: https:;
-      style-src 'self';
-      script-src 'self' https://telegram.org https://s3.tradingview.com https://unpkg.com;
-      connect-src 'self' https://www.okx.com wss://ws.okx.com wss://wsaws.okx.com;
-    ">
+        content="default-src 'self';
+                 img-src 'self' https:;
+                 style-src 'self' 'unsafe-inline';
+                 script-src 'self';
+                 connect-src 'self';">
 
-  <link rel="stylesheet" href="./assets/css/chart.css">
-
-  <!-- внешние скрипты -->
-  <script src="https://telegram.org/js/telegram-web-app.js"></script>
-  <script src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
-
-  <!-- наш код -->
-  <script defer src="./assets/js/okx_chart.js"></script>
-  <!-- ui_panel.js больше не нужен и не подключаем -->
+  <link rel="icon" href="data:;base64,=">
+  <style>
+    html,body{height:100%;margin:0;font-family:system-ui,Arial;background:#0b0f14;color:#e6e6e6}
+    .wrap{height:100%;display:grid;place-items:center;text-align:center;padding:24px}
+    .muted{color:#9aa4af;font-size:14px}
+    a{color:#ffd65c}
+  </style>
+  <script defer src="./assets/js/okx_redirect.js"></script>
 </head>
 <body>
-<div id="wrap">
-  <header id="title">BTC • USDT-SWAP (OKX)</header>
-  <div id="chart" aria-label="График"></div>
-
-  <!-- ФИКСИРОВАННАЯ НИЖНЯЯ ПОЛОСА -->
-  <footer id="dock" role="toolbar" aria-label="Выбор источника">
-    <!-- индикатор состояния -->
-    <div id="status-dot" class="offline" title="Статус соединения"></div>
-
-    <!-- маленькая квадратная кнопка «i» — открывает поп-ап -->
-    <button id="btn-status-info" type="button" title="Справка / настройки">i</button>
-
-    <!-- КНОПКИ-ЛОГОТИПЫ (переключают источник графика) -->
-    <button class="brand" data-src="okx" aria-pressed="false" title="OKX (API/WS)">
-      <img id="logo-okx" src="./images/okx-logotype-light.png" alt="OKX">
-    </button>
-    <button class="brand" data-src="tv" aria-pressed="false" title="TradingView (виджет)">
-      <img id="logo-tv" src="./images/tradingview-logotype-light.png" alt="TradingView">
-    </button>
-    <button class="brand" data-src="vp" aria-pressed="false" title="Volume Profile (ссылка)">
-      <img id="logo-vp" src="./images/vp-logotype-light.png" alt="VP">
-    </button>
-
-    <div class="spacer" aria-hidden="true"></div>
-
-    <!-- «к началу» (по желанию, можно убрать) -->
-    <button id="btn-to-top" type="button" title="К началу">
-      <span class="sr-only">К началу</span>
-    </button>
-  </footer>
-</div>
-
-<!-- ПОП-АП (ALERT/MODAL) поверх сайта.
-     Содержит быстрые кнопки TF, ссылки и мини-справку. -->
-<section id="alert" role="dialog" aria-modal="true" aria-labelledby="alert-title" hidden>
-  <div class="alert-backdrop" data-close="1"></div>
-  <div class="alert-card">
-    <div class="alert-head">
-      <h2 id="alert-title">Быстрые настройки</h2>
-      <button id="alert-close" class="alert-x" title="Закрыть">✕</button>
-    </div>
-
-    <div class="alert-body">
-      <!-- 1) Таймфреймы -->
-      <div class="alert-row">
-        <div class="row-title">TF:</div>
-        <div class="row-controls">
-          <!-- data-min: 15|60|240|1440 -->
-          <button class="js-int" data-min="15">15m</button>
-          <button class="js-int" data-min="60">1h</button>
-          <button class="js-int" data-min="240">4h</button>
-          <button class="js-int" data-min="1440">1d</button>
-          <span id="last-upd" class="muted" title="Последнее обновление">…</span>
-        </div>
-      </div>
-
-      <!-- 2) Быстрые ссылки -->
-      <div class="alert-row">
-        <div class="row-title">Ссылки:</div>
-        <div class="row-controls">
-          <a id="okx-link" class="link danger" target="_blank" rel="noopener">Открыть на OKX</a>
-          <a id="tv-link"  class="link"       target="_blank" rel="noopener">Открыть в TradingView</a>
-          <button id="btn-copy" class="link">Скопировать ссылку</button>
-        </div>
-      </div>
-
-      <!-- 3) Справка по индикатору -->
-      <div class="alert-row">
-        <div class="row-title">Статус:</div>
-        <ul class="row-help">
-          <li>🟢 Онлайн (WS) — данные обновляются в реальном времени.</li>
-          <li>🟡 Деградирован (REST) — WebSocket недоступен, данные подгружаются периодически.</li>
-          <li>🔴 Оффлайн — нет связи с источниками.</li>
-        </ul>
-      </div>
+  <div class="wrap">
+    <div>
+      <div>Перенаправляем на OKX…</div>
+      <div id="fallback" class="muted"></div>
     </div>
   </div>
-</section>
 </body>
 </html>

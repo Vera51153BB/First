@@ -14,7 +14,7 @@
 	--radius:16px;
 	--gap: clamp(10px, 2.2vw, 18px);
 
-	--bottom-h: 68px;
+	--bottom-h: 48px;
 	--menu-h: 80px;
 
 	/* учёт безопасной зоны на iOS */

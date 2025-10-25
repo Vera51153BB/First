@@ -1,0 +1,62 @@
+/* Очень простой редирект на страницу инструмента OKX.
+ * Ожидает query-параметры:
+ *   inst  — полный instId OKX, например: BTC-USDT-SWAP  (приоритет)
+ *   base  — тикер без суффиксов, например: BTC          (соберём BASE-USDT-SWAP)
+ *
+ * Примеры:
+ *   chart.html?inst=ETH-USDT-SWAP
+ *   chart.html?base=BTC
+ *
+ * Если параметров нет/некорректны — откроем BTC-USDT-SWAP.
+ */
+
+(function(){
+  const p = new URLSearchParams(location.search);
+
+  let inst = (p.get('inst') || '').toUpperCase().trim();
+  let base = (p.get('base') || '').toUpperCase().trim();
+
+  // валидация допустимых символов
+  const clean = s => s.replace(/[^A-Z0-9\-]/g, '').slice(0, 50);
+
+  inst = clean(inst);
+  base = clean(base);
+
+  // если нет полного inst — соберём из base
+  if (!inst) {
+    if (base) inst = `${base}-USDT-SWAP`;
+    else      inst = `BTC-USDT-SWAP`;          // дефолт
+  }
+
+  // лёгкая нормализация общих вариантов формата
+  // (на всякий случай: BTCUSDT -> BTC-USDT-SWAP, BTC-USDT -> BTC-USDT-SWAP)
+  if (!inst.includes('-')) {
+    // слепленная пара: BTCUSDT, ETHUSDT
+    const m = inst.match(/^([A-Z0-9]{3,6})(USDT|USD|USDC)$/);
+    if (m) inst = `${m[1]}-${m[2]}-SWAP`;
+  } else if (!/-SWAP$/i.test(inst)) {
+    // если прислали BTC-USDT (без -SWAP) — добавим
+    const parts = inst.split('-');
+    if (parts.length >= 2) inst = `${parts[0]}-${parts[1]}-SWAP`;
+  }
+
+  // финальная чистка ещё раз
+  inst = clean(inst);
+
+  // целевой URL OKX Trade (Swap)
+  const target = `https://www.okx.com/trade-swap/${encodeURIComponent(inst)}`;
+
+  // показать fallback-ссылку на случай, если браузер заблокирует JS
+  const fb = document.getElementById('fallback');
+  if (fb) {
+    fb.innerHTML = `Если не перенаправилось автоматически, <a href="${target}" rel="noopener">нажмите сюда</a>.`;
+  }
+
+  // моментальный редирект
+  try {
+    // предпочтительнее заменить историю, чтобы "Назад" вернул в бот/предыдущую страницу
+    location.replace(target);
+  } catch {
+    location.href = target;
+  }
+})();

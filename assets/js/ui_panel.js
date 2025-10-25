@@ -128,6 +128,28 @@
 		}
 	}
 
+		function onInfoIconClick(e){
+		const btn = e.target.closest('.info-icon-btn');
+		if (!btn) return;
+
+		const act = btn.getAttribute('data-action');
+		if (act === 'okx') {
+			showOkxLayer();
+			closeInfo();
+		}
+		else if (act === 'tv') {
+			ensureTradingView().then((ok) => {
+				showTvLayer();
+				if (ok) initTradingViewWidget();
+				closeInfo();
+			});
+		}
+		else if (act === 'shelves') {
+			showShelves();
+			closeInfo();
+		}
+	}
+
 	// Инициализация
 	document.addEventListener('DOMContentLoaded', () => {
 		// Кнопки панели

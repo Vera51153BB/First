@@ -2,62 +2,55 @@
 <html lang="ru">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>OKX SWAP Chart</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1" />
+  <title>OKXcandlebot • Chart</title>
 
-  <!-- CSP достаточно либеральная для OKX/TV/CDN -->
-  <meta http-equiv="Content-Security-Policy"
-        content="default-src 'self' https://telegram.org https://s3.tradingview.com https://*.tradingview.com https://unpkg.com;
-                 img-src 'self' data: https:;
-                 style-src 'self' 'unsafe-inline';
-                 script-src 'self' https://telegram.org https://s3.tradingview.com https://unpkg.com;
-                 connect-src 'self' https://www.okx.com wss://ws.okx.com wss://wsaws.okx.com">
+  <!-- Lightweight-Charts (отрисовка свечей) -->
+  <script src="https://unpkg.com/lightweight-charts@4.1.1/dist/lightweight-charts.standalone.production.js" defer></script>
 
-  <link rel="stylesheet" href="./assets/css/chart.css">
-  <script src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
+  <style>
+    :root{ --bg:#0b0f14; --text:#e6e6e6; --muted:#9aa4af; --danger:#ff6b6b; }
+    html,body{height:100%;margin:0;background:var(--bg);color:var(--text);font-family:system-ui,Arial}
+    #wrap{height:100%;display:flex;flex-direction:column}
+    /* Верхняя полоса со ссылкой */
+    #topbar{
+      padding:10px 12px; border-bottom:1px solid rgba(255,255,255,.08);
+      display:flex; flex-wrap:wrap; gap:10px; align-items:center;
+    }
+    .hint{color:var(--muted); font-size:12px}
+    #okx-link, #self-link{ color:#7dcfff; text-decoration:none; word-break:break-all }
+    #okx-link:hover, #self-link:hover{ text-decoration:underline }
+    /* Заголовок инструмента */
+    #pair-title{ padding:6px 12px; font:600 14px/1.3 system-ui; color:#fff; }
+    /* Контейнер графика */
+    #chart{flex:1; min-height:320px}
+    #chart-error{padding:10px 12px; color:var(--danger)}
+  </style>
 </head>
+
 <body>
-  <div id="wrap">
-    <header id="title">Chart</header>
-    <div id="chart" style="min-height:320px"></div>
-
-    <!-- Небольшой отладочный блок, виден только при ?debug=1 -->
-    <pre id="debug-log" style="display:none; padding:8px; border-top:1px solid rgba(255,255,255,.08); font-size:12px; opacity:.85"></pre>
-
-    <!-- НИЖНЮЮ ПОЛОСУ/ПАНЕЛЬ НЕ ТРОГАЕМ — оставьте как есть у себя -->
-    <footer id="dock" aria-label="status bar">
-      <div id="status-dot" class="offline" aria-hidden="true" title="Индикатор состояния"></div>
-      <img id="dock-logo" alt="OKX" style="height:24px;width:auto" />
-      <button id="btn-status-info" class="muted" type="button" aria-haspopup="dialog" aria-expanded="false" title="Что значит этот индикатор?">i</button>
-      <div class="spacer"></div>
-      <button id="btn-panel" aria-expanded="false" aria-controls="panel" title="Открыть настройки">▲</button>
-    </footer>
-
-    <!-- Поповер статуса (можете убрать, если не нужен) -->
-    <section id="status-popover" role="dialog" aria-modal="false" hidden>
-      <div class="tip-card">
-        <div class="tip-title">Что значит индикатор состояния?</div>
-        <ul class="tip-list">
-          <li>🟢 <b>Онлайн (WS)</b> — данные обновляются в реальном времени.</li>
-          <li>🟡 <b>Деградирован (REST)</b> — WebSocket временно недоступен, данные периодически подгружаются.</li>
-          <li>🔴 <b>Оффлайн</b> — нет связи с источниками.</li>
-        </ul>
-        <button id="btn-tip-close" type="button" class="muted" title="Закрыть">Понятно</button>
-      </div>
-    </section>
-
-    <!-- ВЫЕЗЖАЮЩУЮ ПАНЕЛЬ ПОКА НЕ ИСПОЛЬЗУЕМ (оставил каркас, если нужна) -->
-    <section id="panel" role="dialog" aria-modal="true" aria-label="Настройки графика" hidden>
-      <div id="panel-head">
-        <div id="panel-title">Настройки</div>
-        <button id="btn-close" type="button" title="Закрыть">Закрыть</button>
-      </div>
-      <div id="panel-body">
-        <!-- можете оставить пустым -->
-      </div>
-    </section>
+<div id="wrap">
+  <!-- 1) СФОРМИРОВАННАЯ ССЫЛКА на страницу OKX -->
+  <div id="topbar">
+    <span class="hint">OKX:</span>
+    <a id="okx-link" href="#" target="_blank" rel="noopener"></a>
+    <span class="hint">• Эта страница:</span>
+    <a id="self-link" href="#" target="_blank" rel="noopener"></a>
   </div>
 
-  <script src="./assets/js/okx_chart.js"></script>
+  <!-- 2) Текстовый заголовок -->
+  <div id="pair-title"></div>
+
+  <!-- 3) График -->
+  <div id="chart"></div>
+
+  <!-- 4) Сообщение об ошибке -->
+  <div id="chart-error" hidden></div>
+</div>
+
+<!-- Ваши стили/док-панель могут идти ниже, если нужно -->
+
+<!-- Логика страницы -->
+<script src="./assets/js/okx_chart.js"></script>
 </body>
 </html>

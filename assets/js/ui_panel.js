@@ -128,28 +128,6 @@
 		}
 	}
 
-		function onInfoIconClick(e){
-		const btn = e.target.closest('.info-icon-btn');
-		if (!btn) return;
-
-		const act = btn.getAttribute('data-action');
-		if (act === 'okx') {
-			showOkxLayer();
-			closeInfo();
-		}
-		else if (act === 'tv') {
-			ensureTradingView().then((ok) => {
-				showTvLayer();
-				if (ok) initTradingViewWidget();
-				closeInfo();
-			});
-		}
-		else if (act === 'shelves') {
-			showShelves();
-			closeInfo();
-		}
-	}
-
 	// Инициализация
 	document.addEventListener('DOMContentLoaded', () => {
 		// Кнопки панели
@@ -157,9 +135,6 @@
 		$('#btn-info')?.addEventListener('click', openInfo);
 		$('#info-close')?.addEventListener('click', closeInfo);
 		$('#slide-menu')?.addEventListener('click', onMenuClick);
-				// Клики по кнопкам-иконкам в инфо-окне
-		$('#info-pop')?.addEventListener('click', onInfoIconClick);
-
 
 		// Клик по фоне info-pop закрывает окно
 		$('#info-pop')?.addEventListener('click', (e) => {

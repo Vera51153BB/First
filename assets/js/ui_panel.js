@@ -128,6 +128,29 @@
 		}
 	}
 
+	  function onInfoIconClick(e){
+    const btn = e.target.closest('.info-icon-btn');
+    if (!btn) return;
+
+    const act = btn.getAttribute('data-action');
+    if (act === 'okx') {
+      showOkxLayer();
+      closeInfo();
+    }
+    else if (act === 'tv') {
+      ensureTradingView().then((ok) => {
+        showTvLayer();
+        if (ok) initTradingViewWidget();
+        closeInfo();
+      });
+    }
+    else if (act === 'shelves') {
+      showShelves();
+      closeInfo();
+    }
+  }
+
+
 	// Инициализация
 	document.addEventListener('DOMContentLoaded', () => {
 		// Кнопки панели
@@ -136,10 +159,12 @@
 		$('#info-close')?.addEventListener('click', closeInfo);
 		$('#slide-menu')?.addEventListener('click', onMenuClick);
 
-		// Клик по фоне info-pop закрывает окно
-		$('#info-pop')?.addEventListener('click', (e) => {
-			if (e.target.id === 'info-pop') closeInfo();
-		});
+	    // Клик по фоне info-pop закрывает окно
+	    $('#info-pop')?.addEventListener('click', (e) => {
+	      if (e.target.id === 'info-pop') closeInfo();
+	    });
+	    // Клики по кнопкам-иконкам в инфо-окне
+	    $('#info-pop')?.addEventListener('click', onInfoIconClick);
 
 		// По умолчанию показываем OKX
 		showOkxLayer();

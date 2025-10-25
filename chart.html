@@ -1,66 +1,108 @@
 <!doctype html>
-<div id="app">
-<!-- Верхняя полоска статуса -->
-<header id="statusbar" class="bar">
-<div class="status-left">
-<span id="chart-title" class="title">OKX • BTC/USDT (SWAP)</span>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <title>OKX SWAP Chart</title>
+
+  <!-- CSP: Telegram, OKX REST/WS, TradingView, unpkg -->
+  <meta http-equiv="Content-Security-Policy"
+        content="
+      default-src 'self' https://telegram.org https://s3.tradingview.com https://*.tradingview.com https://unpkg.com;
+      img-src 'self' data: https:;
+      style-src 'self';
+      script-src 'self' https://telegram.org https://s3.tradingview.com https://unpkg.com;
+      connect-src 'self' https://www.okx.com wss://ws.okx.com wss://wsaws.okx.com;
+    ">
+
+  <link rel="stylesheet" href="./assets/css/chart.css">
+
+  <!-- внешние скрипты -->
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <script src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
+
+  <!-- наш код -->
+  <script defer src="./assets/js/okx_chart.js"></script>
+  <!-- ui_panel.js больше не нужен и не подключаем -->
+</head>
+<body>
+<div id="wrap">
+  <header id="title">BTC • USDT-SWAP (OKX)</header>
+  <div id="chart" aria-label="График"></div>
+
+  <!-- ФИКСИРОВАННАЯ НИЖНЯЯ ПОЛОСА -->
+  <footer id="dock" role="toolbar" aria-label="Выбор источника">
+    <!-- индикатор состояния -->
+    <div id="status-dot" class="offline" title="Статус соединения"></div>
+
+    <!-- маленькая квадратная кнопка «i» — открывает поп-ап -->
+    <button id="btn-status-info" type="button" title="Справка / настройки">i</button>
+
+    <!-- КНОПКИ-ЛОГОТИПЫ (переключают источник графика) -->
+    <button class="brand" data-src="okx" aria-pressed="false" title="OKX (API/WS)">
+      <img id="logo-okx" src="./images/okx-logotype-light.png" alt="OKX">
+    </button>
+    <button class="brand" data-src="tv" aria-pressed="false" title="TradingView (виджет)">
+      <img id="logo-tv" src="./images/tradingview-logotype-light.png" alt="TradingView">
+    </button>
+    <button class="brand" data-src="vp" aria-pressed="false" title="Volume Profile (ссылка)">
+      <img id="logo-vp" src="./images/vp-logotype-light.png" alt="VP">
+    </button>
+
+    <div class="spacer" aria-hidden="true"></div>
+
+    <!-- «к началу» (по желанию, можно убрать) -->
+    <button id="btn-to-top" type="button" title="К началу">
+      <span class="sr-only">К началу</span>
+    </button>
+  </footer>
 </div>
-<div class="status-right">
-<button id="btn-info" class="icon" title="Инфо">i</button>
-<button id="btn-notify" class="icon" title="Уведомление">▲</button>
-</div>
-</header>
 
+<!-- ПОП-АП (ALERT/MODAL) поверх сайта.
+     Содержит быстрые кнопки TF, ссылки и мини-справку. -->
+<section id="alert" role="dialog" aria-modal="true" aria-labelledby="alert-title" hidden>
+  <div class="alert-backdrop" data-close="1"></div>
+  <div class="alert-card">
+    <div class="alert-head">
+      <h2 id="alert-title">Быстрые настройки</h2>
+      <button id="alert-close" class="alert-x" title="Закрыть">✕</button>
+    </div>
 
-<!-- Основная зона графика: вписывается по высоте без прокрутки -->
-<main id="stage">
-<!-- Контейнер, куда подставляется текущий график -->
-<div id="chart-host" aria-live="polite"></div>
+    <div class="alert-body">
+      <!-- 1) Таймфреймы -->
+      <div class="alert-row">
+        <div class="row-title">TF:</div>
+        <div class="row-controls">
+          <!-- data-min: 15|60|240|1440 -->
+          <button class="js-int" data-min="15">15m</button>
+          <button class="js-int" data-min="60">1h</button>
+          <button class="js-int" data-min="240">4h</button>
+          <button class="js-int" data-min="1440">1d</button>
+          <span id="last-upd" class="muted" title="Последнее обновление">…</span>
+        </div>
+      </div>
 
+      <!-- 2) Быстрые ссылки -->
+      <div class="alert-row">
+        <div class="row-title">Ссылки:</div>
+        <div class="row-controls">
+          <a id="okx-link" class="link danger" target="_blank" rel="noopener">Открыть на OKX</a>
+          <a id="tv-link"  class="link"       target="_blank" rel="noopener">Открыть в TradingView</a>
+          <button id="btn-copy" class="link">Скопировать ссылку</button>
+        </div>
+      </div>
 
-<!-- Заглушка Volume Profile (2-я вкладка строки уведомления дублирует ссылки) -->
-<section id="vp-placeholder" hidden>
-<div class="vp-card">
-<h2>Volume Profile</h2>
-<p>Пока заглушка. Перейти:
-<a id="lnk-vp-restmebel" href="https://www.restmebel.ru/" target="_blank" rel="noopener">restmebel.ru</a>
-</p>
-</div>
+      <!-- 3) Справка по индикатору -->
+      <div class="alert-row">
+        <div class="row-title">Статус:</div>
+        <ul class="row-help">
+          <li>🟢 Онлайн (WS) — данные обновляются в реальном времени.</li>
+          <li>🟡 Деградирован (REST) — WebSocket недоступен, данные подгружаются периодически.</li>
+          <li>🔴 Оффлайн — нет связи с источниками.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
 </section>
-</main>
-
-
-<!-- Нижняя закреплённая панель -->
-<footer id="footerbar" class="bar">
-<nav class="tabs">
-<button class="tab is-active" data-tab="okx">OKX</button>
-<button class="tab" data-tab="tv">TradingView</button>
-<button class="tab" data-tab="vp">Volume&nbsp;Profile</button>
-</nav>
-</footer>
-</div>
-
-
-<!-- Уведомление/панель (popover) -->
-<dialog id="notify-pop">
-<form method="dialog" class="sheet">
-<div class="sheet-row">
-<button value="okx" class="pill" data-pop="okx">OKX</button>
-<button value="tv" class="pill" data-pop="tv">TradingView</button>
-<button value="vp" class="pill" data-pop="vp">Volume&nbsp;Profile</button>
-</div>
-<div class="sheet-row links">
-<a id="a-okx" href="https://www.okx.com/" target="_blank" rel="noopener">🔗 OKX</a>
-<a id="a-tv" href="https://www.tradingview.com/" target="_blank" rel="noopener">🔗 TradingView</a>
-</div>
-<div class="sheet-actions">
-<button id="btn-close-pop" value="close" class="ghost">Закрыть</button>
-</div>
-</form>
-</dialog>
-
-
-<script src="assets/js/okx_chart.js"></script>
-<script src="assets/js/ui_panel.js"></script>
 </body>
 </html>

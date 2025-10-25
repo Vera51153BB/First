@@ -56,20 +56,14 @@
 			<button id="btn-menu" class="btn-menu" aria-expanded="false" title="Меню">▲</button>
 		</div>
 
-		<!-- Выезжающее меню -->
-    <div class="info-body">
-    	<div class="info-icons">
-    		<button class="info-icon-btn" data-action="okx" title="ОКХ">
-    			<img src="https://vera51153bb.github.io/First/images/okx-logotype-light.png" alt="OKX" width="128" height="128" loading="lazy">
-    		</button>
-    		<button class="info-icon-btn" data-action="tv" title="ТВ (TradingView)">
-    			<img src="https://vera51153bb.github.io/First/images/tradingview-logotype-light.png" alt="TradingView" width="128" height="128" loading="lazy">
-    		</button>
-    		<button class="info-icon-btn" data-action="shelves" title="Полки объёма">
-    			<img src="https://vera51153bb.github.io/First/images/vp-logotype-light.png" alt="Полки объёма" width="128" height="128" loading="lazy">
-    		</button>
-    	</div>
-    </div>
+		<!-- Выезжающее меню 3×3 -->
+		<nav id="slide-menu" class="slide-menu" aria-hidden="true">
+			<div class="menu-grid">
+				<button class="menu-btn emph" data-action="okx">ОКХ</button>
+				<button class="menu-btn emph" data-action="tv">ТВ</button>
+				<button class="menu-btn emph" data-action="shelves">Полки</button>
+			</div>
+		</nav>
 
 		<!-- Всплывающее окно информации -->
 		<div id="info-pop" class="info-pop" role="dialog" aria-modal="false" aria-hidden="true">

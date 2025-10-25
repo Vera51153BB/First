@@ -94,5 +94,66 @@ await loadCandles();
    }catch(_){}
  };
 </script>
+<script>
+/* ===== DEBUG BAR (включается ?debug=1) ===== */
+(function(){
+  const params = new URLSearchParams(location.search);
+
+  // 1) что ожидаем
+  //   A) instId=BTC-USDT-SWAP  ИЛИ  B) coin=BTC (+ по умолчанию USDT-SWAP)
+  //   дополнительный tf: 1m,3m,5m,15m,30m,1H,2H,4H,1D (ОКХ-форматы)
+  const raw = {
+    instId : params.get('instId'),
+    coin   : params.get('coin'),
+    tf     : params.get('tf') || params.get('interval') || '1H',
+    src    : (params.get('src')||'okx').toLowerCase()
+  };
+
+  // 2) нормализация
+  const clean = s => (s||'').toUpperCase().replace(/[^A-Z0-9\-]/g,'').slice(0,40);
+  let instId  = raw.instId ? clean(raw.instId) : (clean(raw.coin||'BTC')+'-USDT-SWAP');
+  // допустимые таймфреймы у OKX (REST/WS)
+  const TF_OKX = new Set(['1M','3M','5M','15M','30M','1H','2H','4H','1D']);
+  let tf = clean(raw.tf);
+  // подправим формат минут: 15 -> 15M, 60 -> 1H и т.п.
+  if (!/^[0-9]+[MH]$|^[0-9]+M$/i.test(tf)) {
+    const n = parseInt(tf,10);
+    if (Number.isFinite(n)) {
+      tf = (n>=60) ? (n%60===0 ? (n/60)+'H' : '1H') : (n+'M');
+    }
+  }
+  if (!TF_OKX.has(tf)) tf = '1H';
+
+  // 3) итоговые артефакты, с которыми работает страница
+  const restURL = `https://www.okx.com/api/v5/market/candles?instId=${encodeURIComponent(instId)}&bar=${encodeURIComponent(tf)}&limit=500`;
+  const wsChan  = 'candle' + tf; // пример: 1H -> candle1H, 15M -> candle15m (у WS минуты строчными)
+  const wsChanFixed = /M$/.test(tf) ? ('candle' + tf.toLowerCase()) : wsChan;
+
+  // 4) показать на странице, если ?debug=1
+  if (params.get('debug') === '1') {
+    const box = document.createElement('div');
+    box.style.cssText = `
+      position:fixed;left:10px;bottom:10px;z-index:99999;
+      background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.18);
+      color:#e6e6e6;font:12px/1.35 system-ui,Arial;border-radius:10px;
+      padding:10px 12px;max-width:min(92vw,720px);backdrop-filter:blur(4px);
+    `;
+    const pre = (o)=> `<pre style="white-space:pre-wrap;margin:6px 0 0">${o}</pre>`;
+    box.innerHTML =
+      `<b>DEBUG</b> — что пришло / что собрали:
+       ${pre('raw: ' + JSON.stringify(raw))}
+       ${pre('instId: ' + instId)}
+       ${pre('tf: ' + tf)}
+       ${pre('REST: ' + restURL)}
+       ${pre('WS channel: ' + wsChanFixed)}`
+    ;
+    document.body.appendChild(box);
+  }
+
+  // 5) продублируем в консоль
+  console.log('[chart debug]', { raw, instId, tf, restURL, wsChan: wsChanFixed });
+})();
+</script>
+
 </body>
 </html>

@@ -1,63 +1,195 @@
+/* -*- coding: utf-8 -*-  First/assets/css/chart.css
+   • Фиксированная нижняя полоса (индикатор, «i», 3 бренда, кнопка «вверх»)
+   • Поп-ап (alert) поверх сайта — не конфликтует с полосой
+   • iOS-safe-area, отключён резиновый скролл, график не перекрывается
+*/
+
+/* === переменные === */
 :root{
---muted:#93a1b3; /* вторичный текст */
---accent:#5bbcff; /* акцент/границы */
---bar:#0f1524cc; /* фон панелей */
---btn:#1a2135; /* фон кнопок */
---btn-hover:#232c46; /* наведение */
---safe: env(safe-area-inset-bottom, 0px);
+  --bg:#0b0f14; --text:#e6e6e6; --muted:#9aa4af; --accent:#ffd65c; --danger:#ff6b6b;
+  --pad: clamp(10px, 2.5vw, 14px);
+  --radius: 12px;
+
+  /* нижняя полоса */
+  --dock-h: clamp(48px, 7.2vh, 60px);
+  --logo-h: clamp(18px, 4.6vh, 28px);
+  --dot: 10px;
+
+  /* размеры кнопок */
+  --ctl: 36px;
 }
-*{box-sizing:border-box}
-html,body{height:100%; margin:0; background:var(--bg); color:var(--fg);}
 
-
-/* Фикс 100vh для мобильных/iOS: js пишет --vh */
-#app{height:calc(var(--vh, 1vh) * 100); display:flex; flex-direction:column;}
-
-
-.bar{display:flex; align-items:center; justify-content:space-between; gap:.5rem; padding:.5rem .75rem; background:var(--bar); border-bottom:1px solid #101626;}
-#footerbar{border-top:1px solid #101626; border-bottom:none; padding-bottom:calc(.5rem + var(--safe));}
-
-
-.status-left .title{font:600 0.95rem/1.2 system-ui, -apple-system, Segoe UI, Roboto, Arial; letter-spacing:.2px}
-.status-right{display:flex; gap:.5rem}
-.icon{display:inline-flex; align-items:center; justify-content:center; width:34px; height:28px; border-radius:10px; background:var(--btn); border:1px solid rgba(255,255,255,.1); color:var(--muted); cursor:pointer}
-.icon:hover{background:var(--btn-hover)}
-
-
-#stage{position:relative; flex:1 1 auto; min-height:0;}
-#chart-host{position:absolute; inset:0;}
-#chart-host iframe, #chart-host .tv-wrap{position:absolute; inset:0; width:100%; height:100%; border:0;}
-
-
-/* Заглушка VP */
-#vp-placeholder{position:absolute; inset:0; display:grid; place-items:center;}
-.vp-card{background:#121a2d; border:1px dashed var(--accent); border-radius:16px; padding:24px; max-width:560px; text-align:center}
-.vp-card h2{margin:0 0 8px; font-size:20px}
-.vp-card p{margin:0; color:var(--muted)}
-.vp-card a{color:#9ed1ff}
-
-
-/* Нижние вкладки */
-.tabs{display:flex; gap:.5rem; width:100%;}
-.tab{flex:1 1 0; padding:.6rem .8rem; border-radius:12px; background:var(--btn); color:var(--fg); border:1px solid rgba(255,255,255,.08); cursor:pointer; font:600 0.95rem/1 system-ui}
-.tab:hover{background:var(--btn-hover)}
-.tab.is-active{outline:2px solid var(--accent)}
-
-
-/* Popover/уведомление (dialog) */
-dialog{border:none; padding:0; background:transparent}
-dialog::backdrop{background:rgba(0,0,0,.45)}
-.sheet{background:#0b1224; border:1px solid #1c2340; border-radius:16px; padding:16px; min-width:min(92vw,680px)}
-.sheet-row{display:flex; gap:8px; flex-wrap:wrap;}
-.pill{flex:1 1 0; padding:.8rem 1rem; border-radius:999px; background:#141c36; color:var(--fg); border:1px solid rgba(255,255,255,.08); cursor:pointer; font:600 0.95rem/1}
-.pill:hover{background:#1a2446}
-.links{margin-top:10px}
-.links a{flex:1 1 0; display:inline-block; text-align:center; padding:.6rem .8rem; border-radius:10px; background:#10172d; border:1px solid rgba(255,255,255,.08); color:#b7c8e6; text-decoration:none}
-.sheet-actions{margin-top:10px; display:flex; justify-content:flex-end}
-.ghost{background:transparent; border:1px solid rgba(255,255,255,.2); color:var(--muted); padding:.4rem .8rem; border-radius:8px; cursor:pointer}
-
-
-/* Мелкие адаптивы */
-@media (max-width: 480px){
-.status-left .title{font-size:.9rem}
+/* === базовые и iOS-улучшения === */
+html,body{
+  height:100%;
+  margin:0;
+  background:var(--bg);
+  color:var(--text);
+  font-family:system-ui,Arial;
+  -webkit-text-size-adjust:100%;
+  overscroll-behavior: none;
 }
+
+#wrap{
+  min-height: 100svh;
+  display:flex;
+  flex-direction:column;
+  /* просвет, чтобы полоса не перекрывала график */
+  padding-bottom: calc(var(--dock-h) + env(safe-area-inset-bottom));
+}
+
+header{
+  padding:10px var(--pad);
+  font-weight:600; letter-spacing:.3px;
+}
+
+#chart{
+  flex:1;
+  min-height: 50dvh;
+}
+
+/* === фиксированная нижняя полоса === */
+footer#dock{
+  position: fixed;
+  left:0; right:0; bottom:0;
+  height: calc(var(--dock-h) + env(safe-area-inset-bottom));
+  padding: 0 var(--pad) env(safe-area-inset-bottom) var(--pad);
+
+  display:flex; align-items:center; gap:12px;
+  border-top:1px solid rgba(255,255,255,.08);
+  background: rgba(255,255,255,.02);
+  z-index: 999; /* поверх всего контента */
+}
+
+/* индикатор */
+#status-dot{
+  width:var(--dot); height:var(--dot); border-radius:50%;
+  box-shadow: 0 0 0 2px rgba(255,255,255,.06) inset;
+}
+#status-dot.online{   background:#34c759 }
+#status-dot.degraded{ background:#ffd60a }
+#status-dot.offline{  background:#ff453a }
+
+/* квадратная маленькая «i» у нижней кромки логотипов */
+#btn-status-info{
+  appearance:none; -webkit-appearance:none;
+  width: 22px; height: 22px;
+  border-radius: 8px;
+  border:1px solid rgba(255,255,255,.18);
+  background: transparent;
+  color: var(--muted);
+  font: 600 12px/1 system-ui,Arial;
+  display:flex; align-items:center; justify-content:center;
+  cursor:pointer;
+  margin-right: 4px; /* как «две буквы» от индикатора */
+}
+#btn-status-info:hover{ border-color: rgba(255,255,255,.35) }
+
+/* кнопки-бренды */
+button.brand{
+  appearance:none; -webkit-appearance:none;
+  background: transparent;
+  border:1px solid transparent;
+  border-radius: 10px;
+  padding:6px 8px;
+  cursor:pointer;
+  display:flex; align-items:center; justify-content:center;
+}
+button.brand[aria-pressed="true"]{
+  border-color: rgba(255,255,255,.35);
+  background: rgba(255,255,255,.04);
+}
+button.brand img{ display:block; height:var(--logo-h); width:auto; }
+
+.spacer{ flex:1 }
+
+/* «к началу» — квадрат со стрелкой */
+#btn-to-top{
+  --size: calc(var(--dock-h) - 6px); /* 3px сверху/снизу */
+  width: var(--size); height: var(--size);
+  border-radius: 10px;
+  border:1px solid rgba(255,255,255,.18);
+  background: transparent;
+  display:grid; place-items:center;
+  cursor:pointer;
+}
+#btn-to-top::before{
+  content:"";
+  width:0; height:0;
+  border-left:7px solid transparent;
+  border-right:7px solid transparent;
+  border-bottom:10px solid #fff; /* ▲ */
+}
+#btn-to-top:hover{ border-color: rgba(255,255,255,.35) }
+
+/* === ПОП-АП (alert) === */
+#alert[hidden]{ display:none; }
+
+/* затемнение на весь экран, всегда поверх полосы */
+#alert .alert-backdrop{
+  position: fixed; inset:0;
+  background: rgba(0,0,0,.45);
+  z-index: 1001; /* > полосы (999) */
+}
+
+/* карточка по центру (мобильная — почти во всю ширину) */
+#alert .alert-card{
+  position: fixed;
+  left: max(10px, env(safe-area-inset-left));
+  right: max(10px, env(safe-area-inset-right));
+  top: 10svh; bottom: auto;
+
+  background: rgba(16,21,28,.98);
+  border:1px solid rgba(255,255,255,.08);
+  border-radius: 14px;
+  box-shadow: 0 20px 40px rgba(0,0,0,.5);
+  z-index: 1002;
+
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+.alert-head{
+  display:flex; align-items:center; gap:10px;
+  padding:12px 14px;
+  border-bottom:1px solid rgba(255,255,255,.08);
+}
+.alert-head h2{ margin:0; font-size:16px }
+
+.alert-x{
+  margin-left:auto;
+  width:28px; height:28px;
+  border-radius:8px;
+  border:1px solid rgba(255,255,255,.18);
+  background: transparent; color: var(--text);
+  cursor:pointer; display:grid; place-items:center;
+}
+.alert-x:hover{ border-color: rgba(255,255,255,.35) }
+
+.alert-body{ padding: 10px 14px; display:grid; gap:12px }
+
+/* строки внутри карточки */
+.alert-row{ display:flex; align-items:flex-start; gap:10px; flex-wrap:wrap }
+.row-title{ color:var(--muted); min-width:62px; padding-top:6px }
+.row-controls{ display:flex; gap:8px; align-items:center; flex-wrap:wrap }
+.row-controls .muted{ color:var(--muted) }
+
+.alert-row .row-help{
+  margin:6px 0 0 0; padding-left:18px;
+  color: var(--text);
+}
+
+/* кнопки TF и «ссылки-кнопки» */
+button.js-int, .alert-body .link{
+  appearance:none; -webkit-appearance:none;
+  background: transparent; color: var(--text);
+  border:1px solid rgba(255,255,255,.18);
+  border-radius: 10px;
+  padding:6px 10px;
+  cursor:pointer; text-decoration:none;
+}
+button.js-int:hover, .alert-body .link:hover{ border-color: rgba(255,255,255,.35) }
+.alert-body .link.danger{ color: var(--danger); border-color: rgba(255,0,0,.25) }
+
+/* класс на body при открытом поп-апе — блокируем скролл фоном */
+body.modal-open{ overflow: hidden }

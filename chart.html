@@ -2,55 +2,111 @@
 <html lang="ru">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1" />
-  <title>OKXcandlebot • Chart</title>
-
-  <!-- Lightweight-Charts (отрисовка свечей) -->
-  <script src="https://unpkg.com/lightweight-charts@4.1.1/dist/lightweight-charts.standalone.production.js" defer></script>
-
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <title>OKX Swap — Embed</title>
+  <meta name="color-scheme" content="dark light" />
   <style>
-    :root{ --bg:#0b0f14; --text:#e6e6e6; --muted:#9aa4af; --danger:#ff6b6b; }
-    html,body{height:100%;margin:0;background:var(--bg);color:var(--text);font-family:system-ui,Arial}
-    #wrap{height:100%;display:flex;flex-direction:column}
-    /* Верхняя полоса со ссылкой */
-    #topbar{
-      padding:10px 12px; border-bottom:1px solid rgba(255,255,255,.08);
-      display:flex; flex-wrap:wrap; gap:10px; align-items:center;
+    /* Страница только с импортом внешней страницы OKX.
+       IFRAME растягивается на всю высоту окна, прокрутки у документа нет. */
+    :root{
+      --safe-top: env(safe-area-inset-top, 0px);
+      --safe-bottom: env(safe-area-inset-bottom, 0px);
     }
-    .hint{color:var(--muted); font-size:12px}
-    #okx-link, #self-link{ color:#7dcfff; text-decoration:none; word-break:break-all }
-    #okx-link:hover, #self-link:hover{ text-decoration:underline }
-    /* Заголовок инструмента */
-    #pair-title{ padding:6px 12px; font:600 14px/1.3 system-ui; color:#fff; }
-    /* Контейнер графика */
-    #chart{flex:1; min-height:320px}
-    #chart-error{padding:10px 12px; color:var(--danger)}
+    html,body{
+      height:100%;
+      margin:0;
+      background:#0b0e14;
+      color:#e5e7eb;
+      overflow:hidden;              /* без прокрутки вокруг iframe */
+      font:14px/1.45 system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+    }
+    #wrap{
+      height:100vh;
+      height:100svh;                /* корректно на мобильных */
+      padding: 0 0 var(--safe-bottom) 0;
+      display:flex;
+      flex-direction:column;
+    }
+    iframe{
+      border:0;
+      width:100%;
+      height:100%;
+      display:block;
+      background:#0b0e14;
+    }
+    /* Небольшая ненавязчивая плашка-фолбек (если вдруг нужно показать ссылку) */
+    .fallback{
+      position:fixed; left:0; right:0; bottom:0;
+      padding:8px 12px calc(8px + var(--safe-bottom));
+      background:linear-gradient(0deg,rgba(15,19,25,.96),rgba(15,19,25,.86));
+      color:#93a3b8; font-size:12px;
+      text-align:center;
+      border-top:1px solid rgba(255,255,255,.08);
+      display:none;                 /* по умолчанию скрыто: страница — только импорт */
+    }
+    .fallback a{ color:#cfe1ff; text-decoration:none; font-weight:700 }
   </style>
 </head>
-
 <body>
-<div id="wrap">
-  <!-- 1) СФОРМИРОВАННАЯ ССЫЛКА на страницу OKX -->
-  <div id="topbar">
-    <span class="hint">OKX:</span>
-    <a id="okx-link" href="#" target="_blank" rel="noopener"></a>
-    <span class="hint">• Эта страница:</span>
-    <a id="self-link" href="#" target="_blank" rel="noopener"></a>
+  <div id="wrap">
+    <iframe id="okxFrame" title="OKX Swap"></iframe>
   </div>
 
-  <!-- 2) Текстовый заголовок -->
-  <div id="pair-title"></div>
+  <!-- Telegram WebApp SDK (без зависимости; просто на случай открытия в боте) -->
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <script>
+    // ---------- Помощники ----------
+    function getParam(name){
+      const u = new URL(location.href);
+      return u.searchParams.get(name) || '';
+    }
+    // Нормализуем символ в slug OKX вида: <base>-usdt-swap
+    // Принимаем: 'ETH-USDT-SWAP', 'eth-usdt', 'ETH', 'sol', 'btc/usdt', 'btc_usdt_swap' и т.п.
+    function toOkxSwapSlug(symbol){
+      if (!symbol) return 'eth-usdt-swap';
+      let s = String(symbol).trim().toLowerCase();
 
-  <!-- 3) График -->
-  <div id="chart"></div>
+      // убираем пробелы, заменяем / и _ на дефис
+      s = s.replace(/\s+/g,'').replace(/[\/_]/g,'-').replace(/-+/g,'-');
 
-  <!-- 4) Сообщение об ошибке -->
-  <div id="chart-error" hidden></div>
-</div>
+      if (s.endsWith('-swap')) return s;         // уже полноформатный slug
+      if (/-usdt$/.test(s)) return s + '-swap';  // есть пара, добавим -swap
+      // только тикер → считаем usdt perp
+      if (/^[a-z0-9]+$/.test(s)) return s + '-usdt-swap';
 
-<!-- Ваши стили/док-панель могут идти ниже, если нужно -->
+      // иначе добьем безопасно
+      if (!/-usdt(-|$)/.test(s)) s = s.replace(/-swap$/, '') + '-usdt';
+      if (!s.endsWith('-swap')) s += '-swap';
+      return s;
+    }
 
-<!-- Логика страницы -->
-<script src="./assets/js/okx_chart.js"></script>
+    // ---------- Основная логика ----------
+    (function init(){
+      // По умолчанию ETH
+      let symbol = getParam('symbol') || getParam('ticker') || getParam('coin') || 'ETH-USDT-SWAP';
+      const slug  = toOkxSwapSlug(symbol);
+      const url   = `https://www.okx.com/ru/markets/swap-info/${slug}`;
+
+      // Если страница открыта в Telegram WebApp — можно слегка подстроить цветовую тему
+      if (window.Telegram && window.Telegram.WebApp){
+        try{
+          Telegram.WebApp.ready();
+          Telegram.WebApp.setBackgroundColor('#0b0e14');
+          Telegram.WebApp.setHeaderColor('secondary_bg_color');
+        }catch(e){}
+      }
+
+      // Вставляем в iframe
+      document.getElementById('okxFrame').src = url;
+
+      // Если нужно включить плашку-фолбек со ссылкой (например, если сайт запрещает iframes),
+      // просто раскомментируйте строки ниже:
+      // const fb = document.createElement('div');
+      // fb.className = 'fallback';
+      // fb.innerHTML = `Если виджет не загрузился, откройте напрямую: <a href="${url}" target="_blank" rel="noopener">OKX — ${slug}</a>`;
+      // document.body.appendChild(fb);
+      // fb.style.display = 'block';
+    })();
+  </script>
 </body>
 </html>

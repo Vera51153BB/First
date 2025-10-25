@@ -5,29 +5,34 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
   <title>OKX Redirect</title>
 
-  <!-- Никакого UI: только безопасный редирект на OKX -->
+  <!-- Разрешаем Telegram SDK и всё остальное держим строгим -->
   <meta http-equiv="Content-Security-Policy"
         content="default-src 'self';
                  img-src 'self' https:;
                  style-src 'self' 'unsafe-inline';
-                 script-src 'self';
-                 connect-src 'self';">
+                 script-src 'self' https://telegram.org;
+                 connect-src 'self';
+                 frame-ancestors 'self' *;">
 
   <link rel="icon" href="data:;base64,=">
   <style>
-    html,body{height:100%;margin:0;font-family:system-ui,Arial;background:#0b0f14;color:#e6e6e6}
-    .wrap{height:100%;display:grid;place-items:center;text-align:center;padding:24px}
+    html,body{height:100%;margin:0;background:#0b0f14;color:#e6e6e6;font-family:system-ui,Arial}
+    .wrap{height:100%;display:grid;place-items:center;text-align:center;padding:24px;gap:10px}
     .muted{color:#9aa4af;font-size:14px}
-    a{color:#ffd65c}
+    .btn{display:inline-block;padding:10px 14px;border:1px solid rgba(255,255,255,.25);
+         border-radius:10px;background:transparent;color:#ffd65c;text-decoration:none}
   </style>
+
+  <!-- Telegram WebApp (если внутри Telegram) -->
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+
+  <!-- Наш скрипт редиректа -->
   <script defer src="./assets/js/okx_redirect.js"></script>
 </head>
 <body>
   <div class="wrap">
-    <div>
-      <div>Перенаправляем на OKX…</div>
-      <div id="fallback" class="muted"></div>
-    </div>
+    <div id="status">Перенаправляем на OKX…</div>
+    <div id="fallback" class="muted"></div>
   </div>
 </body>
 </html>

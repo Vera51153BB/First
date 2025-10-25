@@ -3,91 +3,173 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-  <title>OKX Swap — Embed</title>
+  <title>OKX Swap — ссылка на страницу</title>
   <meta name="color-scheme" content="dark light" />
   <style>
-    /* Страница только с импортом внешней страницы OKX.
-       IFRAME растягивается на всю высоту окна, прокрутки у документа нет. */
     :root{
-      --safe-top: env(safe-area-inset-top, 0px);
+      --bg:#0b0e14;
+      --panel:#11151c;
+      --panel2:#0f1319;
+      --text:#e5e7eb;
+      --muted:#93a3b8;
+      --accent:#4fa3ff;
+      --ok:#65d16f;
+
+      --hbar:64px;
       --safe-bottom: env(safe-area-inset-bottom, 0px);
+      --safe-top: env(safe-area-inset-top, 0px);
     }
-    html,body{
-      height:100%;
-      margin:0;
-      background:#0b0e14;
-      color:#e5e7eb;
-      overflow:hidden;              /* без прокрутки вокруг iframe */
-      font:14px/1.45 system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+    *{box-sizing:border-box}
+    html,body{height:100%;margin:0;background:var(--bg);color:var(--text);font:14px/1.45 system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}
+    #app{min-height:100vh;min-height:100svh;display:flex;flex-direction:column}
+
+    /* ВЕРХНЯЯ ПАНЕЛЬ С АДРЕСОМ */
+    .topbar{
+      position:sticky; top:0;
+      height:var(--hbar);
+      display:flex; align-items:center; gap:10px;
+      background:linear-gradient(180deg, rgba(15,19,25,.92), rgba(15,19,25,.78));
+      border-bottom:1px solid rgba(255,255,255,.08);
+      padding:10px 12px;
+      backdrop-filter: blur(6px);
+      z-index:10;
     }
-    #wrap{
-      height:100vh;
-      height:100svh;                /* корректно на мобильных */
-      padding: 0 0 var(--safe-bottom) 0;
-      display:flex;
-      flex-direction:column;
+    .led{width:12px;height:12px;border-radius:50%;background:var(--ok);box-shadow:0 0 12px rgba(101,209,111,.9)}
+    .label{font-weight:800;letter-spacing:.2px;white-space:nowrap}
+    .urlbox{
+      flex:1 1 auto; min-width:0; display:flex; align-items:center; gap:8px;
+      background:linear-gradient(180deg,var(--panel),var(--panel2));
+      border:1px solid rgba(255,255,255,.12);
+      border-radius:12px; padding:8px 10px;
     }
-    iframe{
-      border:0;
-      width:100%;
-      height:100%;
-      display:block;
-      background:#0b0e14;
+    .urltext{
+      font-family: ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+      font-size:12px; color:#cfe1ff;
+      overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
     }
-    /* Небольшая ненавязчивая плашка-фолбек (если вдруг нужно показать ссылку) */
-    .fallback{
-      position:fixed; left:0; right:0; bottom:0;
-      padding:8px 12px calc(8px + var(--safe-bottom));
-      background:linear-gradient(0deg,rgba(15,19,25,.96),rgba(15,19,25,.86));
-      color:#93a3b8; font-size:12px;
+    .actions{display:flex; align-items:center; gap:8px}
+    .btn{
+      height:36px; padding:0 12px; border-radius:10px;
+      border:1px solid rgba(255,255,255,.15);
+      background:linear-gradient(180deg,var(--panel),var(--panel2));
+      color:var(--text); font-weight:800; cursor:pointer;
+    }
+
+    /* ОСНОВНОЕ СООБЩЕНИЕ */
+    .main{flex:1 1 auto; display:flex; align-items:center; justify-content:center; padding:20px}
+    .card{
+      width:min(860px,96vw);
+      background:linear-gradient(180deg,var(--panel),var(--panel2));
+      border:1px solid rgba(255,255,255,.12);
+      border-radius:16px;
+      padding:18px;
       text-align:center;
-      border-top:1px solid rgba(255,255,255,.08);
-      display:none;                 /* по умолчанию скрыто: страница — только импорт */
+      box-shadow:0 18px 40px rgba(0,0,0,.35);
     }
-    .fallback a{ color:#cfe1ff; text-decoration:none; font-weight:700 }
+    .card h1{margin:0 0 6px 0; font-size:16px}
+    .card p{margin:.5em 0; color:var(--muted)}
+    .card a{color:#cfe1ff; font-weight:800; text-decoration:none}
+    .note{margin-top:10px; font-size:12px; color:#9bb0cc}
+
+    /* НИЖНЯЯ ТОНКАЯ ПАНЕЛЬ-ЗАГЛУШКА (не обязательна) */
+    .bottombar{
+      height:calc(14px + var(--safe-bottom));
+      padding-bottom:var(--safe-bottom);
+    }
+
+    @media (max-width:720px){
+      .label{display:none}
+      .btn{height:34px}
+    }
   </style>
 </head>
 <body>
-  <div id="wrap">
-    <iframe id="okxFrame" title="OKX Swap"></iframe>
+  <div id="app">
+    <!-- Верхняя панель: кружок + подпись + адрес + кнопки -->
+    <header class="topbar">
+      <span class="led" title="Онлайн (демо)"></span>
+      <span class="label" id="pairLabel">OKX · ETH-USDT-SWAP</span>
+
+      <div class="urlbox">
+        <span class="urltext" id="urlText">https://www.okx.com/ru/markets/swap-info/eth-usdt-swap</span>
+      </div>
+
+      <div class="actions">
+        <button class="btn" id="btnOpen">Открыть</button>
+        <button class="btn" id="btnCopy">Копировать</button>
+      </div>
+    </header>
+
+    <!-- Основная карточка с пояснением -->
+    <main class="main">
+      <div class="card">
+        <h1>Встраивание запрещено сайтом OKX</h1>
+        <p>OKX запрещает показ страниц внутри iframe (политика X-Frame-Options/CSP).  
+           Мы показываем <b>точный адрес</b> сверху. Нажмите «Открыть», чтобы перейти на страницу инструмента.</p>
+        <p>Ссылка: <a id="urlLink" href="https://www.okx.com/ru/markets/swap-info/eth-usdt-swap" target="_blank" rel="noopener">OKX — ETH-USDT-SWAP</a></p>
+        <p class="note">Поддерживаются параметры: <code>?symbol=...</code>, <code>?ticker=...</code>, <code>?coin=...</code>. По умолчанию — ETH.</p>
+      </div>
+    </main>
+
+    <div class="bottombar"></div>
   </div>
 
-  <!-- Telegram WebApp SDK (без зависимости; просто на случай открытия в боте) -->
+  <!-- Telegram WebApp SDK (на случай открытия в боте) -->
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <script>
-    // ---------- Помощники ----------
+    // -------- Помощники --------
+    const $ = (s) => document.querySelector(s);
     function getParam(name){
       const u = new URL(location.href);
       return u.searchParams.get(name) || '';
     }
-    // Нормализуем символ в slug OKX вида: <base>-usdt-swap
-    // Принимаем: 'ETH-USDT-SWAP', 'eth-usdt', 'ETH', 'sol', 'btc/usdt', 'btc_usdt_swap' и т.п.
+    // Нормализация в OKX slug: <base>-usdt-swap
     function toOkxSwapSlug(symbol){
       if (!symbol) return 'eth-usdt-swap';
       let s = String(symbol).trim().toLowerCase();
-
-      // убираем пробелы, заменяем / и _ на дефис
       s = s.replace(/\s+/g,'').replace(/[\/_]/g,'-').replace(/-+/g,'-');
-
-      if (s.endsWith('-swap')) return s;         // уже полноформатный slug
-      if (/-usdt$/.test(s)) return s + '-swap';  // есть пара, добавим -swap
-      // только тикер → считаем usdt perp
+      if (s.endsWith('-swap')) return s;
+      if (/-usdt$/.test(s)) return s + '-swap';
       if (/^[a-z0-9]+$/.test(s)) return s + '-usdt-swap';
-
-      // иначе добьем безопасно
       if (!/-usdt(-|$)/.test(s)) s = s.replace(/-swap$/, '') + '-usdt';
       if (!s.endsWith('-swap')) s += '-swap';
       return s;
     }
+    function buildOkxUrl(symbol){
+      return 'https://www.okx.com/ru/markets/swap-info/' + toOkxSwapSlug(symbol);
+    }
+    function openExternal(url){
+      if (window.Telegram && window.Telegram.WebApp && typeof Telegram.WebApp.openLink === 'function'){
+        Telegram.WebApp.openLink(url);
+      } else {
+        window.open(url,'_blank','noopener');
+      }
+    }
+    async function copyToClipboard(text){
+      try{
+        await navigator.clipboard.writeText(text);
+        $('#btnCopy').textContent = 'Скопировано';
+        setTimeout(()=>{$('#btnCopy').textContent='Копировать'},1200);
+      }catch(e){
+        // Фолбэк: выделение и подсказка
+        alert('Скопируйте вручную:\n' + text);
+      }
+    }
 
-    // ---------- Основная логика ----------
+    // -------- Инициализация --------
     (function init(){
       // По умолчанию ETH
-      let symbol = getParam('symbol') || getParam('ticker') || getParam('coin') || 'ETH-USDT-SWAP';
-      const slug  = toOkxSwapSlug(symbol);
-      const url   = `https://www.okx.com/ru/markets/swap-info/${slug}`;
+      const symbol = getParam('symbol') || getParam('ticker') || getParam('coin') || 'ETH-USDT-SWAP';
+      const slug   = toOkxSwapSlug(symbol);
+      const url    = buildOkxUrl(symbol);
 
-      // Если страница открыта в Telegram WebApp — можно слегка подстроить цветовую тему
+      // Обновим UI
+      $('#pairLabel').textContent = 'OKX · ' + slug.toUpperCase().replace(/-/g,'-');
+      $('#urlText').textContent   = url;
+      $('#urlLink').href          = url;
+      $('#urlLink').textContent   = 'OKX — ' + slug.toUpperCase();
+
+      // Telegram WebApp косметика
       if (window.Telegram && window.Telegram.WebApp){
         try{
           Telegram.WebApp.ready();
@@ -96,16 +178,9 @@
         }catch(e){}
       }
 
-      // Вставляем в iframe
-      document.getElementById('okxFrame').src = url;
-
-      // Если нужно включить плашку-фолбек со ссылкой (например, если сайт запрещает iframes),
-      // просто раскомментируйте строки ниже:
-      // const fb = document.createElement('div');
-      // fb.className = 'fallback';
-      // fb.innerHTML = `Если виджет не загрузился, откройте напрямую: <a href="${url}" target="_blank" rel="noopener">OKX — ${slug}</a>`;
-      // document.body.appendChild(fb);
-      // fb.style.display = 'block';
+      // Кнопки
+      $('#btnOpen').addEventListener('click', () => openExternal(url));
+      $('#btnCopy').addEventListener('click', () => copyToClipboard(url));
     })();
   </script>
 </body>

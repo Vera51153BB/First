@@ -1,191 +1,150 @@
-/* okx_chart.js
-   Лёгкая отрисовка свечей на Canvas (заглушка для OKX BTC-USDT-SWAP).
-   Позже сюда подключим реальное API OKX. Сделано максимально нетяжело.
-
-   Публичные функции:
-   - initOkxCanvas(canvasEl)
-   - showOkxLayer(), showTvLayer(), showShelves()
-   - setChartName(name)
-*/
+/* ==========================================================================
+   ui_panel.js — ЛОГИКА UI (без тяжёлых библиотек)
+   Что делает:
+   • Гарантирует «без прокрутки» за счёт чистого CSS (JS не нужен).
+   • Управляет открытием/закрытием POP-уведомления (▲/▼), закрытие по клику на фон.
+   • Управляет подсказкой TIP («Что значит индикатор состояния?») — открытие по кнопке ², закрытие по клику на фон и ESC.
+   • Кнопка «i» — сейчас просто показывает базовую информацию (alert), можно заменить на ваш контент/модалку.
+   • В POP: кнопки OKX/TV/VP — переключают активный слой (демо). Ссылки открываются в новой вкладке (target=_blank).
+   • Тоггл «Избранное»: меняет подпись «➕ В избранное» <-> «⭐️ Избранное».
+   • Под Telegram WebApp — бережно настраивает цвета и может спрятать topbar.
+   ========================================================================== */
 
 (() => {
-	// ----------- Состояние -----------
-	let canvas, ctx, dpi = 1;
-	let currentLayer = 'okx'; // okx | tv | shelves
-	let rafId = null;
+  // --- Кэш DOM-элементов
+  const $ = (sel) => document.querySelector(sel);
+  const $app         = $('#app');
+  const $menuBtn     = $('#btn-menu');
+  const $infoBtn     = $('#btn-info');
+  const $tipBtn      = $('#btn-tip');
 
-	// Генерация фейковых свечей (N точек)
-	function genFakeCandles(n = 120, start = 68000) {
-		const out = [];
-		let price = start;
-		for (let i = 0; i < n; i++) {
-			const drift = (Math.random() - 0.5) * 400;
-			const open = price;
-			const close = price + drift;
-			const high = Math.max(open, close) + Math.random() * 120;
-			const low  = Math.min(open, close) - Math.random() * 120;
-			out.push({ o: open, h: high, l: low, c: close });
-			price = close + (Math.random() - 0.5) * 100;
-		}
-		return out;
-	}
+  const $popBack     = $('#pop-backdrop');
+  const $popCard     = $('.pop-card');
+  const $favBtn      = $('#btn-fav');
 
-	const data = genFakeCandles();
+  const $tipBack     = $('#tip-backdrop');
+  const $tipCard     = $('.tip-card');
 
-	// ----------- Рендер -----------
-	function resizeCanvas() {
-		if (!canvas) return;
-		const rect = canvas.getBoundingClientRect();
-		dpi = window.devicePixelRatio || 1;
-		canvas.width = Math.max(1, Math.floor(rect.width * dpi));
-		canvas.height = Math.max(1, Math.floor(rect.height * dpi));
-		ctx = canvas.getContext('2d');
-		ctx.setTransform(dpi, 0, 0, dpi, 0, 0); // логические координаты в CSS-пикселях
-	}
+  const $layerOkx    = $('#layer-okx');
+  const $layerTv     = $('#layer-tv');
+  const $layerVp     = $('#layer-vp');
+  const $chartName   = $('#chart-name');
+  const $statusLed   = $('#status-led');
 
-	function findMinMax(arr) {
-		let lo = Infinity, hi = -Infinity;
-		for (const k of arr) {
-			if (k.l < lo) lo = k.l;
-			if (k.h > hi) hi = k.h;
-		}
-		return [lo, hi];
-	}
+  let menuOpen = false;
 
-	function yScaleFactory(lo, hi, h, pad = 10) {
-		const span = Math.max(1, hi - lo);
-		return (price) => {
-			const t = (price - lo) / span;
-			return Math.round((h - pad) - (h - pad * 2) * t);
-		};
-	}
+  // --- Вспомогательные
+  function setChartLayer(which){
+    // Переключаем видимую заглушку-слой
+    $layerOkx.hidden = which !== 'okx';
+    $layerTv.hidden  = which !== 'tv';
+    $layerVp.hidden  = which !== 'vp';
 
-	function render() {
-		if (!canvas || !ctx) return;
+    // Обновляем подпись в панели
+    if (which === 'okx') $chartName.textContent = 'OKX · BTC-USDT-SWAP';
+    if (which === 'tv')  $chartName.textContent = 'TradingView · ETH-USDT-SWAP';
+    if (which === 'vp')  $chartName.textContent = 'Volume Profile · Заглушка';
+  }
 
-		const w = canvas.clientWidth;
-		const h = canvas.clientHeight;
+  function setMenu(open){
+    // Открыть/закрыть pop-уведомление, синхронизируем стрелку ▲/▼
+    menuOpen = open;
+    $popBack?.classList.toggle('show', open);
+    $popBack?.setAttribute('aria-hidden', String(!open));
+    $menuBtn?.setAttribute('aria-expanded', String(open));
+    $menuBtn.textContent = open ? '▼' : '▲';
+  }
 
-		// bg
-		ctx.clearRect(0, 0, w, h);
-		ctx.fillStyle = '#0b0e14';
-		ctx.fillRect(0, 0, w, h);
+  function toggleMenu(){ setMenu(!menuOpen); }
 
-		// рамка
-		ctx.strokeStyle = 'rgba(255,255,255,.08)';
-		ctx.strokeRect(0.5, 0.5, w - 1, h - 1);
+  function openTip(){
+    $tipBack?.classList.add('show');
+    $tipBack?.setAttribute('aria-hidden','false');
+  }
+  function closeTip(){
+    $tipBack?.classList.remove('show');
+    $tipBack?.setAttribute('aria-hidden','true');
+  }
 
-		// сетка
-		ctx.strokeStyle = 'rgba(255,255,255,.06)';
-		ctx.lineWidth = 1;
-		const rows = 5;
-		for (let i = 1; i < rows; i++) {
-			const y = Math.round((h / rows) * i) + 0.5;
-			ctx.beginPath();
-			ctx.moveTo(0, y);
-			ctx.lineTo(w, y);
-			ctx.stroke();
-		}
+  function favToggle(){
+    // Переключатель «Избранное»
+    const state = $favBtn.getAttribute('data-state') || 'add';
+    if (state === 'add'){
+      $favBtn.setAttribute('data-state','star');
+      $favBtn.textContent = '⭐️ Избранное';
+    } else {
+      $favBtn.setAttribute('data-state','add');
+      $favBtn.textContent = '➕ В избранное';
+    }
+  }
 
-		// свечи
-		const [lo, hi] = findMinMax(data);
-		const y = yScaleFactory(lo, hi, h, 12);
+  // --- Обработчики событий
+  function onPopClick(e){
+    // 1-я строка кнопок
+    const btn = e.target.closest('.pop-btn');
+    if (btn){
+      const act = btn.getAttribute('data-action');
+      if (act === 'okx') setChartLayer('okx');
+      if (act === 'tv')  setChartLayer('tv');
+      if (act === 'vp')  setChartLayer('vp');
+      return;
+    }
 
-		const cw = Math.max(3, Math.floor(w / Math.max(30, data.length))); // ширина свечи
-		const gap = Math.max(1, Math.floor(cw * 0.25));
-		const bodyW = Math.max(1, cw - gap);
+    // 2-я строка — fav
+    if (e.target.id === 'btn-fav'){
+      favToggle();
+      return;
+    }
 
-		let x = Math.max(2, w - (data.length * cw) - 6); // прижимаем к правому краю
-		for (const k of data) {
-			const openY = y(k.o);
-			const closeY = y(k.c);
-			const highY = y(k.h);
-			const lowY = y(k.l);
-			const up = k.c >= k.o;
+    // Клик по фону вне карточки — закрыть
+    if (e.target === $popBack){
+      setMenu(false);
+    }
+  }
 
-			// тень
-			ctx.strokeStyle = 'rgba(255,255,255,.35)';
-			ctx.beginPath();
-			ctx.moveTo(x + Math.floor(bodyW / 2), highY);
-			ctx.lineTo(x + Math.floor(bodyW / 2), lowY);
-			ctx.stroke();
+  function onTipClick(e){
+    // Клик по фону — закрыть
+    if (e.target === $tipBack){
+      closeTip();
+    }
+  }
 
-			// тело
-			ctx.fillStyle = up ? '#65d16f' : '#ff6b6b';
-			const top = Math.min(openY, closeY);
-			const bh = Math.max(1, Math.abs(openY - closeY));
-			ctx.fillRect(x, top, bodyW, bh);
+  function onKey(e){
+    if (e.key === 'Escape'){
+      if (menuOpen) setMenu(false);
+      closeTip();
+    }
+  }
 
-			x += cw;
-		}
+  function onInfo(){
+    // Стилистически «i» — как у стрелки. Пока простая справка:
+    alert('Информация о текущем графике (демо). Здесь можно вывести подробности инструмента, таймфрейм, биржу и т.п.');
+  }
 
-		// инфо-текст
-		ctx.fillStyle = 'rgba(255,255,255,.5)';
-		ctx.font = '12px system-ui, -apple-system, Segoe UI, Roboto, Arial';
-		ctx.fillText('OKX · BTC-USDT-SWAP (demo)', 10, 18);
-	}
+  // --- Инициализация
+  document.addEventListener('DOMContentLoaded', () => {
+    // Telegram WebApp косметика
+    if (window.Telegram && window.Telegram.WebApp){
+      try{
+        window.Telegram.WebApp.ready();
+        window.Telegram.WebApp.setBackgroundColor('#0b0e14');
+        window.Telegram.WebApp.setHeaderColor('secondary_bg_color');
+        // Хотите — спрячем topbar внутри бота:
+        // $('#topbar').style.display = 'none';
+      }catch(e){}
+    }
 
-	function loop() {
-		render();
-		// легкая анимация: «дышит» последняя свеча как будто тикает
-		const last = data[data.length - 1];
-		last.c += (Math.random() - 0.5) * 8;
-		last.h = Math.max(last.h, last.c);
-		last.l = Math.min(last.l, last.c);
-		rafId = requestAnimationFrame(loop);
-	}
+    // Слушатели
+    $menuBtn?.addEventListener('click', toggleMenu);
+    $infoBtn?.addEventListener('click', onInfo);
+    $tipBtn?.addEventListener('click', openTip);
 
-	// ----------- Публичные функции -----------
-	function initOkxCanvas(canvasEl) {
-		canvas = canvasEl;
-		resizeCanvas();
-		window.addEventListener('resize', resizeCanvas, { passive:true });
-		loop();
-	}
+    $popBack?.addEventListener('click', onPopClick);
+    $tipBack?.addEventListener('click', onTipClick);
+    document.addEventListener('keydown', onKey);
 
-	function setChartName(name) {
-		const el = document.getElementById('chart-name');
-		if (el) el.textContent = name;
-	}
-
-	function showLayer(which) {
-		currentLayer = which;
-		const $okx = document.getElementById('okxCanvas');
-		const $tv  = document.getElementById('tvContainer');
-		const $sh  = document.getElementById('shelvesPlaceholder');
-
-		if (!$okx || !$tv || !$sh) return;
-
-		$okx.hidden = which !== 'okx';
-		$tv.hidden  = which !== 'tv';
-		$sh.hidden  = which !== 'shelves';
-
-		if (which === 'okx') setChartName('OKX · BTC-USDT-SWAP');
-		if (which === 'tv')  setChartName('TV · ETH-USDT-SWAP');
-		if (which === 'shelves') setChartName('Полки объёма · заглушка');
-	}
-
-	// Упрощённые публичные алиасы
-	window.showOkxLayer = () => showLayer('okx');
-	window.showTvLayer  = () => showLayer('tv');
-	window.showShelves  = () => showLayer('shelves');
-	window.setChartName = setChartName;
-
-	// Инициализация при загрузке DOM
-	document.addEventListener('DOMContentLoaded', () => {
-		const canvasEl = document.getElementById('okxCanvas');
-		if (canvasEl) initOkxCanvas(canvasEl);
-
-		// Если открыто в Telegram WebApp — можно чуть скорректировать UI
-		if (window.Telegram && window.Telegram.WebApp) {
-			document.body.classList.add('tg');
-			try {
-				window.Telegram.WebApp.ready();
-				// выставим цвет темы под тёмный фон
-				window.Telegram.WebApp.setBackgroundColor('#0b0e14');
-				window.Telegram.WebApp.setHeaderColor('secondary_bg_color');
-			} catch(e){}
-		}
-	});
-
+    // Старт: OKX, статус зелёный (декоративный)
+    setChartLayer('okx');
+    $statusLed.title = 'Статус: Онлайн (демо)';
+  });
 })();

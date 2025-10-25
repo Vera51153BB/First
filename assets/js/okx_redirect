@@ -1,62 +1,73 @@
-/* Очень простой редирект на страницу инструмента OKX.
- * Ожидает query-параметры:
- *   inst  — полный instId OKX, например: BTC-USDT-SWAP  (приоритет)
- *   base  — тикер без суффиксов, например: BTC          (соберём BASE-USDT-SWAP)
- *
- * Примеры:
- *   chart.html?inst=ETH-USDT-SWAP
- *   chart.html?base=BTC
- *
- * Если параметров нет/некорректны — откроем BTC-USDT-SWAP.
- */
+/* Устойчивый редирект на страницу инструмента OKX
+   Параметры:
+     ?inst=BTC-USDT-SWAP   — полное имя инструмента OKX (приоритет)
+     ?base=BTC             — только базовый тикер; соберём BASE-USDT-SWAP
 
-(function(){
+   Поведение:
+     1) если в окружении есть Telegram.WebApp — пробуем WebApp.openLink(...)
+     2) window.open(url, '_blank')  (для in-app браузеров)
+     3) location.replace(url)
+     4) показываем кнопку-переход как fallback
+*/
+
+(function () {
+  const $ = (id) => document.getElementById(id);
   const p = new URLSearchParams(location.search);
 
-  let inst = (p.get('inst') || '').toUpperCase().trim();
-  let base = (p.get('base') || '').toUpperCase().trim();
+  // --- читаем вход ---
+  const clean = (s) => String(s || "").toUpperCase().replace(/[^A-Z0-9\-]/g, "").slice(0, 64);
 
-  // валидация допустимых символов
-  const clean = s => s.replace(/[^A-Z0-9\-]/g, '').slice(0, 50);
+  let inst = clean(p.get("inst"));
+  let base = clean(p.get("base"));
 
-  inst = clean(inst);
-  base = clean(base);
-
-  // если нет полного inst — соберём из base
+  // если дали только base — собираем стандартный своп на USDT
   if (!inst) {
-    if (base) inst = `${base}-USDT-SWAP`;
-    else      inst = `BTC-USDT-SWAP`;          // дефолт
+    inst = base ? `${base}-USDT-SWAP` : "BTC-USDT-SWAP";
   }
 
-  // лёгкая нормализация общих вариантов формата
-  // (на всякий случай: BTCUSDT -> BTC-USDT-SWAP, BTC-USDT -> BTC-USDT-SWAP)
-  if (!inst.includes('-')) {
-    // слепленная пара: BTCUSDT, ETHUSDT
-    const m = inst.match(/^([A-Z0-9]{3,6})(USDT|USD|USDC)$/);
+  // нормализуем частые форматы (BTCUSDT, BTC-USDT без -SWAP)
+  if (!inst.includes("-")) {
+    const m = inst.match(/^([A-Z0-9]{3,10})(USDT|USD|USDC)$/);
     if (m) inst = `${m[1]}-${m[2]}-SWAP`;
   } else if (!/-SWAP$/i.test(inst)) {
-    // если прислали BTC-USDT (без -SWAP) — добавим
-    const parts = inst.split('-');
+    const parts = inst.split("-");
     if (parts.length >= 2) inst = `${parts[0]}-${parts[1]}-SWAP`;
   }
 
-  // финальная чистка ещё раз
-  inst = clean(inst);
-
-  // целевой URL OKX Trade (Swap)
+  // итоговый URL OKX (перпетуалы)
   const target = `https://www.okx.com/trade-swap/${encodeURIComponent(inst)}`;
 
-  // показать fallback-ссылку на случай, если браузер заблокирует JS
-  const fb = document.getElementById('fallback');
-  if (fb) {
-    fb.innerHTML = `Если не перенаправилось автоматически, <a href="${target}" rel="noopener">нажмите сюда</a>.`;
+  // fallback-кнопка, если автоматический редирект запретили
+  function showFallback() {
+    const fb = $("fallback");
+    if (fb) {
+      fb.innerHTML =
+        `<a class="btn" href="${target}" rel="noopener" target="_blank">Открыть ${inst} на OKX</a><div class="muted">Если не открывается в мини-браузере, нажмите кнопку.</div>`;
+    }
   }
 
-  // моментальный редирект
+  // 1) Telegram API
   try {
-    // предпочтительнее заменить историю, чтобы "Назад" вернул в бот/предыдущую страницу
+    const wa = window.Telegram && window.Telegram.WebApp;
+    if (wa && typeof wa.openLink === "function") {
+      // открывает внешний URL корректно в телеграм-контейнере
+      wa.openLink(target, { try_instant_view: false });
+      return;
+    }
+  } catch (_) {}
+
+  // 2) классическое окно/вкладка
+  try {
+    const w = window.open(target, "_blank");
+    if (w) return;
+  } catch (_) {}
+
+  // 3) смена локации (лучше replace, чтобы "Назад" вернул в бота)
+  try {
     location.replace(target);
-  } catch {
-    location.href = target;
-  }
+    return;
+  } catch (_) {}
+
+  // 4) запасной вариант — вручную
+  showFallback();
 })();

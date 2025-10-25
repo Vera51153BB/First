@@ -1,100 +1,66 @@
 <!doctype html>
-<html lang="ru">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <title>Charts — OKX & TV</title>
+<div id="app">
+<!-- Верхняя полоска статуса -->
+<header id="statusbar" class="bar">
+<div class="status-left">
+<span id="chart-title" class="title">OKX • BTC/USDT (SWAP)</span>
+</div>
+<div class="status-right">
+<button id="btn-info" class="icon" title="Инфо">i</button>
+<button id="btn-notify" class="icon" title="Уведомление">▲</button>
+</div>
+</header>
 
-  <!-- Telegram WebApp SDK (если открыто в боте) -->
-  <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
-  <link rel="stylesheet" href="assets/css/chart.css" />
-</head>
-<body>
-  <main id="app">
-    <!-- Верхняя зона (можно скрыть в WebApp) -->
-    <header class="topbar" id="topbar">
-      <div class="brand">
-        <span class="dot"></span>
-        <span class="title">Charts</span>
-      </div>
-      <div class="spacer"></div>
-      <!-- Кнопка-индикатор состояния в шапке (дублирует нижний, не активна) -->
-      <button id="btn-status" class="status ok" title="Статус соединения: OK">●</button>
-    </header>
+<!-- Основная зона графика: вписывается по высоте без прокрутки -->
+<main id="stage">
+<!-- Контейнер, куда подставляется текущий график -->
+<div id="chart-host" aria-live="polite"></div>
 
-    <!-- Рабочая область: 3 слоя (демо-заглушки) -->
-    <section class="chart-area" id="chart-area" aria-label="Chart area">
-      <div class="layer layer-okx" id="layer-okx">
-        <div class="layer-title">OKX · BTC-USDT-SWAP (демо)</div>
-      </div>
 
-      <div class="layer layer-tv" id="layer-tv" hidden>
-        <div class="layer-title">TradingView · ETH-USDT-SWAP (демо)</div>
-      </div>
+<!-- Заглушка Volume Profile (2-я вкладка строки уведомления дублирует ссылки) -->
+<section id="vp-placeholder" hidden>
+<div class="vp-card">
+<h2>Volume Profile</h2>
+<p>Пока заглушка. Перейти:
+<a id="lnk-vp-restmebel" href="https://www.restmebel.ru/" target="_blank" rel="noopener">restmebel.ru</a>
+</p>
+</div>
+</section>
+</main>
 
-      <div class="layer layer-vp" id="layer-vp" hidden>
-        <div class="layer-title">Volume Profile · Заглушка</div>
-      </div>
-    </section>
-  </main>
 
-  <!-- Нижняя фиксированная панель -->
-  <footer class="bottombar" id="bottombar" role="toolbar" aria-label="Bottom Controls">
-    <div class="bottom-left">
-      <!-- Светящийся кружок статуса -->
-      <div class="status-led" id="status-led" title="Статус: Онлайн">●</div>
+<!-- Нижняя закреплённая панель -->
+<footer id="footerbar" class="bar">
+<nav class="tabs">
+<button class="tab is-active" data-tab="okx">OKX</button>
+<button class="tab" data-tab="tv">TradingView</button>
+<button class="tab" data-tab="vp">Volume&nbsp;Profile</button>
+</nav>
+</footer>
+</div>
 
-      <!-- Название текущего графика -->
-      <div class="chart-name-wrap">
-        <span class="chart-name" id="chart-name">OKX · BTC-USDT-SWAP</span>
 
-        <!-- Кнопка информации: высота = высоте стрелки, отступ 2px -->
-        <button id="btn-info" class="btn-info" title="Информация (о графике)">i</button>
+<!-- Уведомление/панель (popover) -->
+<dialog id="notify-pop">
+<form method="dialog" class="sheet">
+<div class="sheet-row">
+<button value="okx" class="pill" data-pop="okx">OKX</button>
+<button value="tv" class="pill" data-pop="tv">TradingView</button>
+<button value="vp" class="pill" data-pop="vp">Volume&nbsp;Profile</button>
+</div>
+<div class="sheet-row links">
+<a id="a-okx" href="https://www.okx.com/" target="_blank" rel="noopener">🔗 OKX</a>
+<a id="a-tv" href="https://www.tradingview.com/" target="_blank" rel="noopener">🔗 TradingView</a>
+</div>
+<div class="sheet-actions">
+<button id="btn-close-pop" value="close" class="ghost">Закрыть</button>
+</div>
+</form>
+</dialog>
 
-        <!-- Маленькая «²» в рамке — открывает подсказку про индикатор состояния -->
-        <button id="btn-tip" class="btn-tip" title="Что значит индикатор состояния?">²</button>
-      </div>
-    </div>
 
-    <!-- Справа — кнопка «стрелка-меню» (▲/▼) с округлением, отступ справа ≥ 15px -->
-    <div class="bottom-right">
-      <button id="btn-menu" class="btn-menu" aria-expanded="false" title="Открыть уведомление">▲</button>
-    </div>
-  </footer>
-
-  <!-- Поп-ап уведомление (бекдроп + карточка) -->
-  <div id="pop-backdrop" class="pop-backdrop" aria-hidden="true">
-    <section class="pop-card" role="dialog" aria-modal="true" aria-label="Уведомление">
-      <!-- 1-я строка: 3 кнопки с «сечением» -->
-      <div class="pop-row pop-row-buttons">
-        <button class="pop-btn" data-action="okx">OKX</button>
-        <button class="pop-btn" data-action="tv">TradingView</button>
-        <button class="pop-btn" data-action="vp">Volume Profile</button>
-      </div>
-
-      <!-- 2-я строка: две ссылки + избранное (тоггл) -->
-      <div class="pop-row pop-row-links">
-        <a class="pop-link" href="https://www.okx.com" target="_blank" rel="noopener noreferrer">🔗 OKX</a>
-        <a class="pop-link" href="https://www.tradingview.com" target="_blank" rel="noopener noreferrer">🔗 TradingView</a>
-        <button class="pop-fav" id="btn-fav" data-state="add">➕ В избранное</button>
-      </div>
-    </section>
-  </div>
-
-  <!-- Подсказка «Что значит индикатор состояния?» (бекдроп + карточка) -->
-  <div id="tip-backdrop" class="tip-backdrop" aria-hidden="true">
-    <section class="tip-card" role="dialog" aria-modal="true" aria-label="Подсказка о статусе">
-      <div class="tip-title">Что значит индикатор состояния?</div>
-      <ul class="tip-list">
-        <li><span class="dot-lg ok"></span><b>Онлайн (WS)</b> — данные обновляются в реальном времени.</li>
-        <li><span class="dot-lg warn"></span><b>Деградирован (REST)</b> — WebSocket временно недоступен, данные подгружаются периодически.</li>
-        <li><span class="dot-lg bad"></span><b>Оффлайн</b> — нет связи с источниками.</li>
-      </ul>
-    </section>
-  </div>
-
-  <!-- JS: только поведение UI (без тяжёлых либ) -->
-  <script src="assets/js/ui_panel.js"></script>
+<script src="assets/js/okx_chart.js"></script>
+<script src="assets/js/ui_panel.js"></script>
 </body>
 </html>

@@ -1,187 +1,75 @@
-/* ui_panel.js
-   Логика нижней панели: статус, инфо, выезжающее меню 3x3, переключение слоёв (ОКХ/ТВ/Полки).
-   ТВ (TradingView) — лениво загружается при первом нажатии на кнопку «ТВ».
-*/
-
-(() => {
-	let menuOpen = false;
-	let tvLoaded = false;
-
-	function $(sel){ return document.querySelector(sel); }
-	function $all(sel){ return Array.from(document.querySelectorAll(sel)); }
-
-	function setMenu(open){
-		menuOpen = open;
-		const menu = $('#slide-menu');
-		const btn  = $('#btn-menu');
-		if (!menu || !btn) return;
-
-		menu.classList.toggle('open', open);
-		menu.setAttribute('aria-hidden', String(!open));
-		btn.setAttribute('aria-expanded', String(open));
-		btn.textContent = open ? '▼' : '▲';
-	}
-
-	function toggleMenu(){ setMenu(!menuOpen); }
-
-	function openInfo(){
-		const pop = $('#info-pop');
-		if (!pop) return;
-		pop.classList.add('show');
-		pop.setAttribute('aria-hidden','false');
-	}
-
-	function closeInfo(){
-		const pop = $('#info-pop');
-		if (!pop) return;
-		pop.classList.remove('show');
-		pop.setAttribute('aria-hidden','true');
-	}
-
-	// Статус светодиода (можно связать с реальным каналом потом)
-	function setStatus(state){ // 'ok' | 'warn' | 'bad'
-		const led = $('#status-led');
-		const head = $('#btn-status');
-		if (!led || !head) return;
-		led.style.background = (state === 'ok') ? '#65d16f' : (state === 'warn') ? '#ffcc66' : '#ff6b6b';
-		head.classList.remove('ok','warn','bad');
-		head.classList.add(state);
-	}
-
-	// Ленивое подключение TradingView
-	function ensureTradingView() {
-		return new Promise((resolve) => {
-			if (tvLoaded) return resolve(true);
-
-			// Загружаем официальный lightweight скрипт
-			const s = document.createElement('script');
-			s.src = 'https://s3.tradingview.com/tv.js';
-			s.async = true;
-			s.onload = () => {
-				tvLoaded = true;
-				resolve(true);
-			};
-			// В редких CSP-случаях (Telegram webview строго) может не загрузиться — тогда показываем сообщение
-			s.onerror = () => {
-				console.warn('TradingView script failed to load.');
-				resolve(false);
-			};
-			document.head.appendChild(s);
-		});
-	}
-
-	function initTradingViewWidget() {
-		const root = document.getElementById('tvWidgetRoot');
-		if (!root) return;
-
-		// Если TradingView не доступен — покажем fallback
-		if (typeof TradingView === 'undefined' || !TradingView.widget) {
-			root.innerHTML = '<div style="padding:16px;color:#93a3b8">Не удалось загрузить TradingView (вебвью или CSP). Повторите попытку или откройте в браузере.</div>';
-			return;
-		}
-
-		root.innerHTML = ''; // очистим на всякий
-		/* eslint-disable no-new */
-		new TradingView.widget({
-			container_id: 'tvWidgetRoot',
-			width: '100%',
-			height: '100%',
-			symbol: 'BINANCE:ETHUSDT.P',   // ETH-USDT perpetual (пример; укажите нужную биржу/тикер)
-			interval: '15',
-			theme: 'dark',
-			style: '1',
-			locale: 'ru',
-			enable_publishing: false,
-			hide_legend: false,
-			withdateranges: true,
-			range: '1D',
-		});
-	}
-
-	// Обработка кликов по кнопкам меню
-	function onMenuClick(e){
-		const btn = e.target.closest('.menu-btn');
-		if (!btn) return;
-
-		const act = btn.getAttribute('data-action');
-		const key = btn.getAttribute('data-key');
-
-		if (act === 'okx') {
-			showOkxLayer();
-			setMenu(false);
-		}
-		else if (act === 'tv') {
-			ensureTradingView().then((ok) => {
-				showTvLayer();
-				if (ok) initTradingViewWidget();
-				setMenu(false);
-			});
-		}
-		else if (act === 'shelves') {
-			showShelves();
-			setMenu(false);
-		}
-		else if (key) {
-			// Заглушки для 1..6
-			console.log('Menu key pressed:', key);
-			setMenu(false);
-		}
-	}
-
-	  function onInfoIconClick(e){
-    const btn = e.target.closest('.info-icon-btn');
-    if (!btn) return;
-
-    const act = btn.getAttribute('data-action');
-    if (act === 'okx') {
-      showOkxLayer();
-      closeInfo();
-    }
-    else if (act === 'tv') {
-      ensureTradingView().then((ok) => {
-        showTvLayer();
-        if (ok) initTradingViewWidget();
-        closeInfo();
-      });
-    }
-    else if (act === 'shelves') {
-      showShelves();
-      closeInfo();
-    }
-  }
+// Файл: First/assets/js/ui_panel.js
+// фиксация высоты на iOS/Android (без прокрутки).
 
 
-	// Инициализация
-	document.addEventListener('DOMContentLoaded', () => {
-		// Кнопки панели
-		$('#btn-menu')?.addEventListener('click', toggleMenu);
-		$('#btn-info')?.addEventListener('click', openInfo);
-		$('#info-close')?.addEventListener('click', closeInfo);
-		$('#slide-menu')?.addEventListener('click', onMenuClick);
+(function(){
+const tabs = Array.from(document.querySelectorAll('#footerbar .tab'));
+const notifyBtn = document.getElementById('btn-notify');
+const infoBtn = document.getElementById('btn-info');
+const pop = document.getElementById('notify-pop');
 
-	    // Клик по фоне info-pop закрывает окно
-	    $('#info-pop')?.addEventListener('click', (e) => {
-	      if (e.target.id === 'info-pop') closeInfo();
-	    });
-	    // Клики по кнопкам-иконкам в инфо-окне
-	    $('#info-pop')?.addEventListener('click', onInfoIconClick);
 
-		// По умолчанию показываем OKX
-		showOkxLayer();
-		setStatus('ok');
+// Кнопки первой строки поповера
+const btnsPop = Array.from(pop.querySelectorAll('[data-pop]'));
 
-		// Закрываем меню «вверх свайпом» клавишей Esc
-		document.addEventListener('keydown', (e) => {
-			if (e.key === 'Escape') {
-				if (menuOpen) setMenu(false);
-				closeInfo();
-			}
-		});
 
-		// Если открыто внутри Telegram WebApp — можно скрыть topbar для компактности
-		if (window.Telegram && window.Telegram.WebApp) {
-			const tb = document.getElementById('topbar');
-			if (tb) tb.style.display = 'none';
-		}
-	});
+// 1) Переключение вкладок снизу
+tabs.forEach(b => b.addEventListener('click', () => {
+const tab = b.dataset.tab;
+tabs.forEach(x => x.classList.toggle('is-active', x === b));
+window.__chart?.setChart(tab);
+}));
+
+
+// 2) Кнопка «уведомление» (треугольник) — открыть dialog
+notifyBtn.addEventListener('click', () => {
+try{ pop.showModal(); }catch{ /* старые браузеры */ }
+});
+
+
+// 3) Кнопки первой строки в поповере — дублируют вкладки
+btnsPop.forEach(b => b.addEventListener('click', (e) => {
+const tab = b.dataset.pop;
+// Закрыть поповер и переключить вкладку
+setTimeout(() => {
+if(pop.open) pop.close();
+const t = tabs.find(x => x.dataset.tab === tab);
+if(t){ t.click(); }
+}, 0);
+}));
+
+
+// 4) Кнопка «i» — краткая подсказка
+infoBtn.addEventListener('click', () => {
+const msg = [
+'• OKX — тестовый своп BTC/USDT (через TradingView embed)\n',
+'• TradingView — тестовый своп ETH/USDT\n',
+'• Volume Profile — временная заглушка (ссылка).\n',
+'\nОсновной кейс — открытие внутри Telegram Web App, но страница одинаково работает и в браузере на десктопе/мобиле.'
+].join('');
+try{ pop.showModal(); }catch{}
+// Небольшой трюк: подсветить первую строку
+});
+
+
+// 5) Вписывание по высоте без прокрутки (в т.ч. iOS Safari)
+function applyVhFix(){
+const vh = window.innerHeight * 0.01;
+document.documentElement.style.setProperty('--vh', `${vh * 100}px`);
+}
+window.addEventListener('resize', applyVhFix);
+window.addEventListener('orientationchange', applyVhFix);
+applyVhFix();
+
+
+// 6) Интеграция Telegram Web App (если открыто внутри ТГ)
+const tg = window.Telegram && window.Telegram.WebApp ? window.Telegram.WebApp : null;
+if(tg){
+try{
+tg.expand(); // Разворачиваем на всю высоту
+tg.disableVerticalSwipes && tg.disableVerticalSwipes(); // iOS визуальные ухищрения
+// Подхватываем тему ТГ (опционально можно применить цвета)
+document.documentElement.style.setProperty('--bg', tg.themeParams?.bg_color || '#0b0f1a');
+}catch(e){ /* no-op */ }
+}
 })();

@@ -66,7 +66,7 @@
 		</nav>
 
 		<!-- Всплывающее окно информации -->
-		<div id="info-pop" class="info-pop" role="dialog" aria-modal="false" aria-hidden="true">
+		<!-- <div id="info-pop" class="info-pop" role="dialog" aria-modal="false" aria-hidden="true">
 			<div class="info-card">
 				<div class="info-head">
 					<div>Информация</div>
@@ -78,7 +78,40 @@
 					<p>Работает внутри Telegram WebApp и в обычном браузере (десктоп/мобайл).</p>
 				</div>
 			</div>
-		</div>
+		</div> -->
+		<!-- Всплывающее окно информации -->
+<div id="info-pop" class="info-pop" role="dialog" aria-modal="false" aria-hidden="true">
+  <div class="info-card">
+    <div class="info-head">
+      <div>Информация</div>
+      <button id="info-close" class="x">✕</button>
+    </div>
+
+    <!-- ЗАМЕНИТЬ весь .info-body на этот блок -->
+    <div class="info-body">
+      <!-- Ряд с 3 кнопками-иконками -->
+      <div class="info-icons">
+        <button class="info-icon-btn" data-action="okx" title="ОКХ">
+          <img src="https://vera51153bb.github.io/First/images/okx-logotype-light.png" alt="OKX" width="128" height="128" loading="lazy">
+        </button>
+        <button class="info-icon-btn" data-action="tv" title="ТВ (TradingView)">
+          <img src="https://vera51153bb.github.io/First/images/tradingview-logotype-light.png" alt="TradingView" width="128" height="128" loading="lazy">
+        </button>
+        <button class="info-icon-btn" data-action="shelves" title="Полки объёма">
+          <img src="https://vera51153bb.github.io/First/images/vp-logotype-light.png" alt="Полки объёма" width="128" height="128" loading="lazy">
+        </button>
+      </div>
+
+      <!-- НОВЫЙ ряд ссылок в одну строку -->
+      <div class="info-links">
+        <a class="info-link" href="https://www.okx.com" target="_blank" rel="noopener noreferrer">🔗 OKX</a>
+        <a class="info-link" href="https://www.tradingview.com" target="_blank" rel="noopener noreferrer">🔗 TradingView</a>
+      </div>
+    </div>
+    <!-- / .info-body -->
+  </div>
+</div>
+
 	</footer>
 
 	<script src="assets/js/okx_chart.js"></script>

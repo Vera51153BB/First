@@ -210,6 +210,89 @@ body.tg{ background:var(--bg); }
 }
 .info-body p{ margin:.5em 0; color:var(--muted); }
 
+/* --- Info icons row (кнопки-логотипы) --- */
+.info-icons{
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0,1fr));
+  gap: 16px;
+  align-items: center;
+  justify-items: center;
+  padding: 8px 0 2px;
+}
+
+.info-icon-btn{
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: min(160px, 28vw);
+  height: min(110px, 20vw);
+  border-radius: 14px;
+  border: 1px solid rgba(255,255,255,.12);
+  background: radial-gradient(120% 120% at 50% 0%, rgba(255,255,255,.06), rgba(255,255,255,.02));
+  cursor: pointer;
+  transition: transform .12s ease, box-shadow .12s ease, border-color .12s ease;
+}
+.info-icon-btn:hover{
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(0,0,0,.25);
+  border-color: rgba(79,163,255,.35);
+}
+.info-icon-btn:active{
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(0,0,0,.25) inset;
+}
+.info-icon-btn img{
+  display:block;
+  max-width: 90%;
+  max-height: 80%;
+  object-fit: contain;
+}
+
+/* --- Info links row (2 ссылки в одну строку) --- */
+.info-links{
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0,1fr));
+  gap: 12px;
+  margin-top: 10px;
+}
+.info-link{
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 14px;
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,.10);
+  background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
+  color: var(--text);
+  text-decoration: none;
+  font-weight: 700;
+  letter-spacing: .2px;
+  transition: transform .12s ease, border-color .12s ease, box-shadow .12s ease;
+}
+.info-link:hover{
+  transform: translateY(-1px);
+  border-color: rgba(79,163,255,.35);
+  box-shadow: 0 6px 18px rgba(0,0,0,.18);
+}
+.info-link:active{
+  transform: translateY(0);
+}
+
+@media (max-width: 720px){
+  .info-icons{ gap: 12px; }
+  .info-icon-btn{
+    width: min(140px, 40vw);
+    height: min(90px, 26vw);
+    border-radius: 12px;
+  }
+  .info-icon-btn img{
+    max-width: 88%;
+    max-height: 78%;
+  }
+  .info-links{ gap: 10px; }
+}
+
+
 /* ---------- Адаптив ---------- */
 @media (max-width: 720px){
 	.topbar{ padding:8px 12px; }

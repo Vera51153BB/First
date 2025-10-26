@@ -12,7 +12,7 @@
       --green:#79c172;
       --red:#ff5f5f;
 
-      --hbar:40px;        /* базовая высота зон */
+      --hbar:46px;        /* базовая высота зон */
       --hbar-min:32px;    /* ужатие на экстремально низких экранах */
       --padX:clamp(12px, 4vw, 18px);   /* адаптивный горизонтальный отступ */
 
@@ -20,12 +20,19 @@
       --muted:#9bb0cc;
       --shadow:0 10px 28px rgba(0,0,0,.35);
       --fontSize: clamp(12px, 1.8vw, 14px);
-      --uiSize: clamp(30px, 5.5vw, 34px);
-      --icon:  clamp(20px, 2.8vw, 28px);
+      --uiSize: clamp(28px, 5.5vw, 34px);
+      --icon:  clamp(14px, 2.8vw, 18px);
 
             /* ... существующие переменные ... */
       --focus-ring: rgba(122,167,255,.75);   /* цвет кольца */
       --focus-glow: rgba(122,167,255,.35);   /* внешнее мягкое свечение */
+    }
+    
+    @media (max-width: 768px){
+      :root{
+        --uiSize: clamp(34px, 7vw, 42px);
+        --icon:  clamp(20px, 4vw, 24px);
+      }
     }
     
     /* темы */

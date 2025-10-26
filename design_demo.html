@@ -1,0 +1,460 @@
+<!doctype html>
+<html lang="ru" data-theme="blue">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <title>Charts — Test UI</title>
+  <meta name="color-scheme" content="dark light" />
+
+  <!-- SVG-символы (скрыты). Шестерёнка для кнопки настроек в строках -->
+  <svg xmlns="http://www.w3.org/2000/svg" style="position:absolute;width:0;height:0;overflow:hidden">
+    <symbol id="icon-gear" viewBox="0 0 24 24">
+      <circle cx="12" cy="12" r="3"></circle>
+      <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33h.09a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51h.09a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82v.09a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+    </symbol>
+  </svg>
+
+  <style>
+    :root{
+      /* общие токены */
+      --sep:#a7a093;
+      --green:#79c172;
+      --red:#ff5f5f;
+      --hbar:40px;
+      --hbar-min:32px;
+      --radius:14px;
+      --muted:#9bb0cc;
+      --shadow:0 12px 32px rgba(0,0,0,.35);
+    }
+
+    /* темы: только переменные; авто-контраст делаем в JS коррекцией --text/--muted при установке темы */
+    html[data-theme="blue"]{
+      --bg:#050029;
+      --panel:#0a0637;
+      --panel2:#070430;
+      --text:#eaf0ff; /* будет скорректирован JS при необходимости */
+    }
+    html[data-theme="dark"]{
+      --bg:#0b0e14;
+      --panel:#11151c;
+      --panel2:#0f1319;
+      --text:#e5e7eb;
+    }
+    html[data-theme="light"]{
+      --bg:#f7f8fc;
+      --panel:#ffffff;
+      --panel2:#f2f4f8;
+      --text:#0d1321;
+    }
+
+    *{box-sizing:border-box}
+    html,body{
+      height:100%; margin:0;
+      background:var(--bg); color:var(--text);
+      font:14px/1.45 system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+      -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale;
+    }
+
+    .viewport{
+      height:100vh; height:100svh;
+      display:grid;
+      grid-template-rows: var(--h) 1fr var(--h);
+    }
+    /* динамическая высота верх/низ (40px, но может ужаться до 32px у очень маленьких экранов) */
+    @media (max-height:520px){
+      .viewport{ --h:var(--hbar-min); }
+    }
+    @media (min-height:521px){
+      .viewport{ --h:var(--hbar); }
+    }
+
+    /* разделители */
+    .divider{ height:1px; background:var(--sep); }
+
+    /* верхняя/нижняя полосы */
+    .bar{
+      display:flex; align-items:center; justify-content:space-between;
+      padding:0 12px;
+      background:linear-gradient(180deg,var(--panel),var(--panel2));
+      border-bottom:1px solid rgba(255,255,255,.08);
+    }
+    .bar.bottom{
+      border-top:1px solid rgba(0,0,0,.18);
+      border-bottom:none;
+    }
+
+    /* левый блок: индикатор + имя + время */
+    .left{
+      display:flex; align-items:center; gap:8px; min-width:0;
+    }
+    .pair{ font-weight:800; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+
+    .last-time{
+      font-variant-numeric: tabular-nums;
+      color:var(--muted);
+      white-space:nowrap;
+    }
+
+    /* индикатор со свечением и белым бликом */
+    .led{
+      position:relative;
+      width:14px; height:14px; border-radius:50%;
+      background:var(--green);
+      box-shadow: 0 0 12px rgba(121,193,114,.95), 0 0 26px rgba(121,193,114,.45);
+      cursor:pointer;
+    }
+    .led::after{
+      content:""; position:absolute; left:2px; top:2px;
+      width:4px; height:4px; border-radius:50%;
+      background:#fff; box-shadow: 0 0 4px rgba(255,255,255,.8);
+    }
+
+    /* правый блок: кнопки */
+    .right{ display:flex; align-items:center; gap:10px; }
+    .btn{
+      height:28px; padding:0 10px;
+      border-radius:10px; border:1px solid rgba(255,255,255,.15);
+      background:linear-gradient(180deg,var(--panel),var(--panel2));
+      color:var(--text); font-weight:800; letter-spacing:.2px;
+      display:inline-flex; align-items:center; gap:6px;
+      cursor:pointer;
+    }
+    .btn svg{ width:16px; height:16px; fill:currentColor; }
+    .btn:active{ transform: translateY(1px); }
+
+    /* центральная зона (заглушка графика) */
+    .center{
+      position:relative;
+      background:
+        radial-gradient(120% 120% at 50% 0%, rgba(255,255,255,.05), rgba(255,255,255,.02)),
+        var(--bg);
+      display:flex; align-items:center; justify-content:center;
+    }
+    .chart-card{
+      border:1px solid rgba(255,255,255,.12);
+      border-radius:16px; padding:18px 20px; text-align:center;
+      background:linear-gradient(180deg,var(--panel),var(--panel2));
+      box-shadow: var(--shadow);
+      max-width:min(900px, 92vw);
+    }
+    .chart-title{ font-weight:800; margin-bottom:8px; }
+    .chart-sub{ color:var(--muted); }
+
+    /* модалки — общий слой */
+    .backdrop{
+      position:fixed; inset:0; display:none; align-items:center; justify-content:center;
+      background:rgba(0,0,0,.45); z-index:20; padding:12px;
+    }
+    .backdrop.show{ display:flex; }
+    .modal{
+      width:min(680px,96vw);
+      background:linear-gradient(180deg,var(--panel),var(--panel2));
+      border:1px solid rgba(255,255,255,.12);
+      border-radius:16px; padding:14px 14px 16px;
+      box-shadow: var(--shadow);
+    }
+    .modal h3{ margin:2px 0 10px; font-size:16px; }
+    .grid-3{ display:grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap:10px; }
+    .grid-2{ display:grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap:10px; }
+
+    .pill{
+      border:1px solid rgba(255,255,255,.14);
+      background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
+      border-radius:12px; padding:10px 12px; text-align:center; cursor:pointer; font-weight:800;
+    }
+    .pill.active{ border-color: #7aa7ff; box-shadow: inset 0 0 0 1px rgba(122,167,255,.35); }
+
+    .row{ display:flex; align-items:center; justify-content:space-between; gap:10px; margin:10px 0; }
+    .label{ color:var(--muted); }
+
+    .close{ margin-top:12px; width:100%; }
+
+    /* tooltip / легенда */
+    .legend ul{ margin:8px 0 0; padding:0 0 0 16px; }
+    .legend li{ margin:6px 0; }
+    .dot{ display:inline-block; width:10px; height:10px; border-radius:50%; margin-right:6px; }
+    .dot.ok{ background:var(--green); box-shadow:0 0 10px rgba(121,193,114,.9); }
+    .dot.warn{ background:#ffcc66; box-shadow:0 0 10px rgba(255,204,102,.9); }
+    .dot.bad{ background:#ff5f5f; box-shadow:0 0 10px rgba(255,95,95,.9); }
+
+    @media (max-width:720px){
+      .btn{ height:30px; padding:0 10px; }
+      .pair{ max-width:40vw; }
+    }
+  </style>
+</head>
+<body>
+  <div class="viewport">
+
+    <!-- Верхняя полоса (40px) -->
+    <div class="bar top">
+      <div class="left">
+        <span class="led" id="led" title="Нажмите для легенды"></span>
+        <span class="pair" id="pairName">OKX · BTC-USDT-SWAP · 4h</span>
+        <span class="last-time" id="lastTime">—</span>
+      </div>
+      <div class="right">
+        <button class="btn" id="btnTF">TF</button>
+        <button class="btn" id="btnRefresh">🔄 Обновить</button>
+        <button class="btn" id="btnSettings" title="Настройки">
+          <svg><use href="#icon-gear"></use></svg> Settings
+        </button>
+      </div>
+    </div>
+
+    <!-- Разделитель -->
+    <div class="divider"></div>
+
+    <!-- Центральная область (график — заглушка) -->
+    <div class="center">
+      <div class="chart-card">
+        <div class="chart-title">График (заглушка)</div>
+        <div class="chart-sub">Здесь будет Canvas/TradingView. Тема: <b id="themeName">blue</b>. TF: <b id="tfName">4h</b>.</div>
+      </div>
+    </div>
+
+    <!-- Разделитель -->
+    <div class="divider"></div>
+
+    <!-- Нижняя полоса (40px) -->
+    <div class="bar bottom">
+      <div class="left" aria-hidden="true"></div>
+      <div class="right">
+        <button class="btn" id="btnRefresh2">🔄 Обновить</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Модалка: настройки -->
+  <div class="backdrop" id="dlgSettings" aria-hidden="true">
+    <div class="modal" role="dialog" aria-modal="true" aria-label="Настройки">
+      <h3>Настройки</h3>
+
+      <div class="row">
+        <div class="label">Тема</div>
+        <div class="grid-3" id="themeGrid">
+          <div class="pill" data-theme="light">Light</div>
+          <div class="pill active" data-theme="blue">Blue</div>
+          <div class="pill" data-theme="dark">Dark</div>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="label">Время</div>
+        <div class="grid-2">
+          <div class="pill" data-timezone="local">Локаль</div>
+          <div class="pill active" data-timezone="utc">UTC</div>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="label">Формат вывода</div>
+        <div class="grid-2">
+          <div class="pill active" data-tfmt="clock">Только время</div>
+          <div class="pill" data-tfmt="rel">Относительное</div>
+        </div>
+      </div>
+
+      <button class="btn close" id="btnCloseSettings">Закрыть</button>
+    </div>
+  </div>
+
+  <!-- Модалка: таймфрейм -->
+  <div class="backdrop" id="dlgTF" aria-hidden="true">
+    <div class="modal" role="dialog" aria-modal="true" aria-label="Выбор таймфрейма">
+      <h3>Таймфрейм</h3>
+      <div class="grid-3" id="tfGrid">
+        <div class="pill" data-tf="15m">15m</div>
+        <div class="pill" data-tf="1h">1h</div>
+        <div class="pill active" data-tf="4h">4h</div>
+        <div class="pill" data-tf="8h">8h</div>
+        <div class="pill" data-tf="12h">12h</div>
+        <div class="pill" data-tf="1d">1d</div>
+      </div>
+      <button class="btn close" id="btnCloseTF">Закрыть</button>
+    </div>
+  </div>
+
+  <!-- Модалка: легенда статусов -->
+  <div class="backdrop" id="dlgLegend" aria-hidden="true">
+    <div class="modal legend" role="dialog" aria-modal="true" aria-label="Статусы обновления">
+      <h3>Что значит индикатор состояния?</h3>
+      <ul>
+        <li><span class="dot ok"></span><b>Онлайн (WS)</b> — данные обновляются в реальном времени.</li>
+        <li><span class="dot warn"></span><b>Деградирован (REST)</b> — WebSocket недоступен, данные периодически подгружаются.</li>
+        <li><span class="dot bad"></span><b>Оффлайн (DIS)</b> — нет связи с источниками.</li>
+      </ul>
+      <button class="btn close" id="btnCloseLegend">Понятно</button>
+    </div>
+  </div>
+
+  <script>
+    // --- Состояние (демо)
+    const state = {
+      theme: 'blue',          // light | blue | dark
+      tf: '4h',               // 15m | 1h | 4h | 8h | 12h | 1d
+      timezone: 'utc',        // local | utc
+      tfmt: 'clock',          // clock | rel
+      lastUpdate: Date.now(), // timestamp ms
+      feedMode: 'WS',         // WS | REST | DIS (для будущего)
+      pair: 'OKX · BTC-USDT-SWAP'
+    };
+
+    // --- Элементы
+    const $ = sel => document.querySelector(sel);
+    const $all = sel => Array.from(document.querySelectorAll(sel));
+
+    const pairName = $('#pairName');
+    const lastTime = $('#lastTime');
+    const themeName = $('#themeName');
+    const tfName = $('#tfName');
+
+    // --- Утилиты
+    const pad2 = n => String(n).padStart(2,'0');
+
+    function fmtClock(ts, mode){
+      const d = new Date(ts);
+      if (mode === 'utc'){
+        return `${pad2(d.getUTCHours())}:${pad2(d.getUTCMinutes())}:${pad2(d.getUTCSeconds())} UTC`;
+      }
+      return `${pad2(d.getHours())}:${pad2(d.getMinutes())}:${pad2(d.getSeconds())}`;
+    }
+    function fmtRel(ts){
+      const diff = Math.max(0, Math.floor((Date.now() - ts)/1000));
+      if (diff >= 3600) return '🕐 > 1h';
+      const mm = Math.floor(diff/60);
+      const ss = diff % 60;
+      return `${pad2(mm)}:${pad2(ss)}`;
+    }
+
+    // Автоконтраст: подбираем цвет текста для фонового --panel
+    function applyAutoContrast(){
+      const cs = getComputedStyle(document.documentElement);
+      const bg = cs.getPropertyValue('--panel').trim() || '#000';
+      const rgb = bg.startsWith('#') ? hex2rgb(bg) : parseRGB(bg);
+      const L = luminance(rgb);
+      const text = L > 0.5 ? '#0d1321' : '#e5e7eb';
+      const muted = L > 0.5 ? '#4a5568' : '#9bb0cc';
+      document.documentElement.style.setProperty('--text', text);
+      document.documentElement.style.setProperty('--muted', muted);
+    }
+    function hex2rgb(hex){
+      const h = hex.replace('#','');
+      const n = h.length===3 ? h.split('').map(c=>c+c).join('') : h;
+      return { r:parseInt(n.slice(0,2),16), g:parseInt(n.slice(2,4),16), b:parseInt(n.slice(4,6),16) };
+    }
+    function parseRGB(s){
+      const m = s.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/i);
+      return m ? {r:+m[1], g:+m[2], b:+m[3]} : {r:0,g:0,b:0};
+    }
+    function luminance({r,g,b}){
+      const a=[r,g,b].map(v=>{
+        v/=255; return v<=0.03928 ? v/12.92 : Math.pow((v+0.055)/1.055,2.4);
+      });
+      return 0.2126*a[0]+0.7152*a[1]+0.0722*a[2];
+    }
+
+    // --- Рендер UI
+    function renderBars(){
+      pairName.textContent = `${state.pair} · ${state.tf}`;
+      tfName.textContent = state.tf;
+      themeName.textContent = state.theme;
+    }
+    function renderTime(){
+      if (state.tfmt === 'rel'){
+        lastTime.textContent = fmtRel(state.lastUpdate);
+      } else {
+        lastTime.textContent = fmtClock(state.lastUpdate, state.timezone);
+      }
+    }
+
+    // --- Темы
+    function setTheme(theme){
+      state.theme = theme;
+      document.documentElement.setAttribute('data-theme', theme);
+      applyAutoContrast();
+      renderBars();
+    }
+
+    // --- Модалки
+    function show(el){ el.classList.add('show'); el.setAttribute('aria-hidden','false'); }
+    function hide(el){ el.classList.remove('show'); el.setAttribute('aria-hidden','true'); }
+
+    // Настройки
+    const dlgSettings = $('#dlgSettings');
+    const themeGrid = $('#themeGrid');
+    const btnSettings = $('#btnSettings');
+    $('#btnCloseSettings').addEventListener('click', ()=>hide(dlgSettings));
+    btnSettings.addEventListener('click', ()=>show(dlgSettings));
+    dlgSettings.addEventListener('click', (e)=>{ if (e.target===dlgSettings) hide(dlgSettings); });
+
+    themeGrid.addEventListener('click', (e)=>{
+      const p = e.target.closest('.pill[data-theme]');
+      if (!p) return;
+      $all('#themeGrid .pill').forEach(x=>x.classList.toggle('active', x===p));
+      setTheme(p.dataset.theme);
+    });
+
+    // Время — зона настроек
+    const tzPills = $all('[data-timezone]');
+    tzPills.forEach(p=>p.addEventListener('click', ()=>{
+      tzPills.forEach(x=>x.classList.remove('active'));
+      p.classList.add('active');
+      state.timezone = p.dataset.timezone;
+      renderTime();
+    }));
+    const tfmtPills = $all('[data-tfmt]');
+    tfmtPills.forEach(p=>p.addEventListener('click', ()=>{
+      tfmtPills.forEach(x=>x.classList.remove('active'));
+      p.classList.add('active');
+      state.tfmt = p.dataset.tfmt;
+      renderTime();
+    }));
+
+    // TF
+    const dlgTF = $('#dlgTF');
+    $('#btnTF').addEventListener('click', ()=>show(dlgTF));
+    $('#btnCloseTF').addEventListener('click', ()=>hide(dlgTF));
+    dlgTF.addEventListener('click', (e)=>{ if (e.target===dlgTF) hide(dlgTF); });
+    $('#tfGrid').addEventListener('click', (e)=>{
+      const p = e.target.closest('.pill[data-tf]');
+      if (!p) return;
+      $all('#tfGrid .pill').forEach(x=>x.classList.toggle('active', x===p));
+      state.tf = p.dataset.tf;
+      renderBars();
+      hide(dlgTF);
+    });
+
+    // Легенда (по клику на индикатор)
+    const dlgLegend = $('#dlgLegend');
+    const led = $('#led');
+    led.addEventListener('click', ()=>show(dlgLegend));
+    $('#btnCloseLegend').addEventListener('click', ()=>hide(dlgLegend));
+    dlgLegend.addEventListener('click', (e)=>{ if (e.target===dlgLegend) hide(dlgLegend); });
+
+    // Обновить (демо — просто обновляем lastUpdate)
+    function doRefresh(){
+      state.lastUpdate = Date.now();
+      renderTime();
+    }
+    $('#btnRefresh').addEventListener('click', doRefresh);
+    $('#btnRefresh2').addEventListener('click', doRefresh);
+
+    // Тики времени
+    setInterval(()=>{ renderTime(); }, 1000);
+
+    // Старт
+    setTheme('blue');          // по умолчанию
+    state.lastUpdate = Date.now();
+    renderBars();
+    renderTime();
+
+    // ESC закрывает модалки
+    document.addEventListener('keydown', (e)=>{
+      if (e.key==='Escape'){
+        [dlgSettings, dlgTF, dlgLegend].forEach(hide);
+      }
+    });
+  </script>
+</body>
+</html>

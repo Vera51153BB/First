@@ -28,12 +28,12 @@
       opacity:1;          /* можно снизить при желании */
       pointer-events:none;
     }
-    .divider.top{    top:50px; }
-    .divider.bottom{ bottom:50px; }
+    .divider.top{    top:40px; }
+    .divider.bottom{ bottom:40px; }
 
     /* Верхняя и нижняя панели с иконками */
     .icon-bar{
-      position:absolute; left:0; right:0; height:50px;
+      position:absolute; left:0; right:0; height:40px;
       display:flex; align-items:center; justify-content:flex-end;
       padding: 0 15px;   /* отступ от правого края = 15px */
     }
@@ -55,15 +55,15 @@
     .icons button:hover{ transform: translateY(-1px); }
     .icons button:active{ transform: translateY(0); opacity:.85; }
 
-    /* Три зоны: верхняя (0–50), средняя, нижняя (последние 50) */
+    /* Три зоны: верхняя (0–40), средняя, нижняя (последние 40) */
     .zone{
       position:absolute; left:0; right:0;
       display:flex; align-items:center; justify-content:center;
       pointer-events:none;   /* контент примерный; можно убрать */
     }
-    .zone.top{    top:0; height:50px; }
-    .zone.mid{    top:50px; bottom:50px; }
-    .zone.bot{    bottom:0; height:50px; }
+    .zone.top{    top:0; height:40px; }
+    .zone.mid{    top:40px; bottom:40px; }
+    .zone.bot{    bottom:0; height:40px; }
 
     /* ===== Индикатор (кружок со свечением и белой точкой) ===== */
     .led{

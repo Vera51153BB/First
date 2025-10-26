@@ -1,0 +1,394 @@
+<!doctype html>
+<html lang="ru" data-theme="blue">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <title>Charts — Mobile-first UI</title>
+  <meta name="color-scheme" content="dark light" />
+
+  <style>
+    :root{
+      --sep:#a7a093;
+      --green:#79c172;
+      --red:#ff5f5f;
+
+      --hbar:40px;        /* базовая высота верх/низ */
+      --hbar-min:32px;    /* ужатие на очень низких экранах */
+      --padX:clamp(12px, 4vw, 18px);
+
+      --radius:12px;
+      --muted:#9bb0cc;
+      --shadow:0 10px 28px rgba(0,0,0,.35);
+      --fontSize: clamp(12px, 1.8vw, 14px);
+      --uiSize: clamp(28px, 5.5vw, 34px);
+      --icon:  clamp(18px, 3.4vw, 22px); /* иконки сделали чуть крупнее */
+
+      --focus-ring: rgba(122,167,255,.75);
+      --focus-glow: rgba(122,167,255,.35);
+    }
+
+    /* темы */
+    html[data-theme="blue"]{
+      --bg:#050029;
+      --panel:#0a0637;
+      --panel2:#070430;
+      --text:#eaf0ff; /* автоконтраст подправит при необходимости */
+    }
+    html[data-theme="dark"]{
+      --bg:#0b0e14;
+      --panel:#11151c;
+      --panel2:#0f1319;
+      --text:#e5e7eb;
+    }
+    html[data-theme="light"]{
+      --bg:#f7f8fc;
+      --panel:#ffffff;
+      --panel2:#f2f4f8;
+      --text:#0d1321;
+    }
+
+    *{box-sizing:border-box}
+    html,body{
+      height:100%; margin:0;
+      background:var(--bg); color:var(--text);
+      font: var(--fontSize)/1.45 system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+      -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale;
+      overflow:hidden;
+    }
+
+    .viewport{
+      height:100svh;
+      display:grid;
+      grid-template-rows: var(--h) 1px 1fr 1px var(--h);
+      background:var(--bg);
+    }
+    @media (max-height:520px){ .viewport{ --h:var(--hbar-min); } }
+    @media (min-height:521px){ .viewport{ --h:var(--hbar); } }
+
+    .divider{ background:var(--sep); }
+
+    .topbar{
+      background:linear-gradient(180deg,var(--panel),var(--panel2));
+      border-bottom:1px solid rgba(255,255,255,.08);
+    }
+
+    .center{ position:relative; background:var(--bg); }
+
+    .bottombar{
+      display:flex; align-items:center; justify-content:space-between;
+      padding-left: var(--padX);
+      padding-right: 12px; /* обязательный резерв справа */
+      background:linear-gradient(180deg,var(--panel),var(--panel2));
+      border-top:1px solid rgba(0,0,0,.18);
+      gap: 12px;
+    }
+
+    /* левая часть */
+    .left{
+      display:flex; align-items:center; gap:8px; min-width:0;
+      white-space:nowrap;
+      overflow:hidden;
+    }
+    .pair{
+      font-weight:600;                 /* единый стиль */
+      overflow:hidden; text-overflow:ellipsis;
+      max-width:60vw;                  /* не отбираем место у времени/иконок */
+    }
+    .pair .tf{ font-weight:inherit; }  /* 1h НЕ жирный */
+    .time{
+      color:var(--muted);
+      font-variant-numeric: tabular-nums;
+      margin-left: clamp(6px,1.8vw,10px);
+      flex:0 0 auto;                   /* время не сжимать */
+    }
+
+    .led{
+      position:relative;
+      width: clamp(12px, 2.8vw, 14px);
+      height: clamp(12px, 2.8vw, 14px);
+      border-radius:50%;
+      background:var(--green);
+      box-shadow: 0 0 12px rgba(121,193,114,.95), 0 0 26px rgba(121,193,114,.45);
+      cursor:pointer; flex:0 0 auto;
+    }
+    .led::after{
+      content:""; position:absolute; left:2px; top:2px;
+      width:4px; height:4px; border-radius:50%;
+      background:#fff; box-shadow: 0 0 4px rgba(255,255,255,.8);
+    }
+
+    /* правая часть */
+    .right{ display:flex; align-items:center; gap: clamp(8px, 2vw, 12px); }
+    #btnRefresh{ margin-left:8px; } /* чтобы текст не лип к иконке */
+
+    /* кнопки */
+    .btn{
+      height: var(--uiSize);
+      padding: 0 clamp(10px, 2.6vw, 12px);
+      border: none;
+      border-radius: var(--radius);
+      background: linear-gradient(180deg, var(--panel), var(--panel2));
+      color: var(--text);
+      display:inline-flex; align-items:center; justify-content:center;
+      gap:8px; cursor:pointer; user-select:none;
+      font-weight:800;
+      outline:none;
+      -webkit-tap-highlight-color: transparent;
+      transition: box-shadow .15s ease, background .12s ease, transform .08s ease;
+    }
+    .btn:active{ transform: translateY(1px); }
+
+    .btn-icon{
+      width: var(--uiSize);
+      padding:0;
+      aspect-ratio:1/1;
+      border:none;
+      background:linear-gradient(180deg,var(--panel),var(--panel2));
+      color:var(--text);
+    }
+    .btn-icon svg{
+      width: var(--icon);
+      height: var(--icon);
+      display:block;
+      fill: currentColor;
+    }
+    .btn-icon:hover{
+      background:linear-gradient(180deg,var(--panel),rgba(255,255,255,.04));
+    }
+
+    .btn:focus-visible,
+    .btn-icon:focus-visible{
+      box-shadow:
+        0 0 0 2px rgba(0,0,0,.35),
+        0 0 0 4px var(--focus-ring),
+        0 0 12px 2px var(--focus-glow);
+      outline:none;
+    }
+
+    /* компактные режимы, когда не влазит */
+    .bottombar.compact{
+      --fontSize: clamp(11px, 1.5vw, 13px);
+      --uiSize:   clamp(28px, 5.0vw, 32px);
+      --icon:     clamp(16px, 3.2vw, 20px);
+      gap: 8px;
+    }
+    .bottombar.xcompact{
+      --fontSize: 11px;
+      --uiSize:   26px;
+      --icon:     15px;
+      gap: 6px;
+    }
+    /* если совсем тесно, прячем время последним шагом */
+    .bottombar.xcompact .time{ display:none; }
+  </style>
+</head>
+<body>
+  <div class="viewport">
+    <div class="topbar"></div>
+    <div class="divider"></div>
+
+    <!-- чистое поле под график -->
+    <div class="center" id="chartRoot"></div>
+
+    <div class="divider"></div>
+
+    <!-- НИЖНЯЯ ПАНЕЛЬ -->
+    <div class="bottombar">
+      <div class="left">
+        <span class="led" id="led" title="Нажмите для легенды"></span>
+        <span class="pair" id="pair">OKX · BTC-USDT-SWAP · <span class="tf">1h</span></span>
+        <span class="time" id="time">—</span>
+      </div>
+      <div class="right">
+        <button class="btn" id="btnTF"><b>TF</b></button>
+        <!-- Обновить (inline SVG) -->
+        <button class="btn btn-icon" id="btnRefresh" title="Обновить" aria-label="Обновить">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path fill="currentColor"
+              d="M12 6v3l4-4-4-4v3c-4.42 0-8 3.58-8 8 0 1.57.46 3.03 1.24 4.26L6.7 14.8c-.45-.83-.7-1.79-.7-2.8 0-3.31 2.69-6 6-6zm6.76 1.74L17.3 9.2c.44.84.7 1.79.7 2.8 0 3.31-2.69 6-6 6v-3l-4 4 4 4v-3c4.42 0 8-3.58 8-8 0-1.57-.46-3.03-1.24-4.26z"/>
+          </svg>
+        </button>
+        <!-- Настройки (inline SVG) -->
+        <button class="btn btn-icon" id="btnSettings" title="Настройки" aria-label="Настройки">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path fill="currentColor"
+              d="M3 17v2h6v-2H3zM3 5v2h10V5H3zm10 16v-2h8v-2h-8v-2h-2v6h2zM7 9v2H3v2h4v2h2V9H7zm14 4v-2H11v2h10zm-6-4h2V7h4V5h-4V3h-2v6z"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Настройки -->
+  <div class="backdrop" id="dlgSettings" aria-hidden="true">
+    <div class="modal" role="dialog" aria-modal="true" aria-label="Settings">
+      <h3>Настройки</h3>
+      <div class="row" style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin:10px 0;">
+        <div style="color:var(--muted)">Тема</div>
+        <div class="grid" id="themeGrid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;">
+          <div class="pill" data-theme="light" style="border:1px solid rgba(255,255,255,.14);border-radius:12px;padding:10px 12px;text-align:center;cursor:pointer;font-weight:800;">Light</div>
+          <div class="pill active" data-theme="blue"  style="border:1px solid rgba(255,255,255,.14);border-radius:12px;padding:10px 12px;text-align:center;cursor:pointer;font-weight:800;box-shadow: inset 0 0 0 1px rgba(122,167,255,.35);">Blue</div>
+          <div class="pill" data-theme="dark"  style="border:1px solid rgba(255,255,255,.14);border-radius:12px;padding:10px 12px;text-align:center;cursor:pointer;font-weight:800;">Dark</div>
+        </div>
+      </div>
+      <div class="row" style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin:10px 0;">
+        <div style="color:var(--muted)">Время</div>
+        <div class="grid" style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px;">
+          <div class="pill" data-timezone="local" style="border:1px solid rgba(255,255,255,.14);border-radius:12px;padding:10px 12px;text-align:center;cursor:pointer;font-weight:800;">Локаль</div>
+          <div class="pill active" data-timezone="utc" style="border:1px solid rgba(255,255,255,.14);border-radius:12px;padding:10px 12px;text-align:center;cursor:pointer;font-weight:800;box-shadow: inset 0 0 0 1px rgba(122,167,255,.35);">UTC</div>
+        </div>
+      </div>
+      <div class="row" style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin:10px 0;">
+        <div style="color:var(--muted)">Формат</div>
+        <div class="grid" style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px;">
+          <div class="pill active" data-tfmt="clock" style="border:1px solid rgba(255,255,255,.14);border-radius:12px;padding:10px 12px;text-align:center;cursor:pointer;font-weight:800;box-shadow: inset 0 0 0 1px rgba(122,167,255,.35);">Только время</div>
+          <div class="pill" data-tfmt="rel" style="border:1px solid rgba(255,255,255,.14);border-radius:12px;padding:10px 12px;text-align:center;cursor:pointer;font-weight:800;">Относительное</div>
+        </div>
+      </div>
+      <button class="btn" id="btnCloseSettings" style="width:100%;margin-top:12px;">Закрыть</button>
+    </div>
+  </div>
+
+  <!-- TF -->
+  <div class="backdrop" id="dlgTF" aria-hidden="true">
+    <div class="modal" role="dialog" aria-modal="true" aria-label="TF">
+      <h3>Таймфрейм</h3>
+      <div class="grid" id="tfGrid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;">
+        <div class="pill" data-tf="15m" style="border:1px solid rgba(255,255,255,.14);border-radius:12px;padding:10px 12px;text-align:center;cursor:pointer;font-weight:800;">15m</div>
+        <div class="pill" data-tf="1h"  style="border:1px solid rgba(255,255,255,.14);border-radius:12px;padding:10px 12px;text-align:center;cursor:pointer;font-weight:800;">1h</div>
+        <div class="pill active" data-tf="4h" style="border:1px solid rgba(255,255,255,.14);border-radius:12px;padding:10px 12px;text-align:center;cursor:pointer;font-weight:800;box-shadow: inset 0 0 0 1px rgba(122,167,255,.35);">4h</div>
+        <div class="pill" data-tf="8h"  style="border:1px solid rgba(255,255,255,.14);border-radius:12px;padding:10px 12px;text-align:center;cursor:pointer;font-weight:800;">8h</div>
+        <div class="pill" data-tf="12h" style="border:1px solid rgba(255,255,255,.14);border-radius:12px;padding:10px 12px;text-align:center;cursor:pointer;font-weight:800;">12h</div>
+        <div class="pill" data-tf="1d"  style="border:1px solid rgba(255,255,255,.14);border-radius:12px;padding:10px 12px;text-align:center;cursor:pointer;font-weight:800;">1d</div>
+      </div>
+      <button class="btn" id="btnCloseTF" style="width:100%;margin-top:12px;">Закрыть</button>
+    </div>
+  </div>
+
+  <!-- Легенда -->
+  <div class="backdrop" id="dlgLegend" aria-hidden="true">
+    <div class="modal legend" role="dialog" aria-modal="true" aria-label="Legend">
+      <h3>Что значит индикатор состояния?</h3>
+      <ul style="margin:8px 0 0;padding:0 0 0 16px;">
+        <li style="margin:6px 0;"><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--green);box-shadow:0 0 10px rgba(121,193,114,.9);margin-right:6px;"></span><b>Онлайн (WS)</b> — данные обновляются в реальном времени.</li>
+        <li style="margin:6px 0;"><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#ffcc66;box-shadow:0 0 10px rgba(255,204,102,.9);margin-right:6px;"></span><b>Деградирован (REST)</b> — WebSocket недоступен, данные периодически подгружаются.</li>
+        <li style="margin:6px 0;"><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#ff5f5f;box-shadow:0 0 10px rgba(255,95,95,.9);margin-right:6px;"></span><b>Оффлайн (DIS)</b> — нет связи с источниками.</li>
+      </ul>
+      <button class="btn" id="btnCloseLegend" style="width:100%;margin-top:12px;">Понятно</button>
+    </div>
+  </div>
+
+  <script>
+    // --- состояние (демо)
+    const state = {
+      theme: 'blue',
+      tf: '1h',
+      timezone: 'utc',     // 'local' | 'utc'
+      tfmt: 'clock',       // 'clock' | 'rel'
+      lastUpdate: Date.now(),
+      pair: 'OKX · BTC-USDT-SWAP'
+    };
+
+    // helpers
+    const $ = s => document.querySelector(s);
+    const $$ = s => Array.from(document.querySelectorAll(s));
+    const pad2 = n => String(n).padStart(2,'0');
+
+    function fmtClock(ts, tz){
+      const d = new Date(ts);
+      if (tz==='utc') return `${pad2(d.getUTCHours())}:${pad2(d.getUTCMinutes())}:${pad2(d.getUTCSeconds())} UTC`;
+      return `${pad2(d.getHours())}:${pad2(d.getMinutes())}:${pad2(d.getSeconds())}`;
+    }
+    function fmtRel(ts){
+      const diff = Math.max(0, Math.floor((Date.now()-ts)/1000));
+      if (diff >= 3600) return '🕐 > 1h';
+      const mm = Math.floor(diff/60), ss = diff%60;
+      return `${pad2(mm)}:${pad2(ss)}`;
+    }
+
+    // автоконтраст
+    function applyAutoContrast(){
+      const cs = getComputedStyle(document.documentElement);
+      const bg = cs.getPropertyValue('--panel').trim() || '#000';
+      const rgb = bg.startsWith('#') ? hex2rgb(bg) : parseRGB(bg);
+      const L = luminance(rgb);
+      const text = L > 0.5 ? '#0d1321' : '#e5e7eb';
+      const muted = L > 0.5 ? '#4a5568' : '#9bb0cc';
+      document.documentElement.style.setProperty('--text', text);
+      document.documentElement.style.setProperty('--muted', muted);
+    }
+    function hex2rgb(hex){ const h=hex.replace('#',''); const n=h.length===3?h.split('').map(c=>c+c).join(''):h; return {r:parseInt(n.slice(0,2),16),g:parseInt(n.slice(2,4),16),b:parseInt(n.slice(4,6),16)}; }
+    function parseRGB(s){ const m=s.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/i); return m?{r:+m[1],g:+m[2],b:+m[3]}:{r:0,g:0,b:0}; }
+    function luminance({r,g,b}){ const a=[r,g,b].map(v=>{v/=255;return v<=.03928?v/12.92:Math.pow((v+.055)/1.055,2.4)}); return 0.2126*a[0]+0.7152*a[1]+0.0722*a[2]; }
+
+    // рендер
+    function renderBars(){ $('#pair').innerHTML = `${state.pair} · <span class="tf">${state.tf}</span>`; }
+    function renderTime(){ $('#time').textContent = (state.tfmt==='rel') ? fmtRel(state.lastUpdate) : fmtClock(state.lastUpdate, state.timezone); }
+    function setTheme(t){ state.theme = t; document.documentElement.setAttribute('data-theme', t); applyAutoContrast(); fitBottomBar(); }
+
+    // модалки
+    function show(el){ el.classList.add('show'); el.setAttribute('aria-hidden','false'); }
+    function hide(el){ el.classList.remove('show'); el.setAttribute('aria-hidden','true'); }
+
+    const dlgSettings = $('#dlgSettings');
+    const dlgTF = $('#dlgTF');
+    const dlgLegend = $('#dlgLegend');
+
+    $('#btnSettings').addEventListener('click', ()=>show(dlgSettings));
+    $('#btnCloseSettings').addEventListener('click', ()=>hide(dlgSettings));
+    dlgSettings.addEventListener('click', (e)=>{ if(e.target===dlgSettings) hide(dlgSettings); });
+
+    $('#themeGrid').addEventListener('click', (e)=>{
+      const p = e.target.closest('.pill[data-theme]'); if(!p) return;
+      $$('#themeGrid .pill').forEach(x=>x.classList.toggle('active', x===p));
+      setTheme(p.dataset.theme);
+    });
+    $$('#dlgSettings [data-timezone]').forEach(p=>p.addEventListener('click', ()=>{
+      $$('#dlgSettings [data-timezone]').forEach(x=>x.classList.remove('active'));
+      p.classList.add('active'); state.timezone = p.dataset.timezone; renderTime(); fitBottomBar();
+    }));
+    $$('#dlgSettings [data-tfmt]').forEach(p=>p.addEventListener('click', ()=>{
+      $$('#dlgSettings [data-tfmt]').forEach(x=>x.classList.remove('active'));
+      p.classList.add('active'); state.tfmt = p.dataset.tfmt; renderTime(); fitBottomBar();
+    }));
+
+    $('#btnTF').addEventListener('click', ()=>show(dlgTF));
+    $('#btnCloseTF').addEventListener('click', ()=>hide(dlgTF));
+    dlgTF.addEventListener('click', (e)=>{ if(e.target===dlgTF) hide(dlgTF); });
+    $('#tfGrid').addEventListener('click', (e)=>{
+      const p = e.target.closest('.pill[data-tf]'); if(!p) return;
+      $$('#tfGrid .pill').forEach(x=>x.classList.toggle('active', x===p));
+      state.tf = p.dataset.tf; renderBars(); fitBottomBar(); hide(dlgTF);
+    });
+
+    $('#led').addEventListener('click', ()=>show(dlgLegend));
+    $('#btnCloseLegend').addEventListener('click', ()=>hide(dlgLegend));
+    dlgLegend.addEventListener('click', (e)=>{ if(e.target===dlgLegend) hide(dlgLegend); });
+
+    function doRefresh(){ state.lastUpdate = Date.now(); renderTime(); fitBottomBar(); }
+    $('#btnRefresh').addEventListener('click', doRefresh);
+
+    // умное поджатие нижней панели
+    function fitBottomBar(){
+      const bar = document.querySelector('.bottombar');
+      const left = bar.querySelector('.left');
+      bar.classList.remove('compact','xcompact');
+
+      const barW = bar.clientWidth;
+      const cs   = getComputedStyle(bar);
+      const avail = barW - (parseFloat(cs.paddingLeft)||0) - (parseFloat(cs.paddingRight)||0);
+
+      const need = left.scrollWidth;
+      if (need > avail) bar.classList.add('compact');
+      if (bar.classList.contains('compact') && left.scrollWidth > avail) bar.classList.add('xcompact');
+    }
+    window.addEventListener('resize', fitBottomBar);
+
+    // старт
+    setTheme('blue');
+    state.lastUpdate = Date.now();
+    renderBars(); renderTime(); fitBottomBar();
+    setInterval(renderTime, 1000);
+  </script>
+</body>
+</html>

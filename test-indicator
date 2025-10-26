@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Индикатор статуса — демо</title>
+  <style>
+    /* Тёмный фон ради контраста */
+    html,body{
+      height:100%; margin:0;
+      background:#0b0e14; color:#e5e7eb;
+      font:14px/1.45 system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+    }
+    .wrap{
+      min-height:100%; display:flex; align-items:center; justify-content:center;
+      padding:24px;
+    }
+
+    /* ===== Индикатор (кружок со свечением и белой точкой) ===== */
+    .led{
+      position:relative;
+      width:14px; height:14px;           /* базовый размер индикатора */
+      border-radius:50%;
+      background:#65d16f;                /* зелёный (онлайн) */
+      /* свечение вокруг */
+      box-shadow:
+        0 0 12px rgba(101,209,111,.95),
+        0 0 26px rgba(101,209,111,.45);
+    }
+    /* Белая «блик»-точка внутри (как на скрине) */
+    .led::after{
+      content:"";
+      position:absolute;
+      left:2px; top:2px;                 /* положение блика */
+      width:4px; height:4px;
+      border-radius:50%;
+      background:#ffffff;
+      box-shadow: 0 0 4px rgba(255,255,255,.9);
+    }
+
+    /* Пример рядом с текстом (необязательно) */
+    .row{ display:flex; align-items:center; gap:8px; }
+    .name{ font-weight:700; opacity:.95; letter-spacing:.2px; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <!-- Пример использования индикатора рядом с подписью -->
+    <div class="row" role="status" aria-label="Онлайн">
+      <span class="led" aria-hidden="true"></span>
+      <span class="name">OKX · BTC-USDT-SWAP</span>
+    </div>
+  </div>
+</body>
+</html>

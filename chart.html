@@ -87,24 +87,46 @@
 
     /* нижняя панель (основная) */
     .bottombar{
-      display:flex; align-items:center; justify-content:space-between;
-      padding:0 var(--padX);
-      background:linear-gradient(180deg,var(--panel),var(--panel2));
-      border-top:1px solid rgba(0,0,0,.18);
+      display:flex;
+      align-items:center;
+      padding-left: var(--padX);
       padding-right: 12px; /* минимум 12px справа */
+      background: linear-gradient(180deg, var(--panel), var(--panel2));
+      border-top: 1px solid rgba(0,0,0,.18);
     }
 
-    /* левая часть: индикатор + название + время (НЕ жирным) */
+    /* левая часть: индикатор + название + время */
     .left{
-      display:flex; align-items:center; gap:8px; min-width:0;
+      display:flex;
+      align-items:center;
+      gap:8px;
+      min-width:0;          /* важно для ellipsis */
       white-space:nowrap;
+      flex:1;               /* занимает доступную ширину */
     }
-    .pair{ font-weight:600; /* полужир чуть-чуть, но не bold */ }
-    .pair .tf{ font-weight:600; }        /* TF оставляем жирным */
+    
+    .pair{
+      font-weight:600;      /* единый стиль */
+      flex:1 1 auto;        /* гибкая ширина */
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+    
+    .pair .tf{
+      font-weight: inherit; /* 1h НЕ жирный */
+    }
+    
     .time{
       color:var(--muted);
       font-variant-numeric: tabular-nums;
       margin-left: clamp(6px,1.8vw,10px);
+      flex:0 0 auto;        /* время не сжимать */
+    }
+    
+    /* лёгкий зазор перед иконкой Обновить и фиксированная ширина */
+    #btnRefresh{
+      margin-left:8px;
+      flex:0 0 auto;
     }
 
     /* индикатор со свечением и белым бликом */

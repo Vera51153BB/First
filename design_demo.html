@@ -440,7 +440,7 @@
     $('#tfGrid').addEventListener('click', (e)=>{
       const p = e.target.closest('.pill[data-tf]'); if(!p) return;
       $$('#tfGrid .pill').forEach(x=>x.classList.toggle('active', x===p));
-      state.tf = p.dataset.tf; renderBars(); hide(dlgTF);
+      state.tf = p.dataset.tf; renderBars(); fitBottomBar(); hide(dlgTF);
     });
 
     // legend by indicator click
@@ -464,7 +464,29 @@
     document.addEventListener('keydown', e=>{
       if(e.key==='Escape'){ [dlgSettings, dlgTF, dlgLegend].forEach(hide); }
     });
-  
+
+    // включает классы compact/xcompact, когда не помещается
+    function fitBottomBar(){
+      const bar   = document.querySelector('.bottombar');
+      const left  = bar.querySelector('.left');
+      // сбрасываем режимы и меряем «в полный рост»
+      bar.classList.remove('compact','xcompact');
+    
+      const barW   = bar.clientWidth;
+      const cs     = getComputedStyle(bar);
+      const padL   = parseFloat(cs.paddingLeft) || 0;
+      const padR   = parseFloat(cs.paddingRight) || 0;
+      const avail  = barW - padL - padR;
+    
+      const need = left.scrollWidth; // справа элементов нет — меряем левый блок
+    
+      if (need > avail) bar.classList.add('compact');
+      if (bar.classList.contains('compact')) {
+        const need2 = left.scrollWidth;
+        if (need2 > avail) bar.classList.add('xcompact');
+      }
+    }
+
   </script>
 </body>
 </html>

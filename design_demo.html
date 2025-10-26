@@ -392,6 +392,22 @@
     function parseRGB(s){ const m = s.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/i); return m?{r:+m[1],g:+m[2],b:+m[3]}:{r:0,g:0,b:0}; }
     function luminance({r,g,b}){ const a=[r,g,b].map(v=>{v/=255;return v<=.03928?v/12.92:Math.pow((v+.055)/1.055,2.4)}); return 0.2126*a[0]+0.7152*a[1]+0.0722*a[2]; }
 
+    // где меняется TF/тема/формат времени — после renderBars()/renderTime():
+    // ДОБАВЬ:
+    const _renderBars = renderBars;
+    renderBars = function(){ _renderBars(); fitBottomBar(); }
+  
+    const _renderTime = renderTime;
+    renderTime = function(){ _renderTime(); fitBottomBar(); }
+  
+    // после setTheme / смен TF:
+    const _setTheme = setTheme;
+    setTheme = function(t){ _setTheme(t); fitBottomBar(); }
+  
+    // сразу после начальной инициализации:
+    fitBottomBar();
+// ----------------------------------------------------------------------------
+    
     // --- рендер
     function renderBars(){
       $('#pair').innerHTML = `${state.pair} · <span class="tf">${state.tf}</span>`;
@@ -495,20 +511,6 @@
     window.addEventListener('load', fitBottomBar);
     window.addEventListener('resize', fitBottomBar);
   
-    // где меняется TF/тема/формат времени — после renderBars()/renderTime():
-    // ДОБАВЬ:
-    const _renderBars = renderBars;
-    renderBars = function(){ _renderBars(); fitBottomBar(); }
-  
-    const _renderTime = renderTime;
-    renderTime = function(){ _renderTime(); fitBottomBar(); }
-  
-    // после setTheme / смен TF:
-    const _setTheme = setTheme;
-    setTheme = function(t){ _setTheme(t); fitBottomBar(); }
-  
-    // сразу после начальной инициализации:
-    fitBottomBar();
   </script>
 </body>
 </html>

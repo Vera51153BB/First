@@ -3,36 +3,46 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-  <title>Charts — Test UI</title>
+  <title>Charts — Mobile-first UI</title>
   <meta name="color-scheme" content="dark light" />
 
-  <!-- SVG-символы (скрыты). Шестерёнка для кнопки настроек в строках -->
+  <!-- SVG symbols (единый стиль, без эмодзи) -->
   <svg xmlns="http://www.w3.org/2000/svg" style="position:absolute;width:0;height:0;overflow:hidden">
-    <symbol id="icon-gear" viewBox="0 0 24 24">
-      <circle cx="12" cy="12" r="3"></circle>
-      <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33h.09a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51h.09a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82v.09a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+    <!-- refresh (две стрелки) -->
+    <symbol id="i-refresh" viewBox="0 0 24 24">
+      <path fill="currentColor" d="M17.65 6.35A7.95 7.95 0 0 0 12 4a8 8 0 1 0 7.75 6h-2.1A6 6 0 1 1 12 6c1.66 0 3.14.69 4.22 1.78L14 10h6V4z"/>
+    </symbol>
+    <!-- gear -->
+    <symbol id="i-gear" viewBox="0 0 24 24">
+      <path fill="currentColor" d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33h.09a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51h.09a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82v.09a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+      <circle cx="12" cy="12" r="3" fill="currentColor"/>
     </symbol>
   </svg>
 
   <style>
     :root{
-      /* общие токены */
       --sep:#a7a093;
       --green:#79c172;
       --red:#ff5f5f;
-      --hbar:40px;
-      --hbar-min:32px;
-      --radius:14px;
+
+      --hbar:40px;        /* базовая высота зон */
+      --hbar-min:32px;    /* ужатие на экстремально низких экранах */
+      --padX:clamp(12px, 4vw, 18px);   /* адаптивный горизонтальный отступ */
+
+      --radius:12px;
       --muted:#9bb0cc;
-      --shadow:0 12px 32px rgba(0,0,0,.35);
+      --shadow:0 10px 28px rgba(0,0,0,.35);
+      --fontSize: clamp(12px, 1.8vw, 14px);
+      --uiSize: clamp(28px, 5.5vw, 34px);
+      --icon:  clamp(14px, 2.8vw, 18px);
     }
 
-    /* темы: только переменные; авто-контраст делаем в JS коррекцией --text/--muted при установке темы */
+    /* темы */
     html[data-theme="blue"]{
       --bg:#050029;
       --panel:#0a0637;
       --panel2:#070430;
-      --text:#eaf0ff; /* будет скорректирован JS при необходимости */
+      --text:#eaf0ff; /* будет подправлено автоконтрастом */
     }
     html[data-theme="dark"]{
       --bg:#0b0e14;
@@ -51,57 +61,61 @@
     html,body{
       height:100%; margin:0;
       background:var(--bg); color:var(--text);
-      font:14px/1.45 system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+      font: var(--fontSize)/1.45 system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
       -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale;
+      overflow:hidden; /* без прокрутки */
     }
 
     .viewport{
-      height:100vh; height:100svh;
+      height:100svh;
       display:grid;
-      grid-template-rows: var(--h) 1fr var(--h);
+      grid-template-rows: var(--h) 1px 1fr 1px var(--h); /* верх, разделитель, центр, разделитель, низ */
+      background:var(--bg);
     }
-    /* динамическая высота верх/низ (40px, но может ужаться до 32px у очень маленьких экранов) */
-    @media (max-height:520px){
-      .viewport{ --h:var(--hbar-min); }
-    }
-    @media (min-height:521px){
-      .viewport{ --h:var(--hbar); }
-    }
+    @media (max-height:520px){ .viewport{ --h:var(--hbar-min); } }
+    @media (min-height:521px){ .viewport{ --h:var(--hbar); } }
 
-    /* разделители */
-    .divider{ height:1px; background:var(--sep); }
+    .divider{ background:var(--sep); }
 
-    /* верхняя/нижняя полосы */
-    .bar{
-      display:flex; align-items:center; justify-content:space-between;
-      padding:0 12px;
+    /* верхняя панель-подложка (без контента по ТЗ) */
+    .topbar{
       background:linear-gradient(180deg,var(--panel),var(--panel2));
       border-bottom:1px solid rgba(255,255,255,.08);
     }
-    .bar.bottom{
+
+    /* центральная область — чистое поле для реального графика */
+    .center{ position:relative; background:var(--bg); }
+
+    /* нижняя панель (основная) */
+    .bottombar{
+      display:flex; align-items:center; justify-content:space-between;
+      padding:0 var(--padX);
+      background:linear-gradient(180deg,var(--panel),var(--panel2));
       border-top:1px solid rgba(0,0,0,.18);
-      border-bottom:none;
     }
 
-    /* левый блок: индикатор + имя + время */
+    /* левая часть: индикатор + название + время (НЕ жирным) */
     .left{
       display:flex; align-items:center; gap:8px; min-width:0;
-    }
-    .pair{ font-weight:800; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-
-    .last-time{
-      font-variant-numeric: tabular-nums;
-      color:var(--muted);
       white-space:nowrap;
+    }
+    .pair{ font-weight:600; /* полужир чуть-чуть, но не bold */ }
+    .pair .tf{ font-weight:800; }        /* TF оставляем жирным */
+    .time{
+      color:var(--muted);
+      font-variant-numeric: tabular-nums;
+      margin-left: clamp(6px,1.8vw,10px);
     }
 
     /* индикатор со свечением и белым бликом */
     .led{
       position:relative;
-      width:14px; height:14px; border-radius:50%;
+      width: clamp(12px, 2.8vw, 14px);
+      height: clamp(12px, 2.8vw, 14px);
+      border-radius:50%;
       background:var(--green);
       box-shadow: 0 0 12px rgba(121,193,114,.95), 0 0 26px rgba(121,193,114,.45);
-      cursor:pointer;
+      cursor:pointer; flex:0 0 auto;
     }
     .led::after{
       content:""; position:absolute; left:2px; top:2px;
@@ -109,38 +123,29 @@
       background:#fff; box-shadow: 0 0 4px rgba(255,255,255,.8);
     }
 
-    /* правый блок: кнопки */
-    .right{ display:flex; align-items:center; gap:10px; }
+    /* правая часть: TF + icon buttons */
+    .right{ display:flex; align-items:center; gap: clamp(8px, 2vw, 12px); }
+
     .btn{
-      height:28px; padding:0 10px;
-      border-radius:10px; border:1px solid rgba(255,255,255,.15);
+      height: var(--uiSize);
+      padding: 0 clamp(10px, 2.6vw, 12px);
+      border-radius: var(--radius);
+      border:1px solid rgba(255,255,255,.16);
       background:linear-gradient(180deg,var(--panel),var(--panel2));
-      color:var(--text); font-weight:800; letter-spacing:.2px;
-      display:inline-flex; align-items:center; gap:6px;
-      cursor:pointer;
+      color:var(--text);
+      display:inline-flex; align-items:center; justify-content:center;
+      gap:8px; cursor:pointer; user-select:none;
+      font-weight:800;
     }
-    .btn svg{ width:16px; height:16px; fill:currentColor; }
     .btn:active{ transform: translateY(1px); }
 
-    /* центральная зона (заглушка графика) */
-    .center{
-      position:relative;
-      background:
-        radial-gradient(120% 120% at 50% 0%, rgba(255,255,255,.05), rgba(255,255,255,.02)),
-        var(--bg);
-      display:flex; align-items:center; justify-content:center;
+    .btn-icon{
+      width: var(--uiSize); padding:0; aspect-ratio:1 / 1;
+      display:inline-flex; align-items:center; justify-content:center;
     }
-    .chart-card{
-      border:1px solid rgba(255,255,255,.12);
-      border-radius:16px; padding:18px 20px; text-align:center;
-      background:linear-gradient(180deg,var(--panel),var(--panel2));
-      box-shadow: var(--shadow);
-      max-width:min(900px, 92vw);
-    }
-    .chart-title{ font-weight:800; margin-bottom:8px; }
-    .chart-sub{ color:var(--muted); }
+    .btn-icon svg{ width: var(--icon); height: var(--icon); display:block; }
 
-    /* модалки — общий слой */
+    /* модалки */
     .backdrop{
       position:fixed; inset:0; display:none; align-items:center; justify-content:center;
       background:rgba(0,0,0,.45); z-index:20; padding:12px;
@@ -153,7 +158,7 @@
       border-radius:16px; padding:14px 14px 16px;
       box-shadow: var(--shadow);
     }
-    .modal h3{ margin:2px 0 10px; font-size:16px; }
+    .modal h3{ margin:2px 0 10px; font-size:clamp(14px,2.6vw,16px); }
     .grid-3{ display:grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap:10px; }
     .grid-2{ display:grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap:10px; }
 
@@ -169,65 +174,49 @@
 
     .close{ margin-top:12px; width:100%; }
 
-    /* tooltip / легенда */
+    /* легенда */
     .legend ul{ margin:8px 0 0; padding:0 0 0 16px; }
     .legend li{ margin:6px 0; }
     .dot{ display:inline-block; width:10px; height:10px; border-radius:50%; margin-right:6px; }
     .dot.ok{ background:var(--green); box-shadow:0 0 10px rgba(121,193,114,.9); }
     .dot.warn{ background:#ffcc66; box-shadow:0 0 10px rgba(255,204,102,.9); }
     .dot.bad{ background:#ff5f5f; box-shadow:0 0 10px rgba(255,95,95,.9); }
-
-    @media (max-width:720px){
-      .btn{ height:30px; padding:0 10px; }
-      .pair{ max-width:40vw; }
-    }
   </style>
 </head>
 <body>
   <div class="viewport">
+    <!-- верхняя технологическая зона 40px (пустая, для системных панелей; по ТЗ оставляем) -->
+    <div class="topbar"></div>
 
-    <!-- Верхняя полоса (40px) -->
-    <div class="bar top">
+    <div class="divider"></div>
+
+    <!-- центральная область: чистая (под реальный график) -->
+    <div class="center" id="chartRoot"></div>
+
+    <div class="divider"></div>
+
+    <!-- нижняя панель управления -->
+    <div class="bottombar">
       <div class="left">
         <span class="led" id="led" title="Нажмите для легенды"></span>
-        <span class="pair" id="pairName">OKX · BTC-USDT-SWAP · 4h</span>
-        <span class="last-time" id="lastTime">—</span>
+        <span class="pair" id="pair">OKX · BTC-USDT-SWAP · <span class="tf">1h</span></span>
+        <span class="time" id="time">—</span>
       </div>
       <div class="right">
-        <button class="btn" id="btnTF">TF</button>
-        <button class="btn" id="btnRefresh">🔄 Обновить</button>
-        <button class="btn" id="btnSettings" title="Настройки">
-          <svg><use href="#icon-gear"></use></svg> Settings
+        <button class="btn" id="btnTF"><b>TF</b></button>
+        <button class="btn btn-icon" id="btnRefresh" title="Обновить">
+          <svg><use href="#i-refresh"></use></svg>
         </button>
-      </div>
-    </div>
-
-    <!-- Разделитель -->
-    <div class="divider"></div>
-
-    <!-- Центральная область (график — заглушка) -->
-    <div class="center">
-      <div class="chart-card">
-        <div class="chart-title">График (заглушка)</div>
-        <div class="chart-sub">Здесь будет Canvas/TradingView. Тема: <b id="themeName">blue</b>. TF: <b id="tfName">4h</b>.</div>
-      </div>
-    </div>
-
-    <!-- Разделитель -->
-    <div class="divider"></div>
-
-    <!-- Нижняя полоса (40px) -->
-    <div class="bar bottom">
-      <div class="left" aria-hidden="true"></div>
-      <div class="right">
-        <button class="btn" id="btnRefresh2">🔄 Обновить</button>
+        <button class="btn btn-icon" id="btnSettings" title="Settings">
+          <svg><use href="#i-gear"></use></svg>
+        </button>
       </div>
     </div>
   </div>
 
-  <!-- Модалка: настройки -->
+  <!-- Settings -->
   <div class="backdrop" id="dlgSettings" aria-hidden="true">
-    <div class="modal" role="dialog" aria-modal="true" aria-label="Настройки">
+    <div class="modal" role="dialog" aria-modal="true" aria-label="Settings">
       <h3>Настройки</h3>
 
       <div class="row">
@@ -248,7 +237,7 @@
       </div>
 
       <div class="row">
-        <div class="label">Формат вывода</div>
+        <div class="label">Формат</div>
         <div class="grid-2">
           <div class="pill active" data-tfmt="clock">Только время</div>
           <div class="pill" data-tfmt="rel">Относительное</div>
@@ -259,9 +248,9 @@
     </div>
   </div>
 
-  <!-- Модалка: таймфрейм -->
+  <!-- TF -->
   <div class="backdrop" id="dlgTF" aria-hidden="true">
-    <div class="modal" role="dialog" aria-modal="true" aria-label="Выбор таймфрейма">
+    <div class="modal" role="dialog" aria-modal="true" aria-label="TF">
       <h3>Таймфрейм</h3>
       <div class="grid-3" id="tfGrid">
         <div class="pill" data-tf="15m">15m</div>
@@ -275,9 +264,9 @@
     </div>
   </div>
 
-  <!-- Модалка: легенда статусов -->
+  <!-- Legend -->
   <div class="backdrop" id="dlgLegend" aria-hidden="true">
-    <div class="modal legend" role="dialog" aria-modal="true" aria-label="Статусы обновления">
+    <div class="modal legend" role="dialog" aria-modal="true" aria-label="Legend">
       <h3>Что значит индикатор состояния?</h3>
       <ul>
         <li><span class="dot ok"></span><b>Онлайн (WS)</b> — данные обновляются в реальном времени.</li>
@@ -289,45 +278,34 @@
   </div>
 
   <script>
-    // --- Состояние (демо)
+    // --- состояние (демо)
     const state = {
-      theme: 'blue',          // light | blue | dark
-      tf: '4h',               // 15m | 1h | 4h | 8h | 12h | 1d
-      timezone: 'utc',        // local | utc
-      tfmt: 'clock',          // clock | rel
-      lastUpdate: Date.now(), // timestamp ms
-      feedMode: 'WS',         // WS | REST | DIS (для будущего)
+      theme: 'blue',
+      tf: '1h',
+      timezone: 'utc',     // 'local' | 'utc'
+      tfmt: 'clock',       // 'clock' | 'rel'
+      lastUpdate: Date.now(),
       pair: 'OKX · BTC-USDT-SWAP'
     };
 
-    // --- Элементы
-    const $ = sel => document.querySelector(sel);
-    const $all = sel => Array.from(document.querySelectorAll(sel));
-
-    const pairName = $('#pairName');
-    const lastTime = $('#lastTime');
-    const themeName = $('#themeName');
-    const tfName = $('#tfName');
-
-    // --- Утилиты
+    // --- helpers
+    const $ = s => document.querySelector(s);
+    const $$ = s => Array.from(document.querySelectorAll(s));
     const pad2 = n => String(n).padStart(2,'0');
 
-    function fmtClock(ts, mode){
+    function fmtClock(ts, tz){
       const d = new Date(ts);
-      if (mode === 'utc'){
-        return `${pad2(d.getUTCHours())}:${pad2(d.getUTCMinutes())}:${pad2(d.getUTCSeconds())} UTC`;
-      }
+      if (tz==='utc') return `${pad2(d.getUTCHours())}:${pad2(d.getUTCMinutes())}:${pad2(d.getUTCSeconds())} UTC`;
       return `${pad2(d.getHours())}:${pad2(d.getMinutes())}:${pad2(d.getSeconds())}`;
     }
     function fmtRel(ts){
-      const diff = Math.max(0, Math.floor((Date.now() - ts)/1000));
+      const diff = Math.max(0, Math.floor((Date.now()-ts)/1000));
       if (diff >= 3600) return '🕐 > 1h';
-      const mm = Math.floor(diff/60);
-      const ss = diff % 60;
+      const mm = Math.floor(diff/60), ss = diff%60;
       return `${pad2(mm)}:${pad2(ss)}`;
     }
 
-    // Автоконтраст: подбираем цвет текста для фонового --panel
+    // автоконтраст для текста в зависимости от панели
     function applyAutoContrast(){
       const cs = getComputedStyle(document.documentElement);
       const bg = cs.getPropertyValue('--panel').trim() || '#000';
@@ -343,117 +321,80 @@
       const n = h.length===3 ? h.split('').map(c=>c+c).join('') : h;
       return { r:parseInt(n.slice(0,2),16), g:parseInt(n.slice(2,4),16), b:parseInt(n.slice(4,6),16) };
     }
-    function parseRGB(s){
-      const m = s.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/i);
-      return m ? {r:+m[1], g:+m[2], b:+m[3]} : {r:0,g:0,b:0};
-    }
-    function luminance({r,g,b}){
-      const a=[r,g,b].map(v=>{
-        v/=255; return v<=0.03928 ? v/12.92 : Math.pow((v+0.055)/1.055,2.4);
-      });
-      return 0.2126*a[0]+0.7152*a[1]+0.0722*a[2];
-    }
+    function parseRGB(s){ const m = s.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/i); return m?{r:+m[1],g:+m[2],b:+m[3]}:{r:0,g:0,b:0}; }
+    function luminance({r,g,b}){ const a=[r,g,b].map(v=>{v/=255;return v<=.03928?v/12.92:Math.pow((v+.055)/1.055,2.4)}); return 0.2126*a[0]+0.7152*a[1]+0.0722*a[2]; }
 
-    // --- Рендер UI
+    // --- рендер
     function renderBars(){
-      pairName.textContent = `${state.pair} · ${state.tf}`;
-      tfName.textContent = state.tf;
-      themeName.textContent = state.theme;
+      $('#pair').innerHTML = `${state.pair} · <span class="tf">${state.tf}</span>`;
     }
     function renderTime(){
-      if (state.tfmt === 'rel'){
-        lastTime.textContent = fmtRel(state.lastUpdate);
-      } else {
-        lastTime.textContent = fmtClock(state.lastUpdate, state.timezone);
-      }
+      $('#time').textContent = (state.tfmt==='rel') ? fmtRel(state.lastUpdate) : fmtClock(state.lastUpdate, state.timezone);
     }
-
-    // --- Темы
-    function setTheme(theme){
-      state.theme = theme;
-      document.documentElement.setAttribute('data-theme', theme);
+    function setTheme(t){
+      state.theme = t;
+      document.documentElement.setAttribute('data-theme', t);
       applyAutoContrast();
-      renderBars();
     }
 
-    // --- Модалки
+    // --- модалки
     function show(el){ el.classList.add('show'); el.setAttribute('aria-hidden','false'); }
     function hide(el){ el.classList.remove('show'); el.setAttribute('aria-hidden','true'); }
 
-    // Настройки
     const dlgSettings = $('#dlgSettings');
-    const themeGrid = $('#themeGrid');
-    const btnSettings = $('#btnSettings');
-    $('#btnCloseSettings').addEventListener('click', ()=>hide(dlgSettings));
-    btnSettings.addEventListener('click', ()=>show(dlgSettings));
-    dlgSettings.addEventListener('click', (e)=>{ if (e.target===dlgSettings) hide(dlgSettings); });
+    const dlgTF = $('#dlgTF');
+    const dlgLegend = $('#dlgLegend');
 
-    themeGrid.addEventListener('click', (e)=>{
-      const p = e.target.closest('.pill[data-theme]');
-      if (!p) return;
-      $all('#themeGrid .pill').forEach(x=>x.classList.toggle('active', x===p));
+    // settings
+    $('#btnSettings').addEventListener('click', ()=>show(dlgSettings));
+    $('#btnCloseSettings').addEventListener('click', ()=>hide(dlgSettings));
+    dlgSettings.addEventListener('click', (e)=>{ if(e.target===dlgSettings) hide(dlgSettings); });
+
+    $('#themeGrid').addEventListener('click', (e)=>{
+      const p = e.target.closest('.pill[data-theme]'); if(!p) return;
+      $$('#themeGrid .pill').forEach(x=>x.classList.toggle('active', x===p));
       setTheme(p.dataset.theme);
     });
 
-    // Время — зона настроек
-    const tzPills = $all('[data-timezone]');
-    tzPills.forEach(p=>p.addEventListener('click', ()=>{
-      tzPills.forEach(x=>x.classList.remove('active'));
-      p.classList.add('active');
-      state.timezone = p.dataset.timezone;
-      renderTime();
+    $$('#dlgSettings [data-timezone]').forEach(p=>p.addEventListener('click', ()=>{
+      $$('#dlgSettings [data-timezone]').forEach(x=>x.classList.remove('active'));
+      p.classList.add('active'); state.timezone = p.dataset.timezone; renderTime();
     }));
-    const tfmtPills = $all('[data-tfmt]');
-    tfmtPills.forEach(p=>p.addEventListener('click', ()=>{
-      tfmtPills.forEach(x=>x.classList.remove('active'));
-      p.classList.add('active');
-      state.tfmt = p.dataset.tfmt;
-      renderTime();
+    $$('#dlgSettings [data-tfmt]').forEach(p=>p.addEventListener('click', ()=>{
+      $$('#dlgSettings [data-tfmt]').forEach(x=>x.classList.remove('active'));
+      p.classList.add('active'); state.tfmt = p.dataset.tfmt; renderTime();
     }));
 
     // TF
-    const dlgTF = $('#dlgTF');
     $('#btnTF').addEventListener('click', ()=>show(dlgTF));
     $('#btnCloseTF').addEventListener('click', ()=>hide(dlgTF));
-    dlgTF.addEventListener('click', (e)=>{ if (e.target===dlgTF) hide(dlgTF); });
+    dlgTF.addEventListener('click', (e)=>{ if(e.target===dlgTF) hide(dlgTF); });
     $('#tfGrid').addEventListener('click', (e)=>{
-      const p = e.target.closest('.pill[data-tf]');
-      if (!p) return;
-      $all('#tfGrid .pill').forEach(x=>x.classList.toggle('active', x===p));
-      state.tf = p.dataset.tf;
-      renderBars();
-      hide(dlgTF);
+      const p = e.target.closest('.pill[data-tf]'); if(!p) return;
+      $$('#tfGrid .pill').forEach(x=>x.classList.toggle('active', x===p));
+      state.tf = p.dataset.tf; renderBars(); hide(dlgTF);
     });
 
-    // Легенда (по клику на индикатор)
-    const dlgLegend = $('#dlgLegend');
-    const led = $('#led');
-    led.addEventListener('click', ()=>show(dlgLegend));
+    // legend by indicator click
+    $('#led').addEventListener('click', ()=>show(dlgLegend));
     $('#btnCloseLegend').addEventListener('click', ()=>hide(dlgLegend));
-    dlgLegend.addEventListener('click', (e)=>{ if (e.target===dlgLegend) hide(dlgLegend); });
+    dlgLegend.addEventListener('click', (e)=>{ if(e.target===dlgLegend) hide(dlgLegend); });
 
-    // Обновить (демо — просто обновляем lastUpdate)
-    function doRefresh(){
-      state.lastUpdate = Date.now();
-      renderTime();
-    }
+    // refresh (демо — только «обновляет время»)
+    function doRefresh(){ state.lastUpdate = Date.now(); renderTime(); }
     $('#btnRefresh').addEventListener('click', doRefresh);
-    $('#btnRefresh2').addEventListener('click', doRefresh);
 
-    // Тики времени
-    setInterval(()=>{ renderTime(); }, 1000);
+    // тик времени
+    setInterval(renderTime, 1000);
 
-    // Старт
-    setTheme('blue');          // по умолчанию
+    // старт
+    setTheme('blue');     // по умолчанию — синяя
     state.lastUpdate = Date.now();
-    renderBars();
-    renderTime();
+    renderBars(); renderTime();
 
-    // ESC закрывает модалки
-    document.addEventListener('keydown', (e)=>{
-      if (e.key==='Escape'){
-        [dlgSettings, dlgTF, dlgLegend].forEach(hide);
-      }
+    // ESC закрывает открытые модалки
+    document.addEventListener('keydown', e=>{
+      if(e.key==='Escape'){ [dlgSettings, dlgTF, dlgLegend].forEach(hide); }
     });
   </script>
 </body>

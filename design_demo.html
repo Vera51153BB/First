@@ -87,8 +87,24 @@
     .bottombar{
       display:flex; align-items:center; justify-content:space-between;
       padding:0 var(--padX);
+      padding-right: 12px;  /* ← минимальный «резерв» */
       background:linear-gradient(180deg,var(--panel),var(--panel2));
       border-top:1px solid rgba(0,0,0,.18);
+    }
+    /* компактный режим (первое сжатие) */
+    .bottombar.compact{
+      --fontSize: clamp(11px, 1.5vw, 13px);
+      --uiSize:   clamp(28px, 5.0vw, 32px);
+      --icon:     clamp(16px, 3.2vw, 20px);
+      gap: 8px;
+    }
+
+    /* сверхкомпактный (если всё ещё не влазит на очень узких телефонах) */
+    .bottombar.xcompact{
+      --fontSize: 11px;
+      --uiSize:   26px;
+      --icon:     15px;
+      gap: 6px;
     }
 
     /* левая часть: индикатор + название + время (НЕ жирным) */
@@ -97,7 +113,7 @@
       white-space:nowrap;
     }
     .pair{ font-weight:600; /* полужир чуть-чуть, но не bold */ }
-    .pair .tf{ font-weight:800; }        /* TF оставляем жирным */
+    .pair .tf{ font-weight:600; }        /* TF оставляем жирным */
     .time{
       color:var(--muted);
       font-variant-numeric: tabular-nums;
@@ -448,6 +464,51 @@
     document.addEventListener('keydown', e=>{
       if(e.key==='Escape'){ [dlgSettings, dlgTF, dlgLegend].forEach(hide); }
     });
+    function fitBottomBar(){
+      const bar = document.querySelector('.bottombar');
+      const left = bar.querySelector('.left');
+      const right = bar.querySelector('.right');
+  
+      // Сброс режима — меряем на полном размере
+      bar.classList.remove('compact','xcompact');
+  
+      // Ширина всего бара минус внутренние паддинги
+      const barW   = bar.clientWidth;
+      const styles = getComputedStyle(bar);
+      const padL   = parseFloat(styles.paddingLeft) || 0;
+      const padR   = parseFloat(styles.paddingRight) || 0;
+      const avail  = barW - padL - padR;
+  
+      const needFull = left.scrollWidth + right.scrollWidth;
+  
+      if (needFull > avail) {
+        bar.classList.add('compact');
+      }
+      // Перемеряем уже в compact
+      const needCompact = left.scrollWidth + right.scrollWidth;
+      if (bar.classList.contains('compact') && needCompact > avail) {
+        bar.classList.add('xcompact');
+      }
+    }
+  
+    // Пересчёт при загрузке, ресайзе и смене настроек/TF
+    window.addEventListener('load', fitBottomBar);
+    window.addEventListener('resize', fitBottomBar);
+  
+    // где меняется TF/тема/формат времени — после renderBars()/renderTime():
+    // ДОБАВЬ:
+    const _renderBars = renderBars;
+    renderBars = function(){ _renderBars(); fitBottomBar(); }
+  
+    const _renderTime = renderTime;
+    renderTime = function(){ _renderTime(); fitBottomBar(); }
+  
+    // после setTheme / смен TF:
+    const _setTheme = setTheme;
+    setTheme = function(t){ _setTheme(t); fitBottomBar(); }
+  
+    // сразу после начальной инициализации:
+    fitBottomBar();
   </script>
 </body>
 </html>

@@ -186,7 +186,17 @@
 <body>
   <div class="viewport">
     <!-- верхняя технологическая зона 40px (пустая, для системных панелей; по ТЗ оставляем) -->
-    <div class="topbar"></div>
+    <div class="topbar">
+      <div class="right">
+        <button class="btn" id="btnTF"><b>TF</b></button>
+        <button class="btn btn-icon" id="btnRefresh" title="Обновить">
+          <svg><use href="#i-refresh"></use></svg>
+        </button>
+        <button class="btn btn-icon" id="btnSettings" title="Settings">
+          <svg><use href="#i-gear"></use></svg>
+        </button>
+      </div>
+    </div>
 
     <div class="divider"></div>
 
@@ -201,15 +211,6 @@
         <span class="led" id="led" title="Нажмите для легенды"></span>
         <span class="pair" id="pair">OKX · BTC-USDT-SWAP · <span class="tf">1h</span></span>
         <span class="time" id="time">—</span>
-      </div>
-      <div class="right">
-        <button class="btn" id="btnTF"><b>TF</b></button>
-        <button class="btn btn-icon" id="btnRefresh" title="Обновить">
-          <svg><use href="#i-refresh"></use></svg>
-        </button>
-        <button class="btn btn-icon" id="btnSettings" title="Settings">
-          <svg><use href="#i-gear"></use></svg>
-        </button>
       </div>
     </div>
   </div>

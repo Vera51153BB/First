@@ -85,35 +85,42 @@
     /* центральная область — чистое поле для реального графика */
     .center{ position:relative; background:var(--bg); }
 
-    /* нижняя панель (мобильная всегда) */
+    /* нижняя панель */
     .bottombar{
       height: var(--h);
       display:flex; align-items:center;
       padding-left: var(--padX);
-      padding-right: 12px;                    /* фикс-резерв после последней кнопки */
+      padding-right: 12px; /* постоянный резерв за кнопкой */
       background:linear-gradient(180deg,var(--panel),var(--panel2));
       border-top:1px solid rgba(0,0,0,.18);
       gap:8px;
     }
     
-    /* левая группа: тянется, внутри — управляемое сжатие */
+    /* левая группа: индикатор + пара (скручивается) + время + кнопка */
     .left{
       display:flex; align-items:center; gap:8px;
-      min-width:0;                            /* даёт ellipsis работать */
+      flex:1 1 auto;
+      min-width:0;              /* критично для ellipsis */
+      overflow:hidden;          /* всё лишнее режем внутри */
       white-space:nowrap;
-      flex:1 1 auto;                          /* занимает доступное место */
-      overflow:hidden;                        /* лишний текст режем внутри группы */
     }
     
-    /* надпись пары — единственный гибкий элемент, она и сжимается первой */
+    /* индикатор фиксированный */
+    .led{ flex:0 0 auto; }
+    
+    /* ПАРА — ЕДИНСТВЕННЫЙ СЖИМАЕМЫЙ ЭЛЕМЕНТ */
     .pair{
+      display:block;            /* text-overflow работает только на блочных */
+      flex:1 1 auto;            /* тянется/сжимается */
+      min-width:0;              /* даёт сжаться внутри flex */
+      overflow:hidden;
+      text-overflow:ellipsis;   /* многоточие */
+      white-space:nowrap;
       font-weight:600;
-      flex:1 1 auto;                          /* тянется/сжимается */
-      overflow:hidden; text-overflow:ellipsis;
     }
-    .pair .tf{ font-weight:inherit; }         /* 1h не жирный */
+    .pair .tf{ font-weight: inherit; } /* 1h не жирный */
     
-    /* время — фиксированное, не сжимать */
+    /* ВРЕМЯ — НЕ СЖИМАЕМ */
     .time{
       color:var(--muted);
       font-variant-numeric: tabular-nums;
@@ -121,12 +128,11 @@
       flex:0 0 auto;
     }
     
-    /* кнопка “Обновить” — всегда видима, фикс. ширина; небольшой зазор слева */
+    /* КНОПКА ОБНОВИТЬ — ВСЕГДА ВИДИМА, НЕ СЖИМАЕМ */
     #btnRefresh{
       margin-left:8px;
-      flex:0 0 var(--uiSize);                 /* не сжимать кнопку */
+      flex:0 0 var(--uiSize);
     }
-
 
     /* индикатор со свечением и белым бликом */
     .led{

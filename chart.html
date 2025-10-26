@@ -85,49 +85,48 @@
     /* центральная область — чистое поле для реального графика */
     .center{ position:relative; background:var(--bg); }
 
-    /* нижняя панель (основная) */
+    /* нижняя панель (мобильная всегда) */
     .bottombar{
-      display:flex;
-      align-items:center;
+      height: var(--h);
+      display:flex; align-items:center;
       padding-left: var(--padX);
-      padding-right: 12px; /* минимум 12px справа */
-      background: linear-gradient(180deg, var(--panel), var(--panel2));
-      border-top: 1px solid rgba(0,0,0,.18);
-    }
-
-    /* левая часть: индикатор + название + время */
-    .left{
-      display:flex;
-      align-items:center;
+      padding-right: 12px;                    /* фикс-резерв после последней кнопки */
+      background:linear-gradient(180deg,var(--panel),var(--panel2));
+      border-top:1px solid rgba(0,0,0,.18);
       gap:8px;
-      min-width:0;          /* важно для ellipsis */
+    }
+    
+    /* левая группа: тянется, внутри — управляемое сжатие */
+    .left{
+      display:flex; align-items:center; gap:8px;
+      min-width:0;                            /* даёт ellipsis работать */
       white-space:nowrap;
-      flex:1;               /* занимает доступную ширину */
+      flex:1 1 auto;                          /* занимает доступное место */
+      overflow:hidden;                        /* лишний текст режем внутри группы */
     }
     
+    /* надпись пары — единственный гибкий элемент, она и сжимается первой */
     .pair{
-      font-weight:600;      /* единый стиль */
-      flex:1 1 auto;        /* гибкая ширина */
-      overflow:hidden;
-      text-overflow:ellipsis;
+      font-weight:600;
+      flex:1 1 auto;                          /* тянется/сжимается */
+      overflow:hidden; text-overflow:ellipsis;
     }
+    .pair .tf{ font-weight:inherit; }         /* 1h не жирный */
     
-    .pair .tf{
-      font-weight: inherit; /* 1h НЕ жирный */
-    }
-    
+    /* время — фиксированное, не сжимать */
     .time{
       color:var(--muted);
       font-variant-numeric: tabular-nums;
-      margin-left: clamp(6px,1.8vw,10px);
-      flex:0 0 auto;        /* время не сжимать */
-    }
-    
-    /* лёгкий зазор перед иконкой Обновить и фиксированная ширина */
-    #btnRefresh{
       margin-left:8px;
       flex:0 0 auto;
     }
+    
+    /* кнопка “Обновить” — всегда видима, фикс. ширина; небольшой зазор слева */
+    #btnRefresh{
+      margin-left:8px;
+      flex:0 0 var(--uiSize);                 /* не сжимать кнопку */
+    }
+
 
     /* индикатор со свечением и белым бликом */
     .led{

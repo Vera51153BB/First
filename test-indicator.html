@@ -3,53 +3,132 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Индикатор статуса — демо</title>
+  <title>Три зоны + индикатор</title>
   <style>
-    /* Тёмный фон ради контраста */
+    /* База */
     html,body{
       height:100%; margin:0;
       background:#0b0e14; color:#e5e7eb;
       font:14px/1.45 system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+      -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale;
     }
-    .wrap{
-      min-height:100%; display:flex; align-items:center; justify-content:center;
-      padding:24px;
+
+    /* Вьюпорт-обёртка: 100% высоты, без прокрутки */
+    .viewport{
+      position:relative;
+      height:100vh;
+      height:100svh;      /* корректнее на мобильных */
+      overflow:hidden;
     }
+
+    /* Две горизонтальные полосы-разделители */
+    .divider{
+      position:absolute; left:0; right:0; height:1px;
+      background:#a7a093;
+      opacity:1;          /* можно снизить при желании */
+      pointer-events:none;
+    }
+    .divider.top{    top:50px; }
+    .divider.bottom{ bottom:50px; }
+
+    /* Верхняя и нижняя панели с иконками */
+    .icon-bar{
+      position:absolute; left:0; right:0; height:50px;
+      display:flex; align-items:center; justify-content:flex-end;
+      padding: 0 15px;   /* отступ от правого края = 15px */
+    }
+    .icon-bar.top{   top:0; }
+    .icon-bar.bot{   bottom:0; }
+
+    .icons{
+      display:flex; align-items:center; gap:10px;   /* 10px между иконками */
+      font-size:20px; line-height:1;
+      user-select:none;
+    }
+    .icons button{
+      background:transparent; border:0; padding:0; margin:0;
+      color:#e5e7eb; cursor:pointer;
+      font:inherit;
+      filter: drop-shadow(0 0 4px rgba(255,255,255,.08));
+      transition: transform .08s ease, opacity .12s ease;
+    }
+    .icons button:hover{ transform: translateY(-1px); }
+    .icons button:active{ transform: translateY(0); opacity:.85; }
+
+    /* Три зоны: верхняя (0–50), средняя, нижняя (последние 50) */
+    .zone{
+      position:absolute; left:0; right:0;
+      display:flex; align-items:center; justify-content:center;
+      pointer-events:none;   /* контент примерный; можно убрать */
+    }
+    .zone.top{    top:0; height:50px; }
+    .zone.mid{    top:50px; bottom:50px; }
+    .zone.bot{    bottom:0; height:50px; }
 
     /* ===== Индикатор (кружок со свечением и белой точкой) ===== */
     .led{
       position:relative;
-      width:14px; height:14px;           /* базовый размер индикатора */
+      width:14px; height:14px;          /* базовый размер индикатора */
       border-radius:50%;
-      background:#65d16f;                /* зелёный (онлайн) */
-      /* свечение вокруг */
+      background:#65d16f;               /* зелёный (онлайн) */
       box-shadow:
         0 0 12px rgba(101,209,111,.95),
         0 0 26px rgba(101,209,111,.45);
+      pointer-events:auto;              /* чтобы можно было повесить события, если нужно */
     }
-    /* Белая «блик»-точка внутри (как на скрине) */
     .led::after{
       content:"";
       position:absolute;
-      left:2px; top:2px;                 /* положение блика */
+      left:2px; top:2px;                /* положение «блика» */
       width:4px; height:4px;
       border-radius:50%;
       background:#ffffff;
       box-shadow: 0 0 4px rgba(255,255,255,.9);
     }
 
-    /* Пример рядом с текстом (необязательно) */
+    /* Пример строки с названием */
     .row{ display:flex; align-items:center; gap:8px; }
-    .name{ font-weight:600; opacity:.95; letter-spacing:.2px; }
+    .name{ font-weight:700; opacity:.95; letter-spacing:.2px; white-space:nowrap; }
+
+    /* Для наглядности можно слегка подсветить зоны (выключено) */
+    /* .zone.top{ background:rgba(255,255,255,.02); }
+       .zone.bot{ background:rgba(255,255,255,.02); } */
   </style>
 </head>
 <body>
-  <div class="wrap">
-    <!-- Пример использования индикатора рядом с подписью -->
-    <div class="row" role="status" aria-label="Онлайн">
-      <span class="led" aria-hidden="true"></span>
-      <span class="name">OKX · BTC-USDT-SWAP</span>
+  <div class="viewport">
+
+    <!-- Верхний ряд иконок (прижат к правому краю, отступ справа 15px) -->
+    <div class="icon-bar top" aria-hidden="false">
+      <div class="icons" role="toolbar" aria-label="Верхние действия">
+        <button title="Обновить">🔄</button>
+        <button title="Настройки">⚙️</button>
+        <button title="Информация">ℹ️</button>
+      </div>
     </div>
+
+    <!-- Нижний ряд иконок (аналогично) -->
+    <div class="icon-bar bot" aria-hidden="false">
+      <div class="icons" role="toolbar" aria-label="Нижние действия">
+        <button title="Обновить">🔄</button>
+        <button title="Настройки">⚙️</button>
+        <button title="Информация">ℹ️</button>
+      </div>
+    </div>
+
+    <!-- Две тонкие полосы-разделители (цвет #a7a093) -->
+    <div class="divider top" aria-hidden="true"></div>
+    <div class="divider bottom" aria-hidden="true"></div>
+
+    <!-- Три зоны (верх/середина/низ). В центре — пример с индикатором -->
+    <section class="zone top"   aria-label="Верхняя зона"></section>
+    <section class="zone mid"   aria-label="Средняя зона">
+      <div class="row">
+        <span class="led" aria-hidden="true"></span>
+        <span class="name">OKX · BTC-USDT-SWAP</span>
+      </div>
+    </section>
+    <section class="zone bot"   aria-label="Нижняя зона"></section>
   </div>
 </body>
 </html>

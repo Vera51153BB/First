@@ -12,27 +12,35 @@
       --green:#79c172;
       --red:#ff5f5f;
 
-      --hbar:40px;        /* базовая высота верх/низ */
-      --hbar-min:32px;    /* ужатие на очень низких экранах */
-      --padX:clamp(12px, 4vw, 18px);
+      --hbar:46px;        /* базовая высота зон */
+      --hbar-min:32px;    /* ужатие на экстремально низких экранах */
+      --padX:clamp(12px, 4vw, 18px);   /* адаптивный горизонтальный отступ */
 
       --radius:12px;
       --muted:#9bb0cc;
       --shadow:0 10px 28px rgba(0,0,0,.35);
       --fontSize: clamp(12px, 1.8vw, 14px);
       --uiSize: clamp(28px, 5.5vw, 34px);
-      --icon:  clamp(18px, 3.4vw, 22px); /* иконки сделали чуть крупнее */
+      --icon:  clamp(14px, 2.8vw, 18px);
 
-      --focus-ring: rgba(122,167,255,.75);
-      --focus-glow: rgba(122,167,255,.35);
+            /* ... существующие переменные ... */
+      --focus-ring: rgba(122,167,255,.75);   /* цвет кольца */
+      --focus-glow: rgba(122,167,255,.35);   /* внешнее мягкое свечение */
     }
-
+    
+    @media (max-width: 768px){
+      :root{
+        --uiSize: clamp(32px, 7vw, 36px);
+        --icon:  clamp(22px, 4vw, 26px);
+      }
+    }
+    
     /* темы */
     html[data-theme="blue"]{
       --bg:#050029;
       --panel:#0a0637;
       --panel2:#070430;
-      --text:#eaf0ff; /* автоконтраст подправит при необходимости */
+      --text:#eaf0ff; /* будет подправлено автоконтрастом */
     }
     html[data-theme="dark"]{
       --bg:#0b0e14;
@@ -53,55 +61,83 @@
       background:var(--bg); color:var(--text);
       font: var(--fontSize)/1.45 system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
       -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale;
-      overflow:hidden;
+      overflow:hidden; /* без прокрутки */
     }
 
     .viewport{
       height:100svh;
       display:grid;
-      grid-template-rows: var(--h) 1px 1fr 1px var(--h);
+      grid-template-rows: var(--h) 1px 1fr 1px var(--h); /* верх, разделитель, центр, разделитель, низ */
       background:var(--bg);
     }
-    @media (max-height:520px){ .viewport{ --h:var(--hbar-min); } }
-    @media (min-height:521px){ .viewport{ --h:var(--hbar); } }
+    
+    @media (max-height:768px){ .viewport{ --h:var(--hbar-min); } }
+    @media (min-height:769px){ .viewport{ --h:var(--hbar); } }
 
-    .divider{ background:var(--sep); }
+    /* разделитель — единственный «бордер» между центром и баром */
+    .divider{
+      height:1px;
+      background:var(--sep);
+      position:relative;
+      z-index:2;              /* поверх соседей */
+    }
 
+    /* верхняя панель-подложка (без контента по ТЗ) */
     .topbar{
       background:linear-gradient(180deg,var(--panel),var(--panel2));
       border-bottom:1px solid rgba(255,255,255,.08);
     }
 
+    /* центральная область — чистое поле для реального графика */
     .center{ position:relative; background:var(--bg); }
 
+    /* нижняя панель — постоянный резерв 12px справа */
     .bottombar{
-      display:flex; align-items:center; justify-content:space-between;
+      height: var(--h);
+      display:flex; align-items:center;
       padding-left: var(--padX);
-      padding-right: 12px; /* обязательный резерв справа */
+      padding-right: 12px;       /* резерв за кнопкой */
       background:linear-gradient(180deg,var(--panel),var(--panel2));
       border-top:1px solid rgba(0,0,0,.18);
-      gap: 12px;
+      gap:8px;
     }
-
-    /* левая часть */
+    
+    /* левая группа — тянется, но без растягивания пары */
     .left{
-      display:flex; align-items:center; gap:8px; min-width:0;
-      white-space:nowrap;
+      display:flex; align-items:center; gap:8px;
+      min-width:0; white-space:nowrap;
+      flex:1 1 auto;            /* группа занимает доступную ширину */
       overflow:hidden;
     }
+    
+    /* ПАРА — больше НЕ растёт, только сжимается при нехватке места */
     .pair{
-      font-weight:600;                 /* единый стиль */
-      overflow:hidden; text-overflow:ellipsis;
-      max-width:60vw;                  /* не отбираем место у времени/иконок */
+      display:block;
+      flex:0 1 auto;            /* <-- было 1 1 auto; теперь 0 1 auto */
+      min-width:0;
+      max-width:100%;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      white-space:nowrap;
+      font-weight:600;
     }
-    .pair .tf{ font-weight:inherit; }  /* 1h НЕ жирный */
+    .pair .tf{ font-weight:inherit; } /* 1h не жирный */
+    
+    /* время — фиксированное, не сжимать */
     .time{
       color:var(--muted);
       font-variant-numeric: tabular-nums;
-      margin-left: clamp(6px,1.8vw,10px);
-      flex:0 0 auto;                   /* время не сжимать */
+      margin-left:8px;
+      flex:0 0 auto;
+    }
+    
+    /* Обновить — всегда видима, не сжимать, небольшой зазор слева */
+    #btnRefresh{
+      margin-left:8px;
+      flex:0 0 var(--uiSize);
     }
 
+    /* индикатор со свечением и белым бликом */
     .led{
       position:relative;
       width: clamp(12px, 2.8vw, 14px);
@@ -117,69 +153,108 @@
       background:#fff; box-shadow: 0 0 4px rgba(255,255,255,.8);
     }
 
-    /* правая часть */
+    /* правая часть: TF + icon buttons */
     .right{ display:flex; align-items:center; gap: clamp(8px, 2vw, 12px); }
-    #btnRefresh{ margin-left:8px; } /* чтобы текст не лип к иконке */
 
-    /* кнопки */
+        /* БАЗОВАЯ КНОПКА */
     .btn{
       height: var(--uiSize);
       padding: 0 clamp(10px, 2.6vw, 12px);
       border: none;
-      border-radius: var(--radius);
+      border-radius: var(--radius);                     /* ← добавили */
       background: linear-gradient(180deg, var(--panel), var(--panel2));
       color: var(--text);
-      display:inline-flex; align-items:center; justify-content:center;
-      gap:8px; cursor:pointer; user-select:none;
-      font-weight:800;
-      outline:none;
-      -webkit-tap-highlight-color: transparent;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      cursor: pointer;
+      user-select: none;
+      font-weight: 800;
+      outline: none;                                    /* ring рисуем тенью */
+      -webkit-tap-highlight-color: transparent;         /* мобильный тап */
       transition: box-shadow .15s ease, background .12s ease, transform .08s ease;
     }
     .btn:active{ transform: translateY(1px); }
-
+    
+    /* ИКОНКИ-КНОПКИ (иконки без рамки, квадратная плашка) */
     .btn-icon{
       width: var(--uiSize);
-      padding:0;
-      aspect-ratio:1/1;
-      border:none;
-      background:linear-gradient(180deg,var(--panel),var(--panel2));
-      color:var(--text);
+      padding: 0;
+      aspect-ratio: 1 / 1;
+      /* border:none;         ← уже задано в .btn, можно не дублировать */
+      /* box-shadow:none;     ← не обязателен */
     }
+    
+    /* размер встроенных SVG-иконок и наследование цвета темы */
     .btn-icon svg{
       width: var(--icon);
       height: var(--icon);
-      display:block;
-      fill: currentColor;
+      display: block;
+      fill: currentColor;                                /* на всякий случай */
     }
+    
+    /* HOVER для иконок */
     .btn-icon:hover{
-      background:linear-gradient(180deg,var(--panel),rgba(255,255,255,.04));
+      background: linear-gradient(180deg, var(--panel), rgba(255,255,255,.04));
     }
-
-    .btn:focus-visible,
-    .btn-icon:focus-visible{
+    
+    /* ОБЩЕЕ КОЛЬЦО ФОКУСА (клавиатурная доступность) */
+    .btn:focus-visible{
       box-shadow:
-        0 0 0 2px rgba(0,0,0,.35),
-        0 0 0 4px var(--focus-ring),
-        0 0 12px 2px var(--focus-glow);
-      outline:none;
+        0 0 0 2px rgba(0,0,0,.35),        /* подложка для контраста */
+        0 0 0 4px var(--focus-ring),      /* кольцо */
+        0 0 12px 2px var(--focus-glow);   /* мягкое свечение */
+    }
+    
+    /* необязательный hover для всех кнопок-пиллов (в т.ч. TF) */
+    .btn:hover{
+      background: linear-gradient(180deg, var(--panel), rgba(255,255,255,.04));
+    }
+    
+    /* Disabled-состояние (если используешь) */
+    .btn:disabled{
+      opacity: .5;
+      cursor: default;
+      pointer-events: none;
     }
 
-    /* компактные режимы, когда не влазит */
-    .bottombar.compact{
-      --fontSize: clamp(11px, 1.5vw, 13px);
-      --uiSize:   clamp(28px, 5.0vw, 32px);
-      --icon:     clamp(16px, 3.2vw, 20px);
-      gap: 8px;
+    /* модалки */
+    .backdrop{
+      position:fixed; inset:0; display:none; align-items:center; justify-content:center;
+      background:rgba(0,0,0,.45); z-index:20; padding:12px;
     }
-    .bottombar.xcompact{
-      --fontSize: 11px;
-      --uiSize:   26px;
-      --icon:     15px;
-      gap: 6px;
+    .backdrop.show{ display:flex; }
+    .modal{
+      width:min(680px,96vw);
+      background:linear-gradient(180deg,var(--panel),var(--panel2));
+      border:1px solid rgba(255,255,255,.12);
+      border-radius:16px; padding:14px 14px 16px;
+      box-shadow: var(--shadow);
     }
-    /* если совсем тесно, прячем время последним шагом */
-    .bottombar.xcompact .time{ display:none; }
+    .modal h3{ margin:2px 0 10px; font-size:clamp(14px,2.6vw,16px); }
+    .grid-3{ display:grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap:10px; }
+    .grid-2{ display:grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap:10px; }
+
+    .pill{
+      border:1px solid rgba(255,255,255,.14);
+      background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
+      border-radius:12px; padding:10px 12px; text-align:center; cursor:pointer; font-weight:800;
+    }
+    .pill.active{ border-color: #7aa7ff; box-shadow: inset 0 0 0 1px rgba(122,167,255,.35); }
+
+    .row{ display:flex; align-items:center; justify-content:space-between; gap:10px; margin:10px 0; }
+    .label{ color:var(--muted); }
+
+    .close{ margin-top:12px; width:100%; }
+
+    /* легенда */
+    .legend ul{ margin:8px 0 0; padding:0 0 0 16px; }
+    .legend li{ margin:6px 0; }
+    .dot{ display:inline-block; width:10px; height:10px; border-radius:50%; margin-right:6px; }
+    .dot.ok{ background:var(--green); box-shadow:0 0 10px rgba(121,193,114,.9); }
+    .dot.warn{ background:#ffcc66; box-shadow:0 0 10px rgba(255,204,102,.9); }
+    .dot.bad{ background:#ff5f5f; box-shadow:0 0 10px rgba(255,95,95,.9); }
   </style>
 </head>
 <body>
@@ -298,7 +373,7 @@
       pair: 'OKX · BTC-USDT-SWAP'
     };
 
-    // helpers
+    // --- helpers
     const $ = s => document.querySelector(s);
     const $$ = s => Array.from(document.querySelectorAll(s));
     const pad2 = n => String(n).padStart(2,'0');
@@ -315,7 +390,7 @@
       return `${pad2(mm)}:${pad2(ss)}`;
     }
 
-    // автоконтраст
+    // автоконтраст для текста в зависимости от панели
     function applyAutoContrast(){
       const cs = getComputedStyle(document.documentElement);
       const bg = cs.getPropertyValue('--panel').trim() || '#000';
@@ -326,16 +401,28 @@
       document.documentElement.style.setProperty('--text', text);
       document.documentElement.style.setProperty('--muted', muted);
     }
-    function hex2rgb(hex){ const h=hex.replace('#',''); const n=h.length===3?h.split('').map(c=>c+c).join(''):h; return {r:parseInt(n.slice(0,2),16),g:parseInt(n.slice(2,4),16),b:parseInt(n.slice(4,6),16)}; }
-    function parseRGB(s){ const m=s.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/i); return m?{r:+m[1],g:+m[2],b:+m[3]}:{r:0,g:0,b:0}; }
+    function hex2rgb(hex){
+      const h = hex.replace('#','');
+      const n = h.length===3 ? h.split('').map(c=>c+c).join('') : h;
+      return { r:parseInt(n.slice(0,2),16), g:parseInt(n.slice(2,4),16), b:parseInt(n.slice(4,6),16) };
+    }
+    function parseRGB(s){ const m = s.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/i); return m?{r:+m[1],g:+m[2],b:+m[3]}:{r:0,g:0,b:0}; }
     function luminance({r,g,b}){ const a=[r,g,b].map(v=>{v/=255;return v<=.03928?v/12.92:Math.pow((v+.055)/1.055,2.4)}); return 0.2126*a[0]+0.7152*a[1]+0.0722*a[2]; }
 
-    // рендер
-    function renderBars(){ $('#pair').innerHTML = `${state.pair} · <span class="tf">${state.tf}</span>`; }
-    function renderTime(){ $('#time').textContent = (state.tfmt==='rel') ? fmtRel(state.lastUpdate) : fmtClock(state.lastUpdate, state.timezone); }
-    function setTheme(t){ state.theme = t; document.documentElement.setAttribute('data-theme', t); applyAutoContrast(); fitBottomBar(); }
+    // --- рендер
+    function renderBars(){
+      $('#pair').innerHTML = `${state.pair} · <span class="tf">${state.tf}</span>`;
+    }
+    function renderTime(){
+      $('#time').textContent = (state.tfmt==='rel') ? fmtRel(state.lastUpdate) : fmtClock(state.lastUpdate, state.timezone);
+    }
+    function setTheme(t){
+      state.theme = t;
+      document.documentElement.setAttribute('data-theme', t);
+      applyAutoContrast();
+    }
 
-    // модалки
+    // --- модалки
     function show(el){ el.classList.add('show'); el.setAttribute('aria-hidden','false'); }
     function hide(el){ el.classList.remove('show'); el.setAttribute('aria-hidden','true'); }
 
@@ -343,6 +430,7 @@
     const dlgTF = $('#dlgTF');
     const dlgLegend = $('#dlgLegend');
 
+    // settings
     $('#btnSettings').addEventListener('click', ()=>show(dlgSettings));
     $('#btnCloseSettings').addEventListener('click', ()=>hide(dlgSettings));
     dlgSettings.addEventListener('click', (e)=>{ if(e.target===dlgSettings) hide(dlgSettings); });
@@ -352,53 +440,47 @@
       $$('#themeGrid .pill').forEach(x=>x.classList.toggle('active', x===p));
       setTheme(p.dataset.theme);
     });
+
     $$('#dlgSettings [data-timezone]').forEach(p=>p.addEventListener('click', ()=>{
       $$('#dlgSettings [data-timezone]').forEach(x=>x.classList.remove('active'));
-      p.classList.add('active'); state.timezone = p.dataset.timezone; renderTime(); fitBottomBar();
+      p.classList.add('active'); state.timezone = p.dataset.timezone; renderTime();
     }));
     $$('#dlgSettings [data-tfmt]').forEach(p=>p.addEventListener('click', ()=>{
       $$('#dlgSettings [data-tfmt]').forEach(x=>x.classList.remove('active'));
-      p.classList.add('active'); state.tfmt = p.dataset.tfmt; renderTime(); fitBottomBar();
+      p.classList.add('active'); state.tfmt = p.dataset.tfmt; renderTime();
     }));
 
+    // TF
     $('#btnTF').addEventListener('click', ()=>show(dlgTF));
     $('#btnCloseTF').addEventListener('click', ()=>hide(dlgTF));
     dlgTF.addEventListener('click', (e)=>{ if(e.target===dlgTF) hide(dlgTF); });
     $('#tfGrid').addEventListener('click', (e)=>{
       const p = e.target.closest('.pill[data-tf]'); if(!p) return;
       $$('#tfGrid .pill').forEach(x=>x.classList.toggle('active', x===p));
-      state.tf = p.dataset.tf; renderBars(); fitBottomBar(); hide(dlgTF);
+      state.tf = p.dataset.tf; renderBars(); hide(dlgTF);
     });
 
+    // legend by indicator click
     $('#led').addEventListener('click', ()=>show(dlgLegend));
     $('#btnCloseLegend').addEventListener('click', ()=>hide(dlgLegend));
     dlgLegend.addEventListener('click', (e)=>{ if(e.target===dlgLegend) hide(dlgLegend); });
 
-    function doRefresh(){ state.lastUpdate = Date.now(); renderTime(); fitBottomBar(); }
+    // refresh (демо — только «обновляет время»)
+    function doRefresh(){ state.lastUpdate = Date.now(); renderTime(); }
     $('#btnRefresh').addEventListener('click', doRefresh);
 
-    // умное поджатие нижней панели
-    function fitBottomBar(){
-      const bar = document.querySelector('.bottombar');
-      const left = bar.querySelector('.left');
-      bar.classList.remove('compact','xcompact');
-
-      const barW = bar.clientWidth;
-      const cs   = getComputedStyle(bar);
-      const avail = barW - (parseFloat(cs.paddingLeft)||0) - (parseFloat(cs.paddingRight)||0);
-
-      const need = left.scrollWidth;
-      if (need > avail) bar.classList.add('compact');
-      if (bar.classList.contains('compact') && left.scrollWidth > avail) bar.classList.add('xcompact');
-    }
-    window.addEventListener('resize', fitBottomBar);
+    // тик времени
+    setInterval(renderTime, 1000);
 
     // старт
-    setTheme('blue');
+    setTheme('blue');     // по умолчанию — синяя
     state.lastUpdate = Date.now();
-    renderBars(); renderTime(); fitBottomBar();
-    setInterval(renderTime, 1000);
+    renderBars(); renderTime();
+
+    // ESC закрывает открытые модалки
+    document.addEventListener('keydown', e=>{
+      if(e.key==='Escape'){ [dlgSettings, dlgTF, dlgLegend].forEach(hide); }
+    });
   </script>
-  
 </body>
 </html>

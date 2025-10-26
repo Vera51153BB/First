@@ -27,7 +27,14 @@
       --focus-ring: rgba(122,167,255,.75);   /* цвет кольца */
       --focus-glow: rgba(122,167,255,.35);   /* внешнее мягкое свечение */
     }
-
+    
+    @media (max-width: 768px){
+      :root{
+        --uiSize: clamp(36px, 7vw, 44px);
+        --icon:  clamp(20px, 4vw, 24px);
+      }
+    }
+    
     /* темы */
     html[data-theme="blue"]{
       --bg:#050029;

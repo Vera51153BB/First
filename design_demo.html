@@ -391,22 +391,6 @@
     }
     function parseRGB(s){ const m = s.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/i); return m?{r:+m[1],g:+m[2],b:+m[3]}:{r:0,g:0,b:0}; }
     function luminance({r,g,b}){ const a=[r,g,b].map(v=>{v/=255;return v<=.03928?v/12.92:Math.pow((v+.055)/1.055,2.4)}); return 0.2126*a[0]+0.7152*a[1]+0.0722*a[2]; }
-
-    // где меняется TF/тема/формат времени — после renderBars()/renderTime():
-    // ДОБАВЬ:
-    const _renderBars = renderBars;
-    renderBars = function(){ _renderBars(); fitBottomBar(); }
-  
-    const _renderTime = renderTime;
-    renderTime = function(){ _renderTime(); fitBottomBar(); }
-  
-    // после setTheme / смен TF:
-    const _setTheme = setTheme;
-    setTheme = function(t){ _setTheme(t); fitBottomBar(); }
-  
-    // сразу после начальной инициализации:
-    fitBottomBar();
-// ----------------------------------------------------------------------------
     
     // --- рендер
     function renderBars(){
@@ -480,36 +464,6 @@
     document.addEventListener('keydown', e=>{
       if(e.key==='Escape'){ [dlgSettings, dlgTF, dlgLegend].forEach(hide); }
     });
-    function fitBottomBar(){
-      const bar = document.querySelector('.bottombar');
-      const left = bar.querySelector('.left');
-      const right = bar.querySelector('.right');
-  
-      // Сброс режима — меряем на полном размере
-      bar.classList.remove('compact','xcompact');
-  
-      // Ширина всего бара минус внутренние паддинги
-      const barW   = bar.clientWidth;
-      const styles = getComputedStyle(bar);
-      const padL   = parseFloat(styles.paddingLeft) || 0;
-      const padR   = parseFloat(styles.paddingRight) || 0;
-      const avail  = barW - padL - padR;
-  
-      const needFull = left.scrollWidth + right.scrollWidth;
-  
-      if (needFull > avail) {
-        bar.classList.add('compact');
-      }
-      // Перемеряем уже в compact
-      const needCompact = left.scrollWidth + right.scrollWidth;
-      if (bar.classList.contains('compact') && needCompact > avail) {
-        bar.classList.add('xcompact');
-      }
-    }
-  
-    // Пересчёт при загрузке, ресайзе и смене настроек/TF
-    window.addEventListener('load', fitBottomBar);
-    window.addEventListener('resize', fitBottomBar);
   
   </script>
 </body>

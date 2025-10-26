@@ -134,8 +134,7 @@
     .btn{
       height: var(--uiSize);
       padding: 0 clamp(10px, 2.6vw, 12px);
-      border-radius: var(--radius);
-      border:1px solid rgba(255,255,255,.16);
+      border:none;
       background:linear-gradient(180deg,var(--panel),var(--panel2));
       color:var(--text);
       display:inline-flex; align-items:center; justify-content:center;
@@ -218,11 +217,30 @@
     <div class="topbar">
       <div class="right">
         <button class="btn" id="btnTF"><b>TF</b></button>
-        <button class="btn btn-icon" id="btnRefresh" title="Обновить">
-          <svg><use href="#i-refresh"></use></svg>
+        <!-- Кнопка Обновить -->
+        <button class="btn btn-icon" id="btnRefresh" title="Обновить" aria-label="Обновить">
+          <svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true">
+            <path fill="currentColor"
+              d="M17.65 6.35A7.95 7.95 0 0 0 12 4a8 8 0 1 0 7.75 6h-2.1A6 6 0 1 1 12 6
+                 c1.66 0 3.14.69 4.22 1.78L14 10h6V4z"/>
+          </svg>
         </button>
-        <button class="btn btn-icon" id="btnSettings" title="Settings">
-          <svg><use href="#i-gear"></use></svg>
+        
+        <!-- Кнопка Настройки -->
+        <button class="btn btn-icon" id="btnSettings" title="Настройки" aria-label="Настройки">
+          <svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true">
+            <!-- центр -->
+            <circle cx="12" cy="12" r="3" fill="currentColor"/>
+            <!-- шестерня -->
+            <path fill="currentColor"
+              d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33
+                 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06
+                 a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09
+                 a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06
+                 a1.65 1.65 0 0 0 1.82.33h.09a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51h.09
+                 a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82v.09
+                 a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+          </svg>
         </button>
       </div>
     </div>

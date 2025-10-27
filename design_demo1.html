@@ -160,7 +160,7 @@
       box-shadow:
         0 0 10px color-mix(in srgb, var(--led-color) 75%, transparent),
         0 0 22px color-mix(in srgb, var(--led-color) 45%, transparent);
-      animation: led-breathe 2.8s ease-in-out infinite;
+      animation: none; /* анимация отключена, свечение остаётся. animation: led-breathe 2.8s ease-in-out infinite; */
       cursor: pointer;
     }
     
@@ -180,7 +180,7 @@
     .led[data-state="warn"] { --led-color: var(--led-warn); }
     .led[data-state="bad"]  { --led-color: var(--led-bad); }
     
-    /* мягкое «дыхание» свечения */
+    /*  мягкое «дыхание» свечения 
     @keyframes led-breathe{
       0%,100%{ box-shadow:
         0 0 8px  color-mix(in srgb, var(--led-color) 65%, transparent),
@@ -188,7 +188,7 @@
       50%{ box-shadow:
         0 0 12px color-mix(in srgb, var(--led-color) 80%, transparent),
         0 0 26px color-mix(in srgb, var(--led-color) 50%, transparent); }
-    }
+    } */
     
     /* правая часть: TF + icon buttons */
     .right{ display:flex; align-items:center; gap: clamp(8px, 2vw, 12px); }

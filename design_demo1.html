@@ -179,10 +179,19 @@
         0 0 10px 3px var(--s-g1),
         0 0 22px 10px var(--s-g2);
     }
+    /* БЛИК — меньше, без обводки, ближе к верхнему-левому краю */
     .led::after{
-      content:""; position:absolute; left:2px; top:2px;
-      width:4px; height:4px; border-radius:50%;
-      background:#fff; box-shadow:0 0 4px rgba(255,255,255,.85);
+      content:"";
+      position:absolute;
+      /* позиция блика как на скрине */
+      left: 18%;
+      top: 16%;
+      /* размер блика в долях диаметра индикатора */
+      width: 28%;
+      height: 28%;
+      border-radius:50%;
+      background:#fff;                 /* без границы/обводки */
+      box-shadow: 0 0 3px rgba(255,255,255,.65); /* лёгкое свечение */
     }
     /* внешняя аура */
     .led::before{

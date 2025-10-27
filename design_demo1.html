@@ -28,26 +28,9 @@
       --focus-glow: rgba(122,167,255,.35);   /* внешнее мягкое свечение */
 
       /* ИНДИКАТОРЫ */
-      /* OK (зелёный) */
-      --ok-core:  #d9ffd6;
-      --ok-mid:   #79c172;   /* твой базовый зелёный для консистентности */
-      --ok-deep:  #28b457;
-      --ok-g1:    rgba(124,244,124,.50);
-      --ok-g2:    rgba(79,224,106,.30);
-    
-      /* WARN (жёлтый) */
-      --warn-core:#fff3c7;
-      --warn-mid: #ffcc66;
-      --warn-deep:#e6a200;
-      --warn-g1:  rgba(255,204,102,.55);
-      --warn-g2:  rgba(255,170, 40,.30);
-    
-      /* BAD (красный) */
-      --bad-core: #ffd3d3;
-      --bad-mid:  #ff5f5f;
-      --bad-deep: #d63b3b;
-      --bad-g1:   rgba(255, 95, 95,.55);
-      --bad-g2:   rgba(230, 60, 60,.30);
+      --led-ok:#5fe281;      /* зелёный индикатора */
+      --led-warn:#ffc857;    /* жёлтый индикатора */
+      --led-bad:#ff5f5f;     /* красный индикатора */
     }
     
     @media (max-width: 768px){
@@ -160,57 +143,57 @@
     }
 
     /* индикатор со свечением и белым бликом */
+    /* универсальный «шар» — 1 элемент */
     .led{
-      position:relative;
-      width: clamp(12px, 2.8vw, 14px);
-      height: clamp(12px, 2.8vw, 14px);
-      border-radius:50%;
-      flex:0 0 auto;
-       /* шаблон заливки (берёт переменные текущего статуса) */
+      --led-size: clamp(12px, 2.8vw, 14px);
+      --led-color: var(--led-ok);         /* по умолчанию ОК */
+      position: relative;
+      width: var(--led-size);
+      height: var(--led-size);
+      border-radius: 50%;
+      flex: 0 0 auto;
+      /* тело шара + мягкая периферия через радиальные градиенты */
       background:
-        radial-gradient(circle at 38% 38%,
-          var(--s-core) 0 16%,
-          color-mix(in srgb, var(--s-core) 40%, white 0%) 17% 28%,
-          var(--s-mid) 29% 58%,
-          color-mix(in srgb, var(--s-deep) 75%, var(--s-mid) 25%) 59% 82%,
-          var(--s-deep) 83% 100%);
+        radial-gradient(45% 45% at 30% 28%, rgba(255,255,255,.95), rgba(255,255,255,0) 60%) /* внутренний бликовый градиент */,
+        radial-gradient(100% 100% at 50% 50%, var(--led-color), color-mix(in srgb, var(--led-color) 65%, #000) );
+      /* внешнее свечение — лёгкое «дыхание» */
       box-shadow:
-        inset 0 0 0 1px rgba(255,255,255,.08),
-        0 0 10px 3px var(--s-g1),
-        0 0 22px 10px var(--s-g2);
+        0 0 10px color-mix(in srgb, var(--led-color) 75%, transparent),
+        0 0 22px color-mix(in srgb, var(--led-color) 45%, transparent);
+      animation: led-breathe 2.8s ease-in-out infinite;
+      cursor: pointer;
     }
-    /* БЛИК — меньше, без обводки, ближе к верхнему-левому краю */
+    
+    /* белый «блик» — маленький и без обводки */
     .led::after{
       content:"";
       position:absolute;
-      /* позиция блика как на скрине */
-      left: 18%;
-      top: 16%;
-      /* размер блика в долях диаметра индикатора */
-      width: 28%;
-      height: 28%;
+      left:18%; top:16%;
+      width:28%; height:28%;
       border-radius:50%;
-      background:#fff;                 /* без границы/обводки */
-      box-shadow: 0 0 3px rgba(255,255,255,.65); /* лёгкое свечение */
-    }
-    /* внешняя аура */
-    .led::before{
-      content:""; position:absolute; inset:-8px;
-      border-radius:50%;
-      background: radial-gradient(circle, var(--s-g1), transparent 60%);
-      filter: blur(8px);
-      pointer-events:none;
+      background:#fff;
+      box-shadow:0 0 3px rgba(255,255,255,.6);
     }
     
-    /* Маппинг статуса → палитра */
-    .led.status-ok   { --s-core:var(--ok-core);   --s-mid:var(--ok-mid);   --s-deep:var(--ok-deep);   --s-g1:var(--ok-g1);   --s-g2:var(--ok-g2); }
-    .led.status-warn { --s-core:var(--warn-core); --s-mid:var(--warn-mid); --s-deep:var(--warn-deep); --s-g1:var(--warn-g1); --s-g2:var(--warn-g2); }
-    .led.status-bad  { --s-core:var(--bad-core);  --s-mid:var(--bad-mid);  --s-deep:var(--bad-deep);  --s-g1:var(--bad-g1);  --s-g2:var(--bad-g2); }
-     
+    /* состояния через дата-атрибут */
+    .led[data-state="ok"]   { --led-color: var(--led-ok); }
+    .led[data-state="warn"] { --led-color: var(--led-warn); }
+    .led[data-state="bad"]  { --led-color: var(--led-bad); }
+    
+    /* мягкое «дыхание» свечения */
+    @keyframes led-breathe{
+      0%,100%{ box-shadow:
+        0 0 8px  color-mix(in srgb, var(--led-color) 65%, transparent),
+        0 0 18px color-mix(in srgb, var(--led-color) 35%, transparent); }
+      50%{ box-shadow:
+        0 0 12px color-mix(in srgb, var(--led-color) 80%, transparent),
+        0 0 26px color-mix(in srgb, var(--led-color) 50%, transparent); }
+    }
+    
     /* правая часть: TF + icon buttons */
     .right{ display:flex; align-items:center; gap: clamp(8px, 2vw, 12px); }
 
-        /* БАЗОВАЯ КНОПКА */
+    /* БАЗОВАЯ КНОПКА */
     .btn{
       height: var(--uiSize);
       padding: 0 clamp(10px, 2.6vw, 12px);
@@ -346,7 +329,7 @@
     <!-- нижняя панель управления -->
     <div class="bottombar">
       <div class="left">
-        <span class="led status-warn" id="led" title="Нажмите для легенды"></span>
+        <span class="led" id="led" data-state="ok" title="Онлайн (WS)"></span>
         <span class="pair" id="pair">OKX · BTC-USDT-SWAP</span>
         <span class="time" id="time">—</span>
         <!-- Кнопка Обновить -->

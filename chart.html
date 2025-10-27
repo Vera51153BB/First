@@ -107,13 +107,13 @@
       display:flex; align-items:center; gap:8px;
       min-width:0; white-space:nowrap;
       flex:1 1 auto;            /* группа занимает доступную ширину */
-      overflow:hidden;
+      overflow: visible;        /* было hidden — нужно visible, чтобы не резать свечение индикатора */
     }
     
-    /* ПАРА — больше НЕ растёт, только сжимается при нехватке места */
+    /* ПАРА — не растёт, только сжимается при нехватке места */
     .pair{
       display:block;
-      flex:0 1 auto;            /* <-- было 1 1 auto; теперь 0 1 auto */
+      flex:0 1 auto;            /* было 1 1 auto; теперь 0 1 auto */
       min-width:0;
       max-width:100%;
       overflow:hidden;
@@ -409,13 +409,19 @@
     function parseRGB(s){ const m = s.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/i); return m?{r:+m[1],g:+m[2],b:+m[3]}:{r:0,g:0,b:0}; }
     function luminance({r,g,b}){ const a=[r,g,b].map(v=>{v/=255;return v<=.03928?v/12.92:Math.pow((v+.055)/1.055,2.4)}); return 0.2126*a[0]+0.7152*a[1]+0.0722*a[2]; }
 
-    // --- рендер
+        // --- рендер
     function renderBars(){
-      $('#pair').innerHTML = `${state.pair} · <span class="tf">${state.tf}</span>`;
+      const pairEl = document.getElementById('pair');
+      pairEl.innerHTML = `${state.pair} · <span class="tf">${state.tf}</span>`;
+      pairEl.dataset.full = pairEl.textContent.trim(); // запомним полный вариант
+      fitPair();                                       // подогнать под ширину
     }
+    
     function renderTime(){
-      $('#time').textContent = (state.tfmt==='rel') ? fmtRel(state.lastUpdate) : fmtClock(state.lastUpdate, state.timezone);
+      document.getElementById('time').textContent =
+        (state.tfmt==='rel') ? fmtRel(state.lastUpdate) : fmtClock(state.lastUpdate, state.timezone);
     }
+    
     function setTheme(t){
       state.theme = t;
       document.documentElement.setAttribute('data-theme', t);
@@ -481,6 +487,51 @@
     document.addEventListener('keydown', e=>{
       if(e.key==='Escape'){ [dlgSettings, dlgTF, dlgLegend].forEach(hide); }
     });
+
+    // Шаги сокращения в нужном порядке.
+    // 1) убрать TF (любой из поддерживаемых в конце строки)
+    // 2) убрать "-SWAP"
+    // 3) убрать "-USDT"
+    const PAIR_TRIM_STEPS = [
+      s => s.replace(/\s*·\s*(15m|1h|4h|8h|12h|1d)\s*$/i, ''),
+      s => s.replace(/-SWAP\b/i, ''),
+      s => s.replace(/-USDT\b/i, '')
+    ];
+    
+    // Подгоняем только .pair (время и «обновить» фиксированные)
+    function fitPair() {
+      const el = document.getElementById('pair');
+      if (!el) return;
+    
+      // полный вариант храним здесь; обновляется при renderBars()
+      const full = el.dataset.full || el.textContent.trim();
+    
+      // начинаем каждый раз с полного текста
+      el.textContent = full;
+    
+      // если уже влазит — готово
+      if (el.scrollWidth <= el.clientWidth) return;
+    
+      // пробуем шаги по порядку
+      for (const step of PAIR_TRIM_STEPS) {
+        const next = step(el.textContent);
+        if (next !== el.textContent) {
+          el.textContent = next;
+        }
+        if (el.scrollWidth <= el.clientWidth) break;
+      }
+    
+      // на всякий случай — подсказка с полным названием
+      el.title = full;
+    }
+    
+    // лёгкий дебаунс на ресайз
+    let _fitRaf = 0;
+    window.addEventListener('resize', () => {
+      cancelAnimationFrame(_fitRaf);
+      _fitRaf = requestAnimationFrame(fitPair);
+    });
+    
   </script>
 </body>
 </html>

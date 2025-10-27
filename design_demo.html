@@ -107,7 +107,7 @@
       display:flex; align-items:center; gap:8px;
       min-width:0; white-space:nowrap;
       flex:1 1 auto;            /* группа занимает доступную ширину */
-      overflow:hidden;
+      overflow: visible;        /* было hidden — нужно visible, чтобы не резать свечение индикатора */
     }
     
     /* ПАРА — больше НЕ растёт, только сжимается при нехватке места */
@@ -255,6 +255,12 @@
     .dot.ok{ background:var(--green); box-shadow:0 0 10px rgba(121,193,114,.9); }
     .dot.warn{ background:#ffcc66; box-shadow:0 0 10px rgba(255,204,102,.9); }
     .dot.bad{ background:#ff5f5f; box-shadow:0 0 10px rgba(255,95,95,.9); }
+    /* < 318px: скрываем TF и разделитель перед ним */
+    
+    @media (max-width: 318px){
+      .pair .sep-tf,
+      .pair .tf{ display:none; }
+    }
   </style>
 </head>
 <body>
@@ -411,7 +417,10 @@
 
     // --- рендер
     function renderBars(){
-      $('#pair').innerHTML = `${state.pair} · <span class="tf">${state.tf}</span>`;
+      const pairEl = document.getElementById('pair');
+      // разделитель перед TF вынесен в отдельный span, чтобы его тоже скрывать
+      pairEl.innerHTML = `${state.pair}<span class="sep-tf"> · </span><span class="tf">${state.tf}</span>`;
+      pairEl.dataset.full = pairEl.textContent.trim(); // можно оставить для тултипа/будущих ужиманий
     }
     function renderTime(){
       $('#time').textContent = (state.tfmt==='rel') ? fmtRel(state.lastUpdate) : fmtClock(state.lastUpdate, state.timezone);

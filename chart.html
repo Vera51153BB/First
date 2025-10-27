@@ -498,47 +498,67 @@
     // 1) убрать TF (любой из поддерживаемых в конце строки)
     // 2) убрать "-SWAP"
     // 3) убрать "-USDT"
-    // Ступени сокращения: 1) убрать TF, 2) убрать -SWAP, 3) убрать -USDT
+    // Шаги: 1) убрать TF, 2) убрать -SWAP, 3) убрать -USDT
+
+    // Невидимый измеритель ширины строки .pair (без обрезки)
+    const _pairMeasure = document.createElement('span');
+    _pairMeasure.style.cssText = [
+      'position:absolute','left:-9999px','top:-9999px',
+      'visibility:hidden','white-space:nowrap'
+    ].join(';');
+    document.body.appendChild(_pairMeasure);
+    
+    function _measurePairWidth(sampleEl, text){
+      // копируем ключевые типографские стили из .pair
+      const cs = getComputedStyle(sampleEl);
+      _pairMeasure.style.font       = cs.font;
+      _pairMeasure.style.letterSpacing = cs.letterSpacing;
+      _pairMeasure.style.fontWeight = cs.fontWeight;
+      _pairMeasure.style.textTransform = cs.textTransform;
+      _pairMeasure.textContent = text;
+      return _pairMeasure.scrollWidth;
+    }   
+        
     const PAIR_TRIM_STEPS = [
-      s => s.replace(/\s*·\s*(15m|1h|4h|8h|12h|1d)\s*$/i, ''), // TF в конце
-      s => s.replace(/-SWAP\b/i, ''),                          // тип
-      s => s.replace(/-USDT\b/i, '')                           // котируемая
+      s => s.replace(/\s*·\s*(15m|1h|4h|8h|12h|1d)\s*$/i, ''),
+      s => s.replace(/-SWAP\b/i, ''),
+      s => s.replace(/-USDT\b/i, '')
     ];
     
-    // Подгоняем только .pair (время и «обновить» фиксированные)
     function fitPair(){
       const el = document.getElementById('pair');
       if (!el) return;
     
-      const full = el.dataset.full || (el.dataset.full = el.textContent.trim());
-      el.textContent = full;
-      el.title = full; // для тултипа полное название
+      const full = (el.dataset.full || el.textContent).trim();
+      el.dataset.full = full;
     
-      const fits = () => el.scrollWidth <= el.clientWidth + 1; // 1px на субпиксели
-      if (fits()) return;
+      // доступная ширина у текущей .pair
+      const avail = el.clientWidth; // ширина коробки, куда должно влезть
     
+      // начинаем каждый раз с полного текста
+      let current = full;
+      el.textContent = current;
+    
+      // если полный вариант влазит — всё, выходим
+      if (_measurePairWidth(el, current) <= avail + 1){
+        el.title = full;
+        return;
+      }
+    
+      // применяем шаги по порядку, пока не влезет
       for (const step of PAIR_TRIM_STEPS){
-        const next = step(el.textContent);
-        if (next !== el.textContent){
-          el.textContent = next.trim().replace(/\s{2,}/g,' ');
-          if (fits()) return;
+        const next = step(current).trim().replace(/\s{2,}/g,' ');
+        if (next !== current){
+          current = next;
+          if (_measurePairWidth(el, current) <= avail + 1) break;
         }
       }
-      // если вообще крошечная ширина — останется эллипсис; время и кнопка всё равно видимы
+    
+      // отрисовать урезанное и сохранить тултип с полным названием
+      el.textContent = current;
+      el.title = full;
     }
-    
-    // наблюдаем реальную ширину контейнера, а не только окно
-    const _fitObserver = new ResizeObserver(() => fitPair());
-    _fitObserver.observe(document.querySelector('.bottombar') || document.body);
-    
-    // небольшой дебаунс на window.resize (на всякий случай)
-    let _fitRaf = 0;
-    window.addEventListener('resize', () => {
-      cancelAnimationFrame(_fitRaf);
-      _fitRaf = requestAnimationFrame(fitPair);
-    });
 
-    
   </script>
 </body>
 </html>

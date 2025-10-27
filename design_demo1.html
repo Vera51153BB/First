@@ -297,8 +297,21 @@
     .close{ margin-top:12px; width:100%; }
 
     /* легенда */
-    .legend ul{ margin:8px 0 0; padding:0 0 0 16px; }
-    .legend li{ margin:6px 0; }
+    .legend ul{
+      /* убираем стандартные маркеры */
+      list-style: none;
+      margin: 8px 0 0;
+      padding: 0;
+    }
+    .legend li{
+      /* аккуратное выравнивание точки и текста в ряд */
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin: 10px 0;
+    }
+    /* .legend ul{ margin:8px 0 0; padding:0 0 0 16px; }
+    .legend li{ margin:6px 0; } */
 
     /* базовая точка */
     .legend .dot{

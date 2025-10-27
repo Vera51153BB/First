@@ -498,9 +498,7 @@
     // 1) убрать TF (любой из поддерживаемых в конце строки)
     // 2) убрать "-SWAP"
     // 3) убрать "-USDT"
-    // Шаги: 1) убрать TF, 2) убрать -SWAP, 3) убрать -USDT
-
-    // Невидимый измеритель ширины строки .pair (без обрезки)
+    // ====== измеритель (если ещё не добавлял) ======
     const _pairMeasure = document.createElement('span');
     _pairMeasure.style.cssText = [
       'position:absolute','left:-9999px','top:-9999px',
@@ -508,55 +506,65 @@
     ].join(';');
     document.body.appendChild(_pairMeasure);
     
-    function _measurePairWidth(sampleEl, text){
-      // копируем ключевые типографские стили из .pair
+    function _measureTextWidth(sampleEl, text){
       const cs = getComputedStyle(sampleEl);
-      _pairMeasure.style.font       = cs.font;
+      _pairMeasure.style.font = cs.font;
       _pairMeasure.style.letterSpacing = cs.letterSpacing;
       _pairMeasure.style.fontWeight = cs.fontWeight;
       _pairMeasure.style.textTransform = cs.textTransform;
       _pairMeasure.textContent = text;
       return _pairMeasure.scrollWidth;
-    }   
-        
+    }
+    
+    // ====== шаги сокращения ======
     const PAIR_TRIM_STEPS = [
-      s => s.replace(/\s*·\s*(15m|1h|4h|8h|12h|1d)\s*$/i, ''),
-      s => s.replace(/-SWAP\b/i, ''),
-      s => s.replace(/-USDT\b/i, '')
+      s => s.replace(/\s*·\s*(15m|1h|4h|8h|12h|1d)\s*$/i, ''), // 1) убрать TF в конце
+      s => s.replace(/-SWAP\b/i, ''),                          // 2) убрать -SWAP
+      s => s.replace(/-USDT\b/i, '')                           // 3) убрать -USDT
     ];
     
+    // ====== ВНИМАНИЕ: НОВАЯ fitPair() ======
     function fitPair(){
-      const el = document.getElementById('pair');
-      if (!el) return;
+      const pairEl = document.getElementById('pair');
+      const leftEl = document.querySelector('.bottombar .left');
+      if (!pairEl || !leftEl) return;
     
-      const full = (el.dataset.full || el.textContent).trim();
-      el.dataset.full = full;
+      // полный текст (берём из data-full, если есть)
+      const full = (pairEl.dataset.full || pairEl.textContent).trim();
+      pairEl.dataset.full = full;
     
-      // доступная ширина у текущей .pair
-      const avail = el.clientWidth; // ширина коробки, куда должно влезть
+      // считаем ДОСТУПНУЮ ширину в .left:
+      // ширина контейнера минус ширины всех остальных детей и минус суммарные gap'ы
+      const kids = Array.from(leftEl.children);
+      const gap = parseFloat(getComputedStyle(leftEl).columnGap || getComputedStyle(leftEl).gap) || 0;
+      const othersWidth = kids
+        .filter(n => n !== pairEl)
+        .reduce((acc, n) => acc + n.getBoundingClientRect().width, 0);
+      const gapsWidth = gap * (kids.length - 1);
+      const avail = Math.max(0, leftEl.clientWidth - othersWidth - gapsWidth);
     
-      // начинаем каждый раз с полного текста
+      // функция «влезает ли текст»
+      const fits = (text) => _measureTextWidth(pairEl, text) <= avail + 1; // +1px на субпиксели
+    
+      // начинаем с полного текста
       let current = full;
-      el.textContent = current;
-    
-      // если полный вариант влазит — всё, выходим
-      if (_measurePairWidth(el, current) <= avail + 1){
-        el.title = full;
+      if (fits(current)){
+        pairEl.textContent = current;
+        pairEl.title = full;
         return;
       }
     
-      // применяем шаги по порядку, пока не влезет
+      // по шагам обрезаем
       for (const step of PAIR_TRIM_STEPS){
         const next = step(current).trim().replace(/\s{2,}/g,' ');
         if (next !== current){
           current = next;
-          if (_measurePairWidth(el, current) <= avail + 1) break;
+          if (fits(current)) break;
         }
       }
     
-      // отрисовать урезанное и сохранить тултип с полным названием
-      el.textContent = current;
-      el.title = full;
+      pairEl.textContent = current;
+      pairEl.title = full;
     }
 
   </script>

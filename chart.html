@@ -26,6 +26,28 @@
             /* ... существующие переменные ... */
       --focus-ring: rgba(122,167,255,.75);   /* цвет кольца */
       --focus-glow: rgba(122,167,255,.35);   /* внешнее мягкое свечение */
+
+      /* ИНДИКАТОРЫ */
+      /* OK (зелёный) */
+      --ok-core:  #d9ffd6;
+      --ok-mid:   #79c172;   /* твой базовый зелёный для консистентности */
+      --ok-deep:  #28b457;
+      --ok-g1:    rgba(124,244,124,.50);
+      --ok-g2:    rgba(79,224,106,.30);
+    
+      /* WARN (жёлтый) */
+      --warn-core:#fff3c7;
+      --warn-mid: #ffcc66;
+      --warn-deep:#e6a200;
+      --warn-g1:  rgba(255,204,102,.55);
+      --warn-g2:  rgba(255,170, 40,.30);
+    
+      /* BAD (красный) */
+      --bad-core: #ffd3d3;
+      --bad-mid:  #ff5f5f;
+      --bad-deep: #d63b3b;
+      --bad-g1:   rgba(255, 95, 95,.55);
+      --bad-g2:   rgba(230, 60, 60,.30);
     }
     
     @media (max-width: 768px){
@@ -143,16 +165,39 @@
       width: clamp(12px, 2.8vw, 14px);
       height: clamp(12px, 2.8vw, 14px);
       border-radius:50%;
-      background:var(--green);
-      box-shadow: 0 0 12px rgba(121,193,114,.95), 0 0 26px rgba(121,193,114,.45);
-      cursor:pointer; flex:0 0 auto;
+      flex:0 0 auto;
+       /* шаблон заливки (берёт переменные текущего статуса) */
+      background:
+        radial-gradient(circle at 38% 38%,
+          var(--s-core) 0 16%,
+          color-mix(in srgb, var(--s-core) 40%, white 0%) 17% 28%,
+          var(--s-mid) 29% 58%,
+          color-mix(in srgb, var(--s-deep) 75%, var(--s-mid) 25%) 59% 82%,
+          var(--s-deep) 83% 100%);
+      box-shadow:
+        inset 0 0 0 1px rgba(255,255,255,.08),
+        0 0 10px 3px var(--s-g1),
+        0 0 22px 10px var(--s-g2);
     }
     .led::after{
       content:""; position:absolute; left:2px; top:2px;
       width:4px; height:4px; border-radius:50%;
-      background:#fff; box-shadow: 0 0 4px rgba(255,255,255,.8);
+      background:#fff; box-shadow:0 0 4px rgba(255,255,255,.85);
     }
-
+    /* внешняя аура */
+    .led::before{
+      content:""; position:absolute; inset:-8px;
+      border-radius:50%;
+      background: radial-gradient(circle, var(--s-g1), transparent 60%);
+      filter: blur(8px);
+      pointer-events:none;
+    }
+    
+    /* Маппинг статуса → палитра */
+    .led.status-ok   { --s-core:var(--ok-core);   --s-mid:var(--ok-mid);   --s-deep:var(--ok-deep);   --s-g1:var(--ok-g1);   --s-g2:var(--ok-g2); }
+    .led.status-warn { --s-core:var(--warn-core); --s-mid:var(--warn-mid); --s-deep:var(--warn-deep); --s-g1:var(--warn-g1); --s-g2:var(--warn-g2); }
+    .led.status-bad  { --s-core:var(--bad-core);  --s-mid:var(--bad-mid);  --s-deep:var(--bad-deep);  --s-g1:var(--bad-g1);  --s-g2:var(--bad-g2); }
+     
     /* правая часть: TF + icon buttons */
     .right{ display:flex; align-items:center; gap: clamp(8px, 2vw, 12px); }
 
@@ -251,12 +296,14 @@
     /* легенда */
     .legend ul{ margin:8px 0 0; padding:0 0 0 16px; }
     .legend li{ margin:6px 0; }
-    .dot{ display:inline-block; width:10px; height:10px; border-radius:50%; margin-right:6px; }
-    .dot.ok{ background:var(--green); box-shadow:0 0 10px rgba(121,193,114,.9); }
-    .dot.warn{ background:#ffcc66; box-shadow:0 0 10px rgba(255,204,102,.9); }
-    .dot.bad{ background:#ff5f5f; box-shadow:0 0 10px rgba(255,95,95,.9); }
-    /* < 318px: скрываем TF и разделитель перед ним */
     
+    .dot{ display:inline-block; width:10px; height:10px; border-radius:50%; margin-right:6px; }
+    /* единый стиль свечения для подсказок */
+    .dot.ok   { background:var(--ok-mid);   box-shadow:0 0 8px var(--ok-g1),   0 0 14px var(--ok-g2); }
+    .dot.warn { background:var(--warn-mid); box-shadow:0 0 8px var(--warn-g1), 0 0 14px var(--warn-g2); }
+    .dot.bad  { background:var(--bad-mid);  box-shadow:0 0 8px var(--bad-g1),  0 0 14px var(--bad-g2); }
+
+    /* < 336px: скрываем TF и разделитель перед ним */    
     @media (max-width: 336px){
       .pair .sep-tf,
       .pair .tf{ display:none; }
@@ -290,7 +337,7 @@
     <!-- нижняя панель управления -->
     <div class="bottombar">
       <div class="left">
-        <span class="led" id="led" title="Нажмите для легенды"></span>
+        <span class="led status-ok" id="led" title="Нажмите для легенды"></span>
         <span class="pair" id="pair">OKX · BTC-USDT-SWAP</span>
         <span class="time" id="time">—</span>
         <!-- Кнопка Обновить -->

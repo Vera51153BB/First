@@ -31,6 +31,17 @@
       --led-ok:#5fe281;      /* зелёный индикатора */
       --led-warn:#ffc857;    /* жёлтый индикатора */
       --led-bad:#ff5f5f;     /* красный индикатора */
+
+      /* ——— Индикаторы в легенде: «сферические» точки с лёгким дыханием ——— */
+      /* палитра сфер */
+      --ok-mid:#3BD16A;   --ok-deep:#1E7E46;   --ok-glow:rgba(59,209,106,.42);
+      --warn-mid:#FFCC66; --warn-deep:#CC8A00; --warn-glow:rgba(255,204,102,.40);
+      --bad-mid:#FF5F5F;  --bad-deep:#B80D1A;  --bad-glow:rgba(255,95,95,.42);
+    
+      /* дыхание: длительность и амплитуда (можно подкрутить) */
+      --breathe-dur: 1400ms;
+      --breathe-min: .92;
+      --breathe-max: 1.12;
     }
     
     @media (max-width: 768px){
@@ -288,12 +299,48 @@
     /* легенда */
     .legend ul{ margin:8px 0 0; padding:0 0 0 16px; }
     .legend li{ margin:6px 0; }
+
+    /* базовая точка */
+    .legend .dot{
+      position:relative;
+      width:14px; height:14px; border-radius:50%;
+      flex:0 0 auto;
+    }
     
-    .dot{ display:inline-block; width:10px; height:10px; border-radius:50%; margin-right:6px; }
-    /* единый стиль свечения для подсказок */
-    .dot.ok   { background:var(--ok-mid);   box-shadow:0 0 8px var(--ok-g1),   0 0 14px var(--ok-g2); }
-    .dot.warn { background:var(--warn-mid); box-shadow:0 0 8px var(--warn-g1), 0 0 14px var(--warn-g2); }
-    .dot.bad  { background:var(--bad-mid);  box-shadow:0 0 8px var(--bad-g1),  0 0 14px var(--bad-g2); }
+    /* сама «сфера» (рад градиент + лёгкий блик) */
+    .legend .dot::before{
+      content:""; position:absolute; inset:0; border-radius:inherit;
+      background:
+        radial-gradient(circle at 34% 30%, rgba(255,255,255,.95) 0 18%, transparent 19%) /* блик */,
+        radial-gradient(circle at 50% 55%, var(--_mid) 0 70%, var(--_deep) 76% 100%);    /* тело */
+      box-shadow: 0 0 8px var(--_glow);
+    }
+    
+    /* внешний ореол — ТОЛЬКО он анимируется */
+    .legend .dot::after{
+      content:""; position:absolute; inset:-8px; border-radius:inherit;
+      background: radial-gradient(circle, var(--_glow), transparent 60%);
+      opacity:.55; pointer-events:none;
+      transform: scale(var(--breathe-min));
+      animation: breathe var(--breathe-dur) ease-in-out infinite;
+      will-change: transform, opacity;
+    }
+    
+    /* подстановка цветов для состояний */
+    .legend .dot.ok   { --_mid:var(--ok-mid);   --_deep:var(--ok-deep);   --_glow:var(--ok-glow); }
+    .legend .dot.warn { --_mid:var(--warn-mid); --_deep:var(--warn-deep); --_glow:var(--warn-glow); }
+    .legend .dot.bad  { --_mid:var(--bad-mid);  --_deep:var(--bad-deep);  --_glow:var(--bad-glow); }
+    
+    /* ключевые кадры «дыхания» — мягкий пульс ореола */
+    @keyframes breathe{
+      0%,100% { opacity:.35; transform: scale(var(--breathe-min)); }
+      50%     { opacity:.85; transform: scale(var(--breathe-max)); }
+    }
+    
+    /* уважаем системную настройку «уменьшить движение» */
+    @media (prefers-reduced-motion: reduce){
+      .legend .dot::after{ animation:none; opacity:.45; transform:none; }
+    }
 
     /* < 336px: скрываем TF и разделитель перед ним */    
     @media (max-width: 336px){

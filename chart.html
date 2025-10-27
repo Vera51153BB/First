@@ -110,10 +110,10 @@
       overflow: visible;        /* было hidden — нужно visible, чтобы не резать свечение индикатора */
     }
     
-    /* ПАРА — не растёт, только сжимается при нехватке места */
+    /* ПАРА — больше НЕ растёт, только сжимается при нехватке места */
     .pair{
       display:block;
-      flex:0 1 auto;            /* было 1 1 auto; теперь 0 1 auto */
+      flex:0 1 auto;            /* <-- было 1 1 auto; теперь 0 1 auto */
       min-width:0;
       max-width:100%;
       overflow:hidden;
@@ -127,13 +127,13 @@
     .time{
       color:var(--muted);
       font-variant-numeric: tabular-nums;
-      margin-left:5px;
+      margin-left:8px;
       flex:0 0 auto;
     }
     
     /* Обновить — всегда видима, не сжимать, небольшой зазор слева */
     #btnRefresh{
-      margin-left:5px;
+      margin-left:8px;
       flex:0 0 var(--uiSize);
     }
 
@@ -255,6 +255,12 @@
     .dot.ok{ background:var(--green); box-shadow:0 0 10px rgba(121,193,114,.9); }
     .dot.warn{ background:#ffcc66; box-shadow:0 0 10px rgba(255,204,102,.9); }
     .dot.bad{ background:#ff5f5f; box-shadow:0 0 10px rgba(255,95,95,.9); }
+    /* < 318px: скрываем TF и разделитель перед ним */
+    
+    @media (max-width: 318px){
+      .pair .sep-tf,
+      .pair .tf{ display:none; }
+    }
   </style>
 </head>
 <body>
@@ -409,25 +415,20 @@
     function parseRGB(s){ const m = s.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/i); return m?{r:+m[1],g:+m[2],b:+m[3]}:{r:0,g:0,b:0}; }
     function luminance({r,g,b}){ const a=[r,g,b].map(v=>{v/=255;return v<=.03928?v/12.92:Math.pow((v+.055)/1.055,2.4)}); return 0.2126*a[0]+0.7152*a[1]+0.0722*a[2]; }
 
-            // --- рендер
+    // --- рендер
     function renderBars(){
       const pairEl = document.getElementById('pair');
-      pairEl.innerHTML = `${state.pair} · <span class="tf">${state.tf}</span>`;
-      pairEl.dataset.full = pairEl.textContent.trim(); // сохранить «полный» вид
-      fitPair();                                       // сразу подогнать
+      // разделитель перед TF вынесен в отдельный span, чтобы его тоже скрывать
+      pairEl.innerHTML = `${state.pair}<span class="sep-tf"> · </span><span class="tf">${state.tf}</span>`;
+      pairEl.dataset.full = pairEl.textContent.trim(); // можно оставить для тултипа/будущих ужиманий
     }
-    
     function renderTime(){
-      document.getElementById('time').textContent =
-        (state.tfmt==='rel') ? fmtRel(state.lastUpdate) : fmtClock(state.lastUpdate, state.timezone);
-      fitPair();
+      $('#time').textContent = (state.tfmt==='rel') ? fmtRel(state.lastUpdate) : fmtClock(state.lastUpdate, state.timezone);
     }
-    
     function setTheme(t){
       state.theme = t;
       document.documentElement.setAttribute('data-theme', t);
       applyAutoContrast();
-      fitPair();
     }
 
     // --- модалки
@@ -481,92 +482,14 @@
     setInterval(renderTime, 1000);
 
     // старт
-    setTheme('blue');                 // тема по умолчанию
-    state.lastUpdate = Date.now();    // «сейчас» как время последнего обновления
-    
-    renderBars();   // рисуем строку пары (полный текст)
-    renderTime();   // рисуем время
-    fitPair();      // подгоняем .pair под доступное место
-
+    setTheme('blue');     // по умолчанию — синяя
+    state.lastUpdate = Date.now();
+    renderBars(); renderTime();
 
     // ESC закрывает открытые модалки
     document.addEventListener('keydown', e=>{
       if(e.key==='Escape'){ [dlgSettings, dlgTF, dlgLegend].forEach(hide); }
     });
-
-    // Шаги сокращения в нужном порядке.
-    // 1) убрать TF (любой из поддерживаемых в конце строки)
-    // 2) убрать "-SWAP"
-    // 3) убрать "-USDT"
-    // ====== измеритель (если ещё не добавлял) ======
-    const _pairMeasure = document.createElement('span');
-    _pairMeasure.style.cssText = [
-      'position:absolute','left:-9999px','top:-9999px',
-      'visibility:hidden','white-space:nowrap'
-    ].join(';');
-    document.body.appendChild(_pairMeasure);
-    
-    function _measureTextWidth(sampleEl, text){
-      const cs = getComputedStyle(sampleEl);
-      _pairMeasure.style.font = cs.font;
-      _pairMeasure.style.letterSpacing = cs.letterSpacing;
-      _pairMeasure.style.fontWeight = cs.fontWeight;
-      _pairMeasure.style.textTransform = cs.textTransform;
-      _pairMeasure.textContent = text;
-      return _pairMeasure.scrollWidth;
-    }
-    
-    // ====== шаги сокращения ======
-    const PAIR_TRIM_STEPS = [
-      s => s.replace(/\s*·\s*(15m|1h|4h|8h|12h|1d)\s*$/i, ''), // 1) убрать TF в конце
-      s => s.replace(/-SWAP\b/i, ''),                          // 2) убрать -SWAP
-      s => s.replace(/-USDT\b/i, '')                           // 3) убрать -USDT
-    ];
-    
-    // ====== ВНИМАНИЕ: НОВАЯ fitPair() ======
-    function fitPair(){
-      const pairEl = document.getElementById('pair');
-      const leftEl = document.querySelector('.bottombar .left');
-      if (!pairEl || !leftEl) return;
-    
-      // полный текст (берём из data-full, если есть)
-      const full = (pairEl.dataset.full || pairEl.textContent).trim();
-      pairEl.dataset.full = full;
-    
-      // считаем ДОСТУПНУЮ ширину в .left:
-      // ширина контейнера минус ширины всех остальных детей и минус суммарные gap'ы
-      const kids = Array.from(leftEl.children);
-      const gap = parseFloat(getComputedStyle(leftEl).columnGap || getComputedStyle(leftEl).gap) || 0;
-      const othersWidth = kids
-        .filter(n => n !== pairEl)
-        .reduce((acc, n) => acc + n.getBoundingClientRect().width, 0);
-      const gapsWidth = gap * (kids.length - 1);
-      const avail = Math.max(0, leftEl.clientWidth - othersWidth - gapsWidth);
-    
-      // функция «влезает ли текст»
-      const fits = (text) => _measureTextWidth(pairEl, text) <= avail + 1; // +1px на субпиксели
-    
-      // начинаем с полного текста
-      let current = full;
-      if (fits(current)){
-        pairEl.textContent = current;
-        pairEl.title = full;
-        return;
-      }
-    
-      // по шагам обрезаем
-      for (const step of PAIR_TRIM_STEPS){
-        const next = step(current).trim().replace(/\s{2,}/g,' ');
-        if (next !== current){
-          current = next;
-          if (fits(current)) break;
-        }
-      }
-    
-      pairEl.textContent = current;
-      pairEl.title = full;
-    }
-
   </script>
 </body>
 </html>

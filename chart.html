@@ -626,7 +626,7 @@
   // Назначение:
   //   • На старте и при смене TF/нажатии Refresh — запрашивать PNG и подменять <img>.
   (function(){
-    // читаем ?symbol= из URL, если есть
+    // читаем символ из query (?symbol=...), иначе BTC-USDT-SWAP
     const qp = new URLSearchParams(location.search);
     const instFromUrl = (qp.get("symbol") || "").trim() || "BTC-USDT-SWAP";
   

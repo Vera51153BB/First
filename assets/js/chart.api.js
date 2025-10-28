@@ -5,28 +5,26 @@
 // Что делает:
 //   • fetchCandlePng({inst, bar, size, fresh}) → {ok, url}
 //   • setChartSrc(url) — подменяет картинку.
+//   • enabled() — можно ли дергать API (OKX_API_BASE задан).
 // Примечания:
-//   • Адрес API возьмём из window.OKX_API_BASE (задайте в HTML), иначе — относительный "/".
-(function(){
-  const API_BASE = (typeof window.OKX_API_BASE === "string" ? window.OKX_API_BASE.trim() : "");
-  const API_ENABLED = API_BASE.length > 0; // пусто → на стенде API отключаем
+//   • Адрес API берём из window.OKX_API_BASE (укажите в HTML). Если пусто — API не дергаем.
+;(function(){
+  const API_BASE = (window.OKX_API_BASE || "").trim();
 
-  function enabled(){ return API_ENABLED; }
+  function enabled(){
+    // Если базовый адрес API пуст — работаем в «демо-режиме» без сетевых запросов
+    return API_BASE.length > 0;
+  }
 
-    // Если API выключен (стенд/gh-pages) — не ходим в сеть, возвращаем «нет URL».
   async function fetchCandlePng(params){
-    if (!API_ENABLED){
-      console.info("[ChartAPI] API disabled: set window.OKX_API_BASE to enable backend");
-      return { ok:false, url:null };
+    // Защита: не дергать API, если он не настроен (GitHub Pages → 404)
+    if (!enabled()) {
+      return { ok: false, url: "" };
     }
-  
-  async function fetchCandlePng(params){
-  // если API_BASE пуст — резолвим относительно ТЕКУЩЕГО URL (чтобы работало под /First/)
-  const baseHref = API_BASE ? API_BASE : window.location.href;
-  const u = new URL(`${API_BASE}/render/candle`, baseHref);
 
+    const u = new URL(API_BASE.replace(/\/+$/,'') + "/render/candle", API_BASE.startsWith("http") ? undefined : location.origin);
     u.searchParams.set("inst", params.inst);
-    u.searchParams.set("bar",  params.bar || "1h");
+    u.searchParams.set("bar",  params.bar  || "1h");
     u.searchParams.set("size", params.size || "P-M");
     if (params.fresh) u.searchParams.set("fresh", String(params.fresh));
 
@@ -43,5 +41,6 @@
     img.alt = "Candlestick chart";
   }
 
-    window.ChartAPI = { enabled, fetchCandlePng, setChartSrc };
-})();
+  // Экспортируем минимальный API в глобал с безопасной проверкой
+  window.ChartAPI = { enabled, fetchCandlePng, setChartSrc };
+})(); // IIFE корректно закрыт

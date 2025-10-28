@@ -8,7 +8,17 @@
 // Примечания:
 //   • Адрес API возьмём из window.OKX_API_BASE (задайте в HTML), иначе — относительный "/".
 (function(){
-  const API_BASE = (window.OKX_API_BASE || "").replace(/\/+$/,'');
+  const API_BASE = (typeof window.OKX_API_BASE === "string" ? window.OKX_API_BASE.trim() : "");
+  const API_ENABLED = API_BASE.length > 0; // пусто → на стенде API отключаем
+
+  function enabled(){ return API_ENABLED; }
+
+    // Если API выключен (стенд/gh-pages) — не ходим в сеть, возвращаем «нет URL».
+  async function fetchCandlePng(params){
+    if (!API_ENABLED){
+      console.info("[ChartAPI] API disabled: set window.OKX_API_BASE to enable backend");
+      return { ok:false, url:null };
+    }
   
   async function fetchCandlePng(params){
   // если API_BASE пуст — резолвим относительно ТЕКУЩЕГО URL (чтобы работало под /First/)
@@ -33,5 +43,5 @@
     img.alt = "Candlestick chart";
   }
 
-  window.ChartAPI = { fetchCandlePng, setChartSrc };
+    window.ChartAPI = { enabled, fetchCandlePng, setChartSrc };
 })();

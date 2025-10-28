@@ -115,6 +115,10 @@
       const p = e.target.closest('.pill[data-tf]'); if(!p) return;
       $$('#tfGrid .pill').forEach(x=>x.classList.toggle('active', x===p));
       state.tf = p.dataset.tf; renderBars(); hide(dlgTF);
+    
+      // NEW: сохранить выбор TF в БД (или локально при оффлайне)
+      //  • дефолт TF у нас уже 1h, тут сохраняем новый выбор
+      saveUserPref('tf', state.tf);
     });
 
     // legend by indicator click

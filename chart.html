@@ -569,6 +569,13 @@
       const p = e.target.closest('.pill[data-tf]'); if(!p) return;
       $$('#tfGrid .pill').forEach(x=>x.classList.toggle('active', x===p));
       state.tf = p.dataset.tf; renderBars(); hide(dlgTF);
+      
+      // NEW: синхронизируем значение на самой кнопке в топбаре
+      const tfBtnVal = document.getElementById('tfBtnVal');
+      if (tfBtnVal) tfBtnVal.textContent = state.tf;
+
+      renderBars();
+      hide(dlgTF);
     });
 
     // legend by indicator click
@@ -587,6 +594,9 @@
     setTheme('blue');     // по умолчанию — синяя
     state.lastUpdate = Date.now();
     renderBars(); renderTime();
+    // NEW: привести кнопку TF к актуальному state.tf (на будущее, если дефолт меняется из prefs)
+    const tfBtnVal = document.getElementById('tfBtnVal');
+    if (tfBtnVal) tfBtnVal.textContent = state.tf;
 
     // ESC закрывает открытые модалки
     document.addEventListener('keydown', e=>{

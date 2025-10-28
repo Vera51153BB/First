@@ -5,6 +5,10 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
   <title>Charts — Mobile-first UI</title>
   <meta name="color-scheme" content="dark light" />
+  <!-- prefs.js должен грузиться ПЕРВЫМ, чтобы saveUserPref был доступен далее -->
+  <script src="/assets/js/prefs.js?v=1" defer></script>
+  <!-- основной код страницы (вынесен из инлайна) -->
+  <script src="/assets/js/chart.page.js?v=1" defer></script>
   
   <style>
     :root{
@@ -359,10 +363,6 @@
       .pair .tf{ display:none; }
     }
   </style>
-  <!-- prefs.js должен грузиться ПЕРВЫМ, чтобы saveUserPref был доступен далее -->
-  <script src="/assets/js/prefs.js?v=1" defer></script>
-  <!-- основной код страницы (вынесен из инлайна) -->
-  <script src="/assets/js/chart.page.js?v=1" defer></script>
 </head>
 <body>
   <div class="viewport">

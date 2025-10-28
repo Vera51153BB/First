@@ -476,6 +476,16 @@
   <script defer src="assets/js/i18n.js?v=1"></script>
   <!-- prefs.js должен грузиться ПЕРВЫМ, чтобы saveUserPref был доступен далее -->
   <script defer src="assets/js/prefs.js?v=1"></script>
+      <!-- BASE URL для API (замените на свой инстанс) -->
+  <script>
+    // Файл/блок: /First/chart.html — глобальные настройки фронта
+    // Назначение:
+    //   • Указать базовый URL API для assets/js/chart.api.js
+    // Пример: window.OKX_API_BASE = "https://api.example.com";
+    window.OKX_API_BASE = ""; // относительный путь к вашему /render/candle
+  </script>
+  <script defer src="assets/js/chart.api.js?v=1"></script>
+  
     <script>
     // --- состояние (демо)
     const state = {
@@ -609,54 +619,45 @@
       if(e.key==='Escape'){ [dlgSettings, dlgTF, dlgLegend].forEach(hide); }
     });
   </script>
-    <!-- BASE URL для API (замените на свой инстанс) -->
+
   <script>
-    // Файл/блок: /First/chart.html — глобальные настройки фронта
-    // Назначение:
-    //   • Указать базовый URL API для assets/js/chart.api.js
-    // Пример: window.OKX_API_BASE = "https://api.example.com";
-    window.OKX_API_BASE = ""; // относительный путь к вашему /render/candle
-  </script>
-  <script defer src="/assets/js/chart.api.js?v=1"></script>
+  // --- ИНИЦИАЛИЗАЦИЯ ГРАФИКА (связка с API)
+  // Файл/блок: /First/chart.html
+  // Назначение:
+  //   • На старте и при смене TF/нажатии Refresh — запрашивать PNG и подменять <img>.
+  (function(){
+    const DEFAULT_INST = "BTC-USDT-SWAP";     // можно читать из query ?symbol=...
+    const DEFAULT_SIZE = "P-M";               // для мобильного — P-M по ТЗ
+    let currentBar = "1h";                    // дефолт TF
 
-    <script>
-    // --- ИНИЦИАЛИЗАЦИЯ ГРАФИКА (связка с API)
-    // Файл/блок: /First/chart.html
-    // Назначение:
-    //   • На старте и при смене TF/нажатии Refresh — запрашивать PNG и подменять <img>.
-    (function(){
-      const DEFAULT_INST = "BTC-USDT-SWAP";     // можно читать из query ?symbol=...
-      const DEFAULT_SIZE = "P-M";               // для мобильного — P-M по ТЗ
-      let currentBar = "1h";                    // дефолт TF
+    // Хук смены TF (дополните ваш обработчик, если TF меняете в другом месте)
+    document.getElementById('tfGrid')?.addEventListener('click', async (e)=>{
+      const p = e.target.closest('.pill[data-tf]');
+      if (!p) return;
+      currentBar = p.dataset.tf || "1h";
+      try{
+        const { ok, url } = await ChartAPI.fetchCandlePng({ inst: DEFAULT_INST, bar: currentBar, size: DEFAULT_SIZE, fresh: 1 });
+        if (ok) ChartAPI.setChartSrc(url);
+      }catch(_){}
+    });
 
-      // Хук смены TF (дополните ваш обработчик, если TF меняете в другом месте)
-      document.getElementById('tfGrid')?.addEventListener('click', async (e)=>{
-        const p = e.target.closest('.pill[data-tf]');
-        if (!p) return;
-        currentBar = p.dataset.tf || "1h";
-        try{
-          const { ok, url } = await ChartAPI.fetchCandlePng({ inst: DEFAULT_INST, bar: currentBar, size: DEFAULT_SIZE, fresh: 1 });
-          if (ok) ChartAPI.setChartSrc(url);
-        }catch(_){}
-      });
+    // Хук Refresh
+    document.getElementById('btnRefresh')?.addEventListener('click', async ()=>{
+      try{
+        const { ok, url } = await ChartAPI.fetchCandlePng({ inst: DEFAULT_INST, bar: currentBar, size: DEFAULT_SIZE, fresh: 1 });
+        if (ok) ChartAPI.setChartSrc(url);
+      }catch(_){}
+    });
 
-      // Хук Refresh
-      document.getElementById('btnRefresh')?.addEventListener('click', async ()=>{
-        try{
-          const { ok, url } = await ChartAPI.fetchCandlePng({ inst: DEFAULT_INST, bar: currentBar, size: DEFAULT_SIZE, fresh: 1 });
-          if (ok) ChartAPI.setChartSrc(url);
-        }catch(_){}
-      });
-
-      // Первый запуск
-      window.addEventListener('DOMContentLoaded', async ()=>{
-        try{
-          const { ok, url } = await ChartAPI.fetchCandlePng({ inst: DEFAULT_INST, bar: currentBar, size: DEFAULT_SIZE, fresh: 0 });
-          if (ok) ChartAPI.setChartSrc(url);
-        }catch(_){}
-      });
-    })();
-  </script>
+    // Первый запуск
+    window.addEventListener('DOMContentLoaded', async ()=>{
+      try{
+        const { ok, url } = await ChartAPI.fetchCandlePng({ inst: DEFAULT_INST, bar: currentBar, size: DEFAULT_SIZE, fresh: 0 });
+        if (ok) ChartAPI.setChartSrc(url);
+      }catch(_){}
+    });
+  })();
+</script>
 
 </body>
 </html>

@@ -8,10 +8,13 @@
 // Примечания:
 //   • Адрес API возьмём из window.OKX_API_BASE (задайте в HTML), иначе — относительный "/".
 (function(){
-  const API_BASE = window.OKX_API_BASE || "";
-
+  const API_BASE = (window.OKX_API_BASE || "").replace(/\/+$/,'');
+  
   async function fetchCandlePng(params){
-    const u = new URL(API_BASE + "/render/candle", location.origin);
+  // если API_BASE пуст — резолвим относительно ТЕКУЩЕГО URL (чтобы работало под /First/)
+  const baseHref = API_BASE ? API_BASE : window.location.href;
+  const u = new URL(`${API_BASE}/render/candle`, baseHref);
+
     u.searchParams.set("inst", params.inst);
     u.searchParams.set("bar",  params.bar || "1h");
     u.searchParams.set("size", params.size || "P-M");

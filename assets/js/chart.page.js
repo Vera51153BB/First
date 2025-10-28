@@ -143,6 +143,7 @@
     renderBars(); renderTime();
 
     // ESC закрывает открытые модалки
-    document.addEventListener('keydown', e=>{
-      if(e.key==='Escape'){ [dlgSettings, dlgTF, dlgLegend].forEach(hide); }
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') { [dlgSettings, dlgTF, dlgLegend].forEach(hide); }
+    });
 })();

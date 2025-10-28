@@ -650,40 +650,54 @@
     document.getElementById('tfGrid')?.addEventListener('click', async (e)=>{
       const p = e.target.closest('.pill[data-tf]');
       if (!p) return;
+
       currentBar = p.dataset.tf || "1h";
 
-      // если API не настроен (стенд) — не ходим в сеть
-      if (ChartAPI.enabled()){
+      // UX: обновляем подпись на самой кнопке "TF · …"
+      const tfBtnVal = document.getElementById('tfBtnVal');
+      if (tfBtnVal) tfBtnVal.textContent = currentBar;
+
+      // Безопасная попытка запроса PNG (только если API включён)
+      if (window.ChartAPI && window.ChartAPI.enabled()){
         try{
-          const { ok, url } = await ChartAPI.fetchCandlePng({
-            inst: DEFAULT_INST, bar: currentBar, size: DEFAULT_SIZE, fresh: 1
+          const { ok, url } = await window.ChartAPI.fetchCandlePng({
+            inst: DEFAULT_INST,
+            bar:  currentBar,
+            size: DEFAULT_SIZE,
+            fresh: 1
           });
-          if (ok && url) ChartAPI.setChartSrc(url);
+          if (ok) window.ChartAPI.setChartSrc(url);
         }catch(_){}
       }
     });
 
-
-        // Хук Refresh
+    // Хук Refresh
     document.getElementById('btnRefresh')?.addEventListener('click', async ()=>{
-      if (ChartAPI.enabled()){
+      if (window.ChartAPI && window.ChartAPI.enabled()){
         try{
-          const { ok, url } = await ChartAPI.fetchCandlePng({
-            inst: DEFAULT_INST, bar: currentBar, size: DEFAULT_SIZE, fresh: 1
+          const { ok, url } = await window.ChartAPI.fetchCandlePng({
+            inst: DEFAULT_INST,
+            bar:  currentBar,
+            size: DEFAULT_SIZE,
+            fresh: 1
           });
-          if (ok && url) ChartAPI.setChartSrc(url);
+          if (ok) window.ChartAPI.setChartSrc(url);
         }catch(_){}
       }
     });
 
-        // Первый запуск
+    // Первый запуск
+    // Безопасно: не трогаем API, если ChartAPI не собрался ИЛИ OKX_API_BASE пуст
     window.addEventListener('DOMContentLoaded', async ()=>{
-      if (ChartAPI.enabled()){
+      if (window.ChartAPI && window.ChartAPI.enabled()){
         try{
-          const { ok, url } = await ChartAPI.fetchCandlePng({
-            inst: DEFAULT_INST, bar: currentBar, size: DEFAULT_SIZE, fresh: 0
+          const { ok, url } = await window.ChartAPI.fetchCandlePng({
+            inst: DEFAULT_INST,
+            bar:  currentBar,
+            size: DEFAULT_SIZE,
+            fresh: 0
           });
-          if (ok && url) ChartAPI.setChartSrc(url);
+          if (ok) window.ChartAPI.setChartSrc(url);
         }catch(_){}
       }
     });

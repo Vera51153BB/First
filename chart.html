@@ -465,7 +465,8 @@
       <button class="btn close" id="btnCloseLegend">Понятно</button>
     </div>
   </div>
-
+  <!-- prefs.js должен грузиться ПЕРВЫМ, чтобы saveUserPref был доступен далее -->
+  <script defer src="assets/js/prefs.js?v=1"></script>
     <script>
     // --- состояние (демо)
     const state = {

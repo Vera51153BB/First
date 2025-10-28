@@ -118,7 +118,11 @@
     
       // NEW: сохранить выбор TF в БД (или локально при оффлайне)
       //  • дефолт TF у нас уже 1h, тут сохраняем новый выбор
-      saveUserPref('tf', state.tf);
+      if (typeof window.saveUserPref === 'function') {
+        window.saveUserPref('tf', state.tf);
+      } else {
+        console.debug('[prefs] saveUserPref unavailable; only local state updated');
+      }
     });
 
     // legend by indicator click

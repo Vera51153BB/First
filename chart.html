@@ -584,12 +584,13 @@
     $('#tfGrid').addEventListener('click', (e)=>{
       const p = e.target.closest('.pill[data-tf]'); if(!p) return;
       $$('#tfGrid .pill').forEach(x=>x.classList.toggle('active', x===p));
-      state.tf = p.dataset.tf; renderBars(); hide(dlgTF);
+      state.tf = p.dataset.tf;
       
-      // NEW: синхронизируем значение на самой кнопке в топбаре
+      // подпись на кнопке «TF · <val>»
       const tfBtnVal = document.getElementById('tfBtnVal');
       if (tfBtnVal) tfBtnVal.textContent = state.tf;
-
+      
+      // обновляем нижнюю строку («… · <tf>»)
       renderBars();
       hide(dlgTF);
     });
@@ -626,52 +627,67 @@
   // Назначение:
   //   • На старте и при смене TF/нажатии Refresh — запрашивать PNG и подменять <img>.
   (function(){
-    // читаем символ из query (?symbol=...), иначе BTC-USDT-SWAP
+    // читаем ?symbol=BTC-USDT-SWAP (если нет — BTC-USDT-SWAP)
     const qp = new URLSearchParams(location.search);
-    const instFromUrl = (qp.get("symbol") || "").trim() || "BTC-USDT-SWAP";
-  
-    const DEFAULT_INST = instFromUrl;   // теперь по ссылке из бота будет нужная пара
+    const DEFAULT_INST = (qp.get('symbol') || "BTC-USDT-SWAP").trim();  // теперь по ссылке из бота будет нужная пара
     const DEFAULT_SIZE = "P-M";         // для мобильного — P-M по ТЗ
     let currentBar = "1h";              // дефолт TF
   
-    // Синхронизация нижней подписи пары с выбранным instId
-    (function syncPairLabel(){
-      const pairEl = document.getElementById("pair");      // нижняя левая подпись
-      if (!pairEl) return;
-      // показываем «OKX · <instId>»
-      const baseLabel = `OKX · ${DEFAULT_INST}`;
-      // оставляем уже отрисованный TF справа (если есть)
-      const tfText = (document.getElementById("tfBtnVal")?.textContent || currentBar);
-      pairEl.innerHTML = `${baseLabel}<span class="sep-tf"> · </span><span class="tf">${tfText}</span>`;
-    })();
-
+      // обновляем подпись пары в нижней панели (OKX · <inst> · <tf>)
+    const pairEl = document.getElementById('pair');
+    if (pairEl){
+      // оставляем «OKX · …», TF дорисовывается функцией renderBars()
+      // заменяем только середину на выбранный instId
+      // state определён выше в файле — используем его:
+      if (typeof state === 'object'){
+        state.pair = `OKX · ${DEFAULT_INST}`;
+        // сразу перерисуем строку
+        try { renderBars(); } catch(_){}
+      }
+    }
 
     // Хук смены TF (дополните ваш обработчик, если TF меняете в другом месте)
     document.getElementById('tfGrid')?.addEventListener('click', async (e)=>{
       const p = e.target.closest('.pill[data-tf]');
       if (!p) return;
       currentBar = p.dataset.tf || "1h";
-      try{
-        const { ok, url } = await ChartAPI.fetchCandlePng({ inst: DEFAULT_INST, bar: currentBar, size: DEFAULT_SIZE, fresh: 1 });
-        if (ok) ChartAPI.setChartSrc(url);
-      }catch(_){}
+
+      // если API не настроен (стенд) — не ходим в сеть
+      if (ChartAPI.enabled()){
+        try{
+          const { ok, url } = await ChartAPI.fetchCandlePng({
+            inst: DEFAULT_INST, bar: currentBar, size: DEFAULT_SIZE, fresh: 1
+          });
+          if (ok && url) ChartAPI.setChartSrc(url);
+        }catch(_){}
+      }
     });
 
-    // Хук Refresh
+
+        // Хук Refresh
     document.getElementById('btnRefresh')?.addEventListener('click', async ()=>{
-      try{
-        const { ok, url } = await ChartAPI.fetchCandlePng({ inst: DEFAULT_INST, bar: currentBar, size: DEFAULT_SIZE, fresh: 1 });
-        if (ok) ChartAPI.setChartSrc(url);
-      }catch(_){}
+      if (ChartAPI.enabled()){
+        try{
+          const { ok, url } = await ChartAPI.fetchCandlePng({
+            inst: DEFAULT_INST, bar: currentBar, size: DEFAULT_SIZE, fresh: 1
+          });
+          if (ok && url) ChartAPI.setChartSrc(url);
+        }catch(_){}
+      }
     });
 
-    // Первый запуск
+        // Первый запуск
     window.addEventListener('DOMContentLoaded', async ()=>{
-      try{
-        const { ok, url } = await ChartAPI.fetchCandlePng({ inst: DEFAULT_INST, bar: currentBar, size: DEFAULT_SIZE, fresh: 0 });
-        if (ok) ChartAPI.setChartSrc(url);
-      }catch(_){}
+      if (ChartAPI.enabled()){
+        try{
+          const { ok, url } = await ChartAPI.fetchCandlePng({
+            inst: DEFAULT_INST, bar: currentBar, size: DEFAULT_SIZE, fresh: 0
+          });
+          if (ok && url) ChartAPI.setChartSrc(url);
+        }catch(_){}
+      }
     });
+
   })();
 </script>
 

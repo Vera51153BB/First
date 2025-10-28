@@ -359,11 +359,6 @@
       .pair .tf{ display:none; }
     }
   </style>
-
-  <!-- prefs.js должен грузиться ПЕРВЫМ, чтобы saveUserPref был доступен далее -->
-  <script src="assets/js/prefs.js?v=1" defer></script>
-  <!-- основной код страницы (вынесен из инлайна) -->
-  <script src="assets/js/chart.page.js?v=1" defer></script>
   
 </head>
 <body>
@@ -470,5 +465,9 @@
       <button class="btn close" id="btnCloseLegend">Понятно</button>
     </div>
   </div>
+  <!-- prefs.js должен грузиться ПЕРВЫМ, чтобы saveUserPref был доступен далее -->
+  <script defer src="assets/js/prefs.js?v=1"></script>
+  <!-- основной код страницы (вынесен из инлайна) -->
+  <script defer src="assets/js/chart.page.js?v=1"></script>  
 </body>
 </html>

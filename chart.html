@@ -481,8 +481,9 @@
       // Файл/блок: /First/chart.html — глобальные настройки фронта
       // Назначение:
       //   • Указать базовый URL API для assets/js/chart.api.js
-      // Пример: window.OKX_API_BASE = "https://api.example.com";
-      window.OKX_API_BASE = ""; // относительный путь к вашему /render/candle
+    <script>
+      // Адрес API: тот же домен → "/" (same-origin через Nginx)
+      window.OKX_API_BASE = "/";
     </script>
     <script defer src="assets/js/chart.api.js?v=1"></script>
   

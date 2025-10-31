@@ -637,10 +637,26 @@
   //   • На старте и при смене TF/нажатии Refresh — запрашивать PNG и подменять <img>.
   (function(){
     // читаем ?symbol=BTC-USDT-SWAP (если нет — BTC-USDT-SWAP)
+    // const qp = new URLSearchParams(location.search);
+    // const DEFAULT_INST = (qp.get('symbol') || "BTC-USDT-SWAP").trim();  // теперь по ссылке из бота будет нужная пара
+    // const DEFAULT_SIZE = "P-M";         // для мобильного — P-M по ТЗ
+    // let currentBar = "1h";              // дефолт TF
+
+        // --- входные параметры из URL ---
     const qp = new URLSearchParams(location.search);
-    const DEFAULT_INST = (qp.get('symbol') || "BTC-USDT-SWAP").trim();  // теперь по ссылке из бота будет нужная пара
-    const DEFAULT_SIZE = "P-M";         // для мобильного — P-M по ТЗ
-    let currentBar = "1h";              // дефолт TF
+    const DEFAULT_INST = (qp.get("symbol") || "BTC-USDT-SWAP").trim();
+    let currentBar = String(qp.get("bar") || "1h").toLowerCase(); // поддержим ?bar=...
+
+    // --- элементы интерфейса ---
+    const img       = document.getElementById("candle-img");   // <img id="candle-img">
+    const pairEl    = document.getElementById("pair");          // подпись "OKX · <inst> · <tf>"
+    const tfGrid    = document.getElementById("tfGrid");        // контейнер с кнопками timeframe (data-tf)
+    const tfBtnVal  = document.getElementById("tfBtnVal");      // текст на кнопке "TF · ..."
+    // поддержим оба варианта id у кнопки "обновить"
+    const btnRefresh = document.getElementById("btnRefresh") || document.getElementById("btn-refresh");
+
+    const SIZE = "P-M"; // мобильный пресет
+    const DEFAULT_TTL = 900; // секунд — кэш PNG на бэке
   
       // обновляем подпись пары в нижней панели (OKX · <inst> · <tf>)
     const pairEl = document.getElementById('pair');

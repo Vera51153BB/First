@@ -341,7 +341,16 @@
     .legend .dot.ok   { --_mid:var(--ok-mid);   --_deep:var(--ok-deep);   --_glow:var(--ok-glow); }
     .legend .dot.warn { --_mid:var(--warn-mid); --_deep:var(--warn-deep); --_glow:var(--warn-glow); }
     .legend .dot.bad  { --_mid:var(--bad-mid);  --_deep:var(--bad-deep);  --_glow:var(--bad-glow); }
-    
+
+    /* PNG-график заполняет центр, не растягиваясь за рамки */
+    #chartRoot { position: relative; }
+    #candle-img {
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: contain; /* чтобы всё помещалось и не вытягивалось */
+    }
+
     /* ключевые кадры «дыхания» — мягкий пульс ореола */
     @keyframes breathe{
       0%,100% { opacity:.35; transform: scale(var(--breathe-min)); }
@@ -382,12 +391,7 @@
 
     <!-- центральная область: чистая (под реальный график) -->
     <div class="center" id="chartRoot">
-            <!-- центральная область: PNG-график, подменяемый через ChartAPI -->
-      <div class="center" id="chartRoot">
-        <!-- <img id="chart" src="" alt="Candlestick chart" style="display:block; width:100%; height:100%; object-fit:contain;"> -->
-        <img id="candle-img" alt="Candlestick chart" />
-      </div>
-      
+      <img id="candle-img" alt="Candlestick chart">
     </div>
 
     <div class="divider"></div>
@@ -630,33 +634,17 @@
     });
   </script>
 
-  <script>
+  <!--- <script>
   // --- ИНИЦИАЛИЗАЦИЯ ГРАФИКА (связка с API)
   // Файл/блок: /First/chart.html
   // Назначение:
   //   • На старте и при смене TF/нажатии Refresh — запрашивать PNG и подменять <img>.
   (function(){
-    // читаем ?symbol=BTC-USDT-SWAP (если нет — BTC-USDT-SWAP)
-    // const qp = new URLSearchParams(location.search);
-    // const DEFAULT_INST = (qp.get('symbol') || "BTC-USDT-SWAP").trim();  // теперь по ссылке из бота будет нужная пара
-    // const DEFAULT_SIZE = "P-M";         // для мобильного — P-M по ТЗ
-    // let currentBar = "1h";              // дефолт TF
-
-        // --- входные параметры из URL ---
+    читаем ?symbol=BTC-USDT-SWAP (если нет — BTC-USDT-SWAP)
     const qp = new URLSearchParams(location.search);
-    const DEFAULT_INST = (qp.get("symbol") || "BTC-USDT-SWAP").trim();
-    let currentBar = String(qp.get("bar") || "1h").toLowerCase(); // поддержим ?bar=...
-
-    // --- элементы интерфейса ---
-    const img       = document.getElementById("candle-img");   // <img id="candle-img">
-    const pairEl    = document.getElementById("pair");          // подпись "OKX · <inst> · <tf>"
-    const tfGrid    = document.getElementById("tfGrid");        // контейнер с кнопками timeframe (data-tf)
-    const tfBtnVal  = document.getElementById("tfBtnVal");      // текст на кнопке "TF · ..."
-    // поддержим оба варианта id у кнопки "обновить"
-    const btnRefresh = document.getElementById("btnRefresh") || document.getElementById("btn-refresh");
-
-    const SIZE = "P-M"; // мобильный пресет
-    const DEFAULT_TTL = 900; // секунд — кэш PNG на бэке
+    const DEFAULT_INST = (qp.get('symbol') || "BTC-USDT-SWAP").trim();  // теперь по ссылке из бота будет нужная пара
+    const DEFAULT_SIZE = "P-M";         // для мобильного — P-M по ТЗ
+    let currentBar = "1h";              // дефолт TF
   
       // обновляем подпись пары в нижней панели (OKX · <inst> · <tf>)
     const pairEl = document.getElementById('pair');
@@ -728,80 +716,86 @@
     });
 
   })();
-</script>
-  <!--- <script>
-  // --- ИНИЦИАЛИЗАЦИЯ ГРАФИКА (PNG от бэкенда) ---
-  // Файл/блок: /chart.html (ранее /First/chart.html)
-  // Что делает:
-  //   • читает ?symbol=... (дефолт BTC-USDT-SWAP) и опц. ?bar=...
-  //   • подставляет PNG в <img id="candle-img">
-  //   • обновляет картинку при смене TF (#tfGrid) и по кнопке Refresh (#btnRefresh / #btn-refresh)
+</script> --->
+<script>
+  // --- ИНИЦИАЛИЗАЦИЯ ГРАФИКА (связка с API)
+  // Файл/блок: /First/chart.html
+  // Назначение:
+  //   • На старте и при смене TF/нажатии Refresh — запрашивать PNG и подменять <img>.
   (function () {
     // --- входные параметры из URL ---
     const qp = new URLSearchParams(location.search);
     const DEFAULT_INST = (qp.get("symbol") || "BTC-USDT-SWAP").trim();
-    let currentBar = String(qp.get("bar") || "1h").toLowerCase(); // поддержим ?bar=...
+    let currentBar = String(qp.get("bar") || (typeof state === "object" ? state.tf : "1h") || "1h").toLowerCase();
 
     // --- элементы интерфейса ---
-    const img       = document.getElementById("candle-img");   // <img id="candle-img">
-    const pairEl    = document.getElementById("pair");          // подпись "OKX · <inst> · <tf>"
-    const tfGrid    = document.getElementById("tfGrid");        // контейнер с кнопками timeframe (data-tf)
-    const tfBtnVal  = document.getElementById("tfBtnVal");      // текст на кнопке "TF · ..."
-    // поддержим оба варианта id у кнопки "обновить"
+    const img        = document.getElementById("candle-img");
+    const pairEl     = document.getElementById("pair");
+    const tfGrid     = document.getElementById("tfGrid");
+    const tfBtnVal   = document.getElementById("tfBtnVal");
     const btnRefresh = document.getElementById("btnRefresh") || document.getElementById("btn-refresh");
 
-    const SIZE = "P-M"; // мобильный пресет
-    const DEFAULT_TTL = 900; // секунд — кэш PNG на бэке
+    const SIZE        = "P-M";   // мобильный пресет
+    const DEFAULT_TTL = 900;     // сек — TTL PNG на бэке
 
-    // вспомогательное: обновить подпись внизу
-    function updatePairLabel() {
-      if (pairEl) pairEl.textContent = `OKX · ${DEFAULT_INST} · ${currentBar}`;
-      if (tfBtnVal) tfBtnVal.textContent = currentBar;
+    // --- синхронизация подписи внизу ---
+    if (typeof state === "object") {
+      state.pair = `OKX · ${DEFAULT_INST}`;
+      state.tf   = currentBar;
+      try { renderBars(); } catch { /* no-op */ }
+      if (tfBtnVal) tfBtnVal.textContent = state.tf;
     }
 
-    // установить src для <img>, ttl=0 — пробить PNG-кэш
-    function setChartPng(ttl = DEFAULT_TTL) {
-      // функция candleUrl(inst, bar, size, ttl) должна быть объявлена ранее (в вашем верхнем блоке)
-      // на случай отсутствия — подстрахуемся локальной сборкой URL
-      const base = (typeof candleUrl === "function")
-        ? candleUrl(DEFAULT_INST, currentBar, SIZE, ttl)
-        : ( (window.OKX_API_BASE || "/") + "render/candle.png?" +
-            new URLSearchParams({
-              inst: DEFAULT_INST,
-              bar: currentBar,
-              size: SIZE,
-              ttl: String(ttl)
-            }).toString()
-          );
+    // --- универсальная подгрузка PNG (ChartAPI или прямой URL) ---
+    async function loadPng(fresh) {
+      const bar = String(currentBar || "1h").toLowerCase();
 
-      if (img) {
-        // при ttl=0 добавим cache-buster, чтобы браузер точно перезагрузил
-        img.src = ttl === 0 ? (base + "&_ts=" + Date.now()) : base;
-        img.alt = "Candlestick chart";
+      try {
+        // 1) Если есть ChartAPI и он включён — используем его (он сам выставит src)
+        if (window.ChartAPI && window.ChartAPI.enabled && window.ChartAPI.enabled()) {
+          const { ok, url } = await window.ChartAPI.fetchCandlePng({
+            inst: DEFAULT_INST,
+            bar,
+            size: SIZE,
+            fresh: fresh ? 1 : 0,
+          });
+          if (ok && window.ChartAPI.setChartSrc) {
+            window.ChartAPI.setChartSrc(url);
+            return;
+          }
+        }
+
+        // 2) Fallback: строим URL напрямую и ставим на <img>
+        const url = candleUrl(DEFAULT_INST, bar, SIZE, fresh ? 0 : DEFAULT_TTL);
+        // timestamp для обхода CDN-кэша при fresh
+        img.src = url + (fresh ? `&_ts=${Date.now()}` : "");
+      } catch {
+        // тихо игнорируем; при желании можно показать toast
       }
     }
 
-    // --- первичная отрисовка ---
-    updatePairLabel();
-    setChartPng(DEFAULT_TTL);
-
-    // --- смена TF кликом по пилюлям ---
+    // --- обработчик смены TF ---
     tfGrid?.addEventListener("click", (e) => {
-      const p = e.target.closest(".pill[data-tf]");
-      if (!p) return;
-      currentBar = String(p.dataset.tf || "1h").toLowerCase();
-      updatePairLabel();
-      setChartPng(0); // пробиваем кэш на смене TF
+      const pill = e.target.closest(".pill[data-tf]");
+      if (!pill) return;
+
+      currentBar = String(pill.dataset.tf || "1h").toLowerCase();
+
+      if (tfBtnVal) tfBtnVal.textContent = currentBar;
+      if (typeof state === "object") {
+        state.tf = currentBar;
+        try { renderBars(); } catch { /* no-op */ }
+      }
+      loadPng(true);
     });
 
-    // --- ручной refresh (если кнопка есть в DOM) ---
-    btnRefresh?.addEventListener("click", () => setChartPng(0));
+    // --- обработчик Refresh ---
+    btnRefresh?.addEventListener("click", () => loadPng(true));
 
-    // // Опционально: автообновление раз в минуту
-    // setInterval(() => setChartPng(0), 60_000);
+    // --- первый запуск ---
+    window.addEventListener("DOMContentLoaded", () => loadPng(false));
   })();
-</script> --->
-
+</script>
 
 </body>
 </html>

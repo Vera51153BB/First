@@ -1,46 +1,65 @@
-// -*- coding: utf-8 -*-
 // Файл: assets/js/chart.api.js
 // Назначение:
-//   • Тонкий клиент для вызова /render/candle и подмены <img id="chart"> в центре.
-// Что делает:
-//   • fetchCandlePng({inst, bar, size, fresh}) → {ok, url}
-//   • setChartSrc(url) — подменяет картинку.
-//   • enabled() — можно ли дергать API (OKX_API_BASE задан).
-// Примечания:
-//   • Адрес API берём из window.OKX_API_BASE (укажите в HTML). Если пусто — API не дергаем.
-;(function(){
-  const API_BASE = (window.OKX_API_BASE || "").trim();
+//   Обёртка над беком для получения URL PNG и подстановки <img src=...>
 
-  function enabled(){
-    // Если базовый адрес API пуст — работаем в «демо-режиме» без сетевых запросов
-    return API_BASE.length > 0;
+(function (g) {
+  "use strict";
+
+  const BASE = (typeof window.OKX_API_BASE === "string" && window.OKX_API_BASE.trim() !== "/")
+    ? window.OKX_API_BASE
+    : "/"; // по умолчанию same-origin
+
+  function qs(obj) {
+    const p = new URLSearchParams();
+    Object.entries(obj).forEach(([k, v]) => { if (v !== undefined && v !== null) p.set(k, String(v)); });
+    return p.toString();
   }
 
-  async function fetchCandlePng(params){
-    // Защита: не дергать API, если он не настроен (GitHub Pages → 404)
-    if (!enabled()) {
-      return { ok: false, url: "" };
+  async function fetchJson(url) {
+    const r = await fetch(url, { credentials: "omit", cache: "no-cache" });
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    return r.json();
+  }
+
+  // Публичные методы
+  const ChartAPI = {
+    enabled() {
+      // если BASE пуст/не задан — считаем выключенным
+      return typeof BASE === "string" && BASE.length > 0;
+    },
+
+    /**
+     * Запросить URL PNG. Сначала пытаемся JSON (/render/candle),
+     * при ошибке — fallback на прямую картинку (/render/candle.png).
+     */
+    async fetchCandlePng({ inst, bar = "1h", size = "P-M", fresh = 0 }) {
+      // 1) JSON-вариант
+      const url1 = `${BASE}render/candle?${qs({ inst, bar: String(bar).toLowerCase(), size, fresh })}`;
+      try {
+        const j = await fetchJson(url1);
+        if (j && j.ok && j.url) {
+          return { ok: true, url: j.url, via: "json" };
+        }
+      } catch (_) { /* fallthrough */ }
+
+      // 2) fallback: прямая картинка с редиректом
+      const url2 = `${BASE}render/candle.png?${qs({ inst, bar: String(bar).toLowerCase(), size, fresh })}`;
+      return { ok: true, url: url2, via: "redirect" };
+    },
+
+    /** Установить src на <img id="candle-img"> */
+    setChartSrc(pngUrl) {
+      const img = document.getElementById("candle-img");
+      if (!img) return;
+      img.src = pngUrl;
+      img.alt = "Candlestick chart";
+      // гарантируем корректную вписываемость
+      img.style.display = "block";
+      img.style.width = "100%";
+      img.style.height = "100%";
+      img.style.objectFit = "contain";
     }
+  };
 
-    const u = new URL(API_BASE.replace(/\/+$/,'') + "/render/candle", API_BASE.startsWith("http") ? undefined : location.origin);
-    u.searchParams.set("inst", params.inst);
-    u.searchParams.set("bar",  params.bar  || "1h");
-    u.searchParams.set("size", params.size || "P-M");
-    if (params.fresh) u.searchParams.set("fresh", String(params.fresh));
-
-    const r = await fetch(u.toString(), { method: "GET" });
-    if (!r.ok) throw new Error("HTTP " + r.status);
-    return r.json(); // { ok, url }
-  }
-
-  function setChartSrc(url){
-    // В центре страницы должен быть <img id="chart"> (см. правку chart.html)
-    const img = document.getElementById("chart");
-    if (!img) return;
-    img.src = url;
-    img.alt = "Candlestick chart";
-  }
-
-  // Экспортируем минимальный API в глобал с безопасной проверкой
-  window.ChartAPI = { enabled, fetchCandlePng, setChartSrc };
-})(); // IIFE корректно закрыт
+  g.ChartAPI = ChartAPI;
+})(window);

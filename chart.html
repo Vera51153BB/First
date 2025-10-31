@@ -477,13 +477,31 @@
     <!-- prefs.js должен грузиться ПЕРВЫМ, чтобы saveUserPref был доступен далее -->
     <script defer src="assets/js/prefs.js?v=1"></script>
         <!-- BASE URL для API (замените на свой инстанс) -->
-    <script>
+    <!-- <script>
       // Файл/блок: /First/chart.html — глобальные настройки фронта
       // Назначение:
       //   • Указать базовый URL API для assets/js/chart.api.js (same-origin через Nginx)
       // Важно: без завершающего слэша → "" (иначе будет //render/candle).
       window.OKX_API_BASE = "";
+    </script> -->
+
+    <script>
+      // База — тот же домен (через Nginx/Cloudflare)
+      window.OKX_API_BASE = "/";
+    
+      function candleUrl(inst, bar, size="P-M", ttl=900) {
+        // bar должен быть в нижнем регистре: 1h, 4h, 1d (бек это принимает)
+        const q = new URLSearchParams({ inst, bar: bar.toLowerCase(), size, ttl: String(ttl) });
+        return window.OKX_API_BASE + "render/candle.png?" + q.toString();
+      }
+    
+      // Пример: проставляем src на картинку
+      const inst = "BTC-USDT-SWAP";
+      const bar  = "1h";
+      document.getElementById("candle-img").src = candleUrl(inst, bar);
     </script>
+
+  
 
     <script defer src="assets/js/chart.api.js?v=1"></script>
   

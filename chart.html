@@ -389,10 +389,15 @@
 
     <div class="divider"></div>
 
-    <!-- центральная область: чистая (под реальный график) -->
+    <!-- центральная область: чистая (под реальный график)
     <div class="center" id="chartRoot">
       <img id="candle-img" alt="Candlestick chart">
+    </div>  -->
+        <!-- центральная область: ВРЕМЕННО показываем JSON-ответ -->
+    <div class="center" id="chartRoot">
+      <pre id="json-view" style="margin:0; padding:12px; height:100%; overflow:auto; white-space:pre-wrap; word-break:break-word;"></pre>
     </div>
+
 
     <div class="divider"></div>
 
@@ -796,6 +801,58 @@
     window.addEventListener("DOMContentLoaded", () => loadPng(false));
   })();
 </script>
+
+<script>
+  // --- ВРЕМЕННЫЙ ОТЛАДОЧНЫЙ БЛОК: вывод JSON вместо графика -----------------
+  // Файл/блок: /First/chart.html (debug-json)
+  // Что делает:
+  //   • На старте, при смене TF и при нажатии Refresh — делает fetch JSON
+  //     на /render/candle (лёгкий JSON-эндпоинт) и печатает в <pre id="json-view">.
+  (function(){
+    // поддержка ?symbol=... и ?bar=...
+    const qp   = new URLSearchParams(location.search);
+    const inst = (qp.get("symbol") || "BTC-USDT-SWAP").trim();
+    let   bar  = String(qp.get("bar") || "1h").toLowerCase();
+
+    const out  = document.getElementById("json-view");
+
+    function show(obj){
+      if (!out) return;
+      out.textContent = JSON.stringify(obj, null, 2);
+    }
+
+    async function load(){
+      try{
+        // /render/candle даёт {"ok":true,"url":"/render/candle.png?..."}
+        const url = window.OKX_API_BASE + "render/candle"
+                  + "?inst=" + encodeURIComponent(inst)
+                  + "&bar="  + encodeURIComponent(bar)
+                  + "&size=P-M";
+        const res = await fetch(url, { cache: "no-store" });
+        const data = await res.json().catch(()=> ({}));
+        show({ endpoint: "/render/candle", status: res.status, ok: res.ok, data });
+      }catch(e){
+        show({ endpoint: "/render/candle", error: String(e) });
+      }
+    }
+
+    // Хуки на TF и Refresh — перезагружаем JSON
+    document.getElementById("tfGrid")?.addEventListener("click", (e)=>{
+      const p = e.target.closest(".pill[data-tf]");
+      if (!p) return;
+      bar = String(p.dataset.tf || "1h").toLowerCase();
+      load();
+    });
+
+    document.getElementById("btnRefresh")?.addEventListener("click", load);
+
+    // Первый запуск
+    window.addEventListener("DOMContentLoaded", load);
+  })();
+  // ---------------------------------------------------------------------------
+</script>
+
+  
 
 </body>
 </html>

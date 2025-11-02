@@ -753,6 +753,12 @@
 
     // --- элементы интерфейса ---
     const img        = document.getElementById("candle-img");
+          // Сброс возможных inline-стилей, которые могли остаться от старой версии
+      if (img){
+        img.style.height = 'auto';
+        img.style.width  = '100%';
+        img.style.objectFit = 'contain';
+      }
     const pairEl     = document.getElementById("pair");
     const tfGrid     = document.getElementById("tfGrid");
     const tfBtnVal   = document.getElementById("tfBtnVal");

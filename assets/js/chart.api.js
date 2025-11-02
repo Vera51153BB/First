@@ -32,31 +32,35 @@
      * Запросить URL PNG. Сначала пытаемся JSON (/render/candle),
      * при ошибке — fallback на прямую картинку (/render/candle.png).
      */
-    async fetchCandlePng({ inst, bar = "1h", size = "P-M", fresh = 0 }) {
-      // 1) JSON-вариант
-      const url1 = `${BASE}render/candle?${qs({ inst, bar: String(bar).toLowerCase(), size, fresh })}`;
+    // RU: добавили scale (по умолчанию 2) и пробрасываем в оба запроса
+    // EN: add `scale` (defaults to 2) and pass it to both requests
+    async function fetchCandlePng({ inst, bar = "1h", size = "P-M", fresh = 0, scale = 2 }) {
+      const params = { inst, bar: String(bar).toLowerCase(), size, fresh, scale };
+    
+      const url1 = `${BASE}render/candle?${qs(params)}`;
       try {
         const j = await fetchJson(url1);
         if (j && j.ok && j.url) {
           return { ok: true, url: j.url, via: "json" };
         }
       } catch (_) { /* fallthrough */ }
-
-      // 2) fallback: прямая картинка с редиректом
-      const url2 = `${BASE}render/candle.png?${qs({ inst, bar: String(bar).toLowerCase(), size, fresh })}`;
+    
+      const url2 = `${BASE}render/candle.png?${qs(params)}`;
       return { ok: true, url: url2, via: "redirect" };
     },
 
-    /** Установить src на <img id="candle-img"> */
+        /** Установить src на <img id="candle-img"> */
     setChartSrc(pngUrl) {
       const img = document.getElementById("candle-img");
       if (!img) return;
       img.src = pngUrl;
       img.alt = "Candlestick chart";
-      // гарантируем корректную вписываемость
+    
+      // RU: не трогаем высоту, даём работать CSS (width:100%; height:auto)
+      // EN: let CSS handle sizing (width:100%; height:auto)
       img.style.display = "block";
       img.style.width = "100%";
-      img.style.height = "100%";
+      img.style.height = "auto";
       img.style.objectFit = "contain";
     }
   };

@@ -115,10 +115,10 @@
     .center{
       position: relative;
       background: var(--bg);
-      display: flex;              /* растягиваем содержимое на всю строку */
-      align-items: stretch;
-      justify-content: center;
-      overflow: hidden;           /* без скролла внутри центра */
+      display: flex;
+      align-items: stretch;   /* по поперечной оси — во всю высоту строки */
+      /* justify-content: center;  ← убрать */
+      overflow: hidden;
       padding: 0;
     }
 
@@ -365,10 +365,12 @@
     
     #candle-img{
       display:block;
-      width:100% !important;      /* ширина во всю доступную */
-      height:auto !important;      /* сохраняем пропорции */
-      max-height:100%;             /* не вылезаем из центра по высоте */
-      object-fit:contain;          /* без обрезки */
+      width:100% !important;      /* во всю ширину строки */
+      height:auto !important;     /* пропорции сохраняем */
+      max-height:100%;
+      object-fit:contain;
+      flex: 1 1 auto;             /* RU: разрешаем flex-растяжение по главной оси */
+      min-width:0;                /* страховка от «переполнения» */
     }
 
     /* ключевые кадры «дыхания» — мягкий пульс ореола */

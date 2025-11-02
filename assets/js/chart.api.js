@@ -34,18 +34,20 @@
      */
     // RU: добавили scale (по умолчанию 2) и пробрасываем в оба запроса
     // EN: add `scale` (defaults to 2) and pass it to both requests
-    async function fetchCandlePng({ inst, bar = "1h", size = "P-M", fresh = 0, scale = 2 }) {
-      const params = { inst, bar: String(bar).toLowerCase(), size, fresh, scale };
-    
-      const url1 = `${BASE}render/candle?${qs(params)}`;
+    async fetchCandlePng({ inst, bar = "1h", size = "P-M", fresh = 0, scale = 2 }) {
+      const _bar = String(bar).toLowerCase();
+
+      // 1) JSON-вариант
+      const url1 = `${BASE}render/candle?${qs({ inst, bar: _bar, size, fresh, scale })}`;
       try {
         const j = await fetchJson(url1);
         if (j && j.ok && j.url) {
           return { ok: true, url: j.url, via: "json" };
         }
       } catch (_) { /* fallthrough */ }
-    
-      const url2 = `${BASE}render/candle.png?${qs(params)}`;
+
+      // 2) fallback: прямая картинка
+      const url2 = `${BASE}render/candle.png?${qs({ inst, bar: _bar, size, fresh, scale })}`;
       return { ok: true, url: url2, via: "redirect" };
     },
 

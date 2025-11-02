@@ -112,12 +112,14 @@
       border-bottom: 1px solid rgba(255,255,255,.08);
     }
 
-    /* центральная область — чистое поле для реального графика */
     .center{
       position: relative;
       background: var(--bg);
-      min-height: 0;   /* ВАЖНО: разрешаем центру ужиматься внутри грид-строки */
-      overflow: hidden;/* чтобы ничего не раздвигало контейнер */
+      display: flex;              /* растягиваем содержимое на всю строку */
+      align-items: stretch;
+      justify-content: center;
+      overflow: hidden;           /* без скролла внутри центра */
+      padding: 0;
     }
 
     /* нижняя панель — постоянный резерв 12px справа */

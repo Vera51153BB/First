@@ -81,10 +81,13 @@
     }
 
     .viewport{
-      height:100svh;
-      display:grid;
+      /* фиксируем контейнер на весь вьюпорт без участия svh,
+         чтобы не дергалось от адресной строки/клавиатуры */
+      position: fixed;
+      inset: 0;
+      display: grid;
       grid-template-rows: var(--h) 1px 1fr 1px var(--h); /* верх, разделитель, центр, разделитель, низ */
-      background:var(--bg);
+      background: var(--bg);
     }
     
     @media (max-height:768px){ .viewport{ --h:var(--hbar-min); } }
@@ -99,13 +102,23 @@
     }
 
     /* верхняя панель-подложка (без контента по ТЗ) */
+    /* верхняя панель */
     .topbar{
-      background:linear-gradient(180deg,var(--panel),var(--panel2));
-      border-bottom:1px solid rgba(255,255,255,.08);
+      height: var(--h);                           /* ← фиксируем высоту строки */
+      display: flex; align-items: center;         /* ← вертикальное выравнивание контента */
+      padding-left: var(--padX);
+      padding-right: 12px;                        /* симметрия с нижней панелью */
+      background: linear-gradient(180deg,var(--panel),var(--panel2));
+      border-bottom: 1px solid rgba(255,255,255,.08);
     }
 
     /* центральная область — чистое поле для реального графика */
-    .center{ position:relative; background:var(--bg); }
+    .center{
+      position: relative;
+      background: var(--bg);
+      min-height: 0;   /* ВАЖНО: разрешаем центру ужиматься внутри грид-строки */
+      overflow: hidden;/* чтобы ничего не раздвигало контейнер */
+    }
 
     /* нижняя панель — постоянный резерв 12px справа */
     .bottombar{
@@ -343,7 +356,11 @@
     .legend .dot.bad  { --_mid:var(--bad-mid);  --_deep:var(--bad-deep);  --_glow:var(--bad-glow); }
 
     /* PNG-график заполняет центр, не растягиваясь за рамки */
-    #chartRoot { position: relative; }
+    #chartRoot {
+      position: relative;
+      height: 100%;   /* ВАЖНО: чтобы <img> с height:100% реально заполнял центр */
+    }
+    
     #candle-img {
       display: block;
       width: 100%;

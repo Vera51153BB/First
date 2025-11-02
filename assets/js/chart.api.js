@@ -55,16 +55,22 @@
     setChartSrc(pngUrl) {
       const img = document.getElementById("candle-img");
       if (!img) return;
+
+      // Сбрасываем «старые» инлайн-стили (если когда-то ставили height:100%)
+      try {
+        img.style.removeProperty && img.style.removeProperty("height");
+        img.style.removeProperty && img.style.removeProperty("max-height");
+        // не трогаем width/object-fit, зададим ниже явно
+      } catch(_) {}
+
       img.src = pngUrl;
       img.alt = "Candlestick chart";
-    
-      // ВАЖНО: ширина — 100%, высота — auto (чтобы реально занять всю ширину),
-      // maxHeight не задаём (пусть контейнер режет высоту overflow'ом).
+
+      // Вписываем по ширине: ширина 100%, высота auto
       img.style.display   = "block";
       img.style.width     = "100%";
       img.style.height    = "auto";
       img.style.objectFit = "contain";
-      img.style.removeProperty?.("max-height");
     }
   };
 

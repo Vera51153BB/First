@@ -363,12 +363,12 @@
       /* height: 100%;    ВАЖНО: чтобы <img> с height:100% реально заполнял центр */
     }
     
-    #candle-img {
-      display: block;
-      width: 100%;     /* всегда во всю ширину контейнера */
-      height: auto;    /* сохраняем пропорции, первична ширина */
-      max-height: 100%;/* чтобы не вылезало за центр по высоте */
-      object-fit: contain;
+    #candle-img{
+      display:block;
+      width:100% !important;      /* ширина во всю доступную */
+      height:auto !important;      /* сохраняем пропорции */
+      max-height:100%;             /* не вылезаем из центра по высоте */
+      object-fit:contain;          /* без обрезки */
     }
 
     /* ключевые кадры «дыхания» — мягкий пульс ореола */
@@ -511,12 +511,13 @@
       window.OKX_API_BASE = "/";
     
       // Построение URL PNG эндпоинта
-      function candleUrl(inst, bar, size = "P-M", ttl = 900) {
+      function candleUrl(inst, bar, size = "P-M", ttl = 900, scale = 2) {
         const q = new URLSearchParams({
           inst: inst,
-          bar: String(bar || "1h").toLowerCase(), // бек принимает нижний регистр
+          bar: String(bar || "1h").toLowerCase(),
           size: size,
-          ttl: String(ttl)
+          ttl: String(ttl),
+          scale: String(scale)   // <-- масштаб отрисовки на сервере
         });
         return window.OKX_API_BASE + "render/candle.png?" + q.toString();
       }
@@ -658,90 +659,6 @@
       if(e.key==='Escape'){ [dlgSettings, dlgTF, dlgLegend].forEach(hide); }
     });
   </script>
-
-  <!--- <script>
-  // --- ИНИЦИАЛИЗАЦИЯ ГРАФИКА (связка с API)
-  // Файл/блок: /First/chart.html
-  // Назначение:
-  //   • На старте и при смене TF/нажатии Refresh — запрашивать PNG и подменять <img>.
-  (function(){
-    читаем ?symbol=BTC-USDT-SWAP (если нет — BTC-USDT-SWAP)
-    const qp = new URLSearchParams(location.search);
-    const DEFAULT_INST = (qp.get('symbol') || "BTC-USDT-SWAP").trim();  // теперь по ссылке из бота будет нужная пара
-    const DEFAULT_SIZE = "P-M";         // для мобильного — P-M по ТЗ
-    let currentBar = "1h";              // дефолт TF
-  
-      // обновляем подпись пары в нижней панели (OKX · <inst> · <tf>)
-    const pairEl = document.getElementById('pair');
-    if (pairEl){
-      // оставляем «OKX · …», TF дорисовывается функцией renderBars()
-      // заменяем только середину на выбранный instId
-      // state определён выше в файле — используем его:
-      if (typeof state === 'object'){
-        state.pair = `OKX · ${DEFAULT_INST}`;
-        // сразу перерисуем строку
-        try { renderBars(); } catch(_){}
-      }
-    }
-
-    // Хук смены TF (дополните ваш обработчик, если TF меняете в другом месте)
-    document.getElementById('tfGrid')?.addEventListener('click', async (e)=>{
-      const p = e.target.closest('.pill[data-tf]');
-      if (!p) return;
-
-      currentBar = p.dataset.tf || "1h";
-
-      // UX: обновляем подпись на самой кнопке "TF · …"
-      const tfBtnVal = document.getElementById('tfBtnVal');
-      if (tfBtnVal) tfBtnVal.textContent = currentBar;
-
-      // Безопасная попытка запроса PNG (только если API включён)
-      if (window.ChartAPI && window.ChartAPI.enabled()){
-        try{
-          const { ok, url } = await window.ChartAPI.fetchCandlePng({
-            inst: DEFAULT_INST,
-            bar:  currentBar,
-            size: DEFAULT_SIZE,
-            fresh: 1
-          });
-          if (ok) window.ChartAPI.setChartSrc(url);
-        }catch(_){}
-      }
-    });
-
-    // Хук Refresh
-    document.getElementById('btnRefresh')?.addEventListener('click', async ()=>{
-      if (window.ChartAPI && window.ChartAPI.enabled()){
-        try{
-          const { ok, url } = await window.ChartAPI.fetchCandlePng({
-            inst: DEFAULT_INST,
-            bar:  currentBar,
-            size: DEFAULT_SIZE,
-            fresh: 1
-          });
-          if (ok) window.ChartAPI.setChartSrc(url);
-        }catch(_){}
-      }
-    });
-
-    // Первый запуск
-    // Безопасно: не трогаем API, если ChartAPI не собрался ИЛИ OKX_API_BASE пуст
-    window.addEventListener('DOMContentLoaded', async ()=>{
-      if (window.ChartAPI && window.ChartAPI.enabled()){
-        try{
-          const { ok, url } = await window.ChartAPI.fetchCandlePng({
-            inst: DEFAULT_INST,
-            bar:  currentBar,
-            size: DEFAULT_SIZE,
-            fresh: 0
-          });
-          if (ok) window.ChartAPI.setChartSrc(url);
-        }catch(_){}
-      }
-    });
-
-  })();
-</script> --->
 <script>
   // --- ИНИЦИАЛИЗАЦИЯ ГРАФИКА (связка с API)
   // Файл/блок: /First/chart.html
@@ -789,15 +706,16 @@
             bar,
             size: SIZE,
             fresh: fresh ? 1 : 0,
+            scale: 2               // <— добавили масштаб
           });
           if (ok && window.ChartAPI.setChartSrc) {
             window.ChartAPI.setChartSrc(url);
             return;
           }
         }
-
+        
         // 2) Fallback: строим URL напрямую и ставим на <img>
-        const url = candleUrl(DEFAULT_INST, bar, SIZE, fresh ? 0 : DEFAULT_TTL);
+        const url = candleUrl(DEFAULT_INST, bar, SIZE, fresh ? 0 : DEFAULT_TTL, 2);
         // timestamp для обхода CDN-кэша при fresh
         img.src = url + (fresh ? `&_ts=${Date.now()}` : "");
       } catch {

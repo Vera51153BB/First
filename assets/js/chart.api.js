@@ -51,19 +51,20 @@
       return { ok: true, url: url2, via: "redirect" };
     },
 
-        /** Установить src на <img id="candle-img"> */
+    /** Установить src на <img id="candle-img"> */
     setChartSrc(pngUrl) {
       const img = document.getElementById("candle-img");
       if (!img) return;
       img.src = pngUrl;
       img.alt = "Candlestick chart";
     
-      // RU: не трогаем высоту, даём работать CSS (width:100%; height:auto)
-      // EN: let CSS handle sizing (width:100%; height:auto)
-      img.style.display = "block";
-      img.style.width = "100%";
-      img.style.height = "auto";
+      // ВАЖНО: ширина — 100%, высота — auto (чтобы реально занять всю ширину),
+      // maxHeight не задаём (пусть контейнер режет высоту overflow'ом).
+      img.style.display   = "block";
+      img.style.width     = "100%";
+      img.style.height    = "auto";
       img.style.objectFit = "contain";
+      img.style.removeProperty?.("max-height");
     }
   };
 

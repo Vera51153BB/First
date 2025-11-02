@@ -117,7 +117,7 @@
       background: var(--bg);
       display: flex;
       align-items: stretch;   /* по поперечной оси — во всю высоту строки */
-      /* justify-content: center;  ← убрать */
+      justify-content: center;  /*  ← убрать */
       overflow: hidden;
       padding: 0;
     }
@@ -363,14 +363,15 @@
       /* height: 100%;    ВАЖНО: чтобы <img> с height:100% реально заполнял центр */
     }
     
+    /* PNG-график: во всю ширину, допускаем выход по высоте (срежется контейнером) */
     #candle-img{
-      display:block;
-      width:100% !important;      /* во всю ширину строки */
-      height:auto !important;     /* пропорции сохраняем */
-      max-height:100%;
-      object-fit:contain;
-      flex: 1 1 auto;             /* RU: разрешаем flex-растяжение по главной оси */
-      min-width:0;                /* страховка от «переполнения» */
+      display: block;
+      width: 100% !important;     /* тянем на всю ширину строки */
+      height: auto !important;    /* пропорции сохраняем, ширина — приоритет */
+      max-height: none !important;/* НЕ ограничиваем высоту, иначе ширина «сдувается» */
+      object-fit: contain;         /* без обрезки по сторонам (по ширине будет full) */
+      flex: 1 1 auto;              /* растягиваемся вместе с центром */
+      min-width: 0;                /* страхуемся от переполнения */
     }
 
     /* ключевые кадры «дыхания» — мягкий пульс ореола */
@@ -525,7 +526,7 @@
       }
     </script>  
 
-    <script defer src="assets/js/chart.api.js?v=1"></script>
+    <script defer src="assets/js/chart.api.js?v=2"></script>
   
     <script>
     // --- состояние (демо)

@@ -32,22 +32,22 @@
      * Запросить URL PNG. Сначала пытаемся JSON (/render/candle),
      * при ошибке — fallback на прямую картинку (/render/candle.png).
      */
-    // RU: добавили scale (по умолчанию 2) и пробрасываем в оба запроса
-    // EN: add `scale` (defaults to 2) and pass it to both requests
-    async fetchCandlePng({ inst, bar = "1h", size = "P-M", fresh = 0, scale = 2 }) {
+    // RU: добавили scale (по умолчанию 2) и font_scale (по умолчанию 2)
+    // EN: add `scale` (default 2) and `font_scale` (default 2)
+    async fetchCandlePng({ inst, bar = "1h", size = "P-M", fresh = 0, scale = 2, font_scale = 2 }) {
       const _bar = String(bar).toLowerCase();
-
+  
       // 1) JSON-вариант
-      const url1 = `${BASE}render/candle?${qs({ inst, bar: _bar, size, fresh, scale })}`;
+      const url1 = `${BASE}render/candle?${qs({ inst, bar: _bar, size, fresh, scale, font_scale })}`;
       try {
         const j = await fetchJson(url1);
         if (j && j.ok && j.url) {
           return { ok: true, url: j.url, via: "json" };
         }
       } catch (_) { /* fallthrough */ }
-
+  
       // 2) fallback: прямая картинка
-      const url2 = `${BASE}render/candle.png?${qs({ inst, bar: _bar, size, fresh, scale })}`;
+      const url2 = `${BASE}render/candle.png?${qs({ inst, bar: _bar, size, fresh, scale, font_scale })}`;
       return { ok: true, url: url2, via: "redirect" };
     },
 
@@ -55,22 +55,13 @@
     setChartSrc(pngUrl) {
       const img = document.getElementById("candle-img");
       if (!img) return;
-
-      // Сбрасываем «старые» инлайн-стили (если когда-то ставили height:100%)
-      try {
-        img.style.removeProperty && img.style.removeProperty("height");
-        img.style.removeProperty && img.style.removeProperty("max-height");
-        // не трогаем width/object-fit, зададим ниже явно
-      } catch(_) {}
-
       img.src = pngUrl;
       img.alt = "Candlestick chart";
-
-      // Вписываем по ширине: ширина 100%, высота auto
       img.style.display   = "block";
       img.style.width     = "100%";
       img.style.height    = "auto";
       img.style.objectFit = "contain";
+      img.style.removeProperty?.("max-height");
     }
   };
 

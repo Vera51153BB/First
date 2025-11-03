@@ -502,30 +502,22 @@
     </div>
   </div>
     <!-- Скрипты -->
+    <!-- Скрипты -->
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <script defer src="assets/js/i18n.js?v=2"></script>
-    <!-- prefs.js должен грузиться ПЕРВЫМ, чтобы saveUserPref был доступен далее -->
-    <script defer src="assets/js/prefs.js?v=2"></script>
-    <script>
-      // База — тот же домен (через Nginx/Cloudflare)
-      window.OKX_API_BASE = "/";
-    
-      // Построение URL PNG эндпоинта
-      function candleUrl(inst, bar, size = "P-M", ttl = 900, scale = 2, font_scale = 2) {
-        const q = new URLSearchParams({
-          inst: inst,
-          bar: String(bar || "1h").toLowerCase(),
-          size: size,
-          ttl: String(ttl),
-          scale: String(scale),
-          font_scale: String(font_scale)
-        });
-        return window.OKX_API_BASE + "render/candle.png?" + q.toString();
-      }
-    </script>  
 
+    <!-- ВАЖНО: prefs.js должен грузиться ПЕРВЫМ, затем i18n.js -->
+    <script defer src="assets/js/prefs.js?v=2"></script>
+    <script defer src="assets/js/i18n.js?v=2"></script>
+
+    <script>
+      // База — тот же домен (через Nginx/Cloudflare/Time4VPS)
+      window.OKX_API_BASE = "/";
+    </script>
+
+    <!-- Обёртка над API (ChartAPI) -->
     <script defer src="assets/js/chart.api.js?v=3"></script>
-  
+
+    <!-- UI: состояние/модалки/время/тема (без изменений логики) -->
     <script>
     // --- состояние (демо)
     const state = {
@@ -625,11 +617,11 @@
       const p = e.target.closest('.pill[data-tf]'); if(!p) return;
       $$('#tfGrid .pill').forEach(x=>x.classList.toggle('active', x===p));
       state.tf = p.dataset.tf;
-      
+
       // подпись на кнопке «TF · <val>»
       const tfBtnVal = document.getElementById('tfBtnVal');
       if (tfBtnVal) tfBtnVal.textContent = state.tf;
-      
+
       // обновляем нижнюю строку («… · <tf>»)
       renderBars();
       hide(dlgTF);
@@ -660,7 +652,9 @@
       if(e.key==='Escape'){ [dlgSettings, dlgTF, dlgLegend].forEach(hide); }
     });
   </script>
-<script>
+
+  <!-- ИНИЦИАЛИЗАЦИЯ ГРАФИКА (container-aware) -->
+  <script>
   // --- ИНИЦИАЛИЗАЦИЯ ГРАФИКА (связка с API)
   // Файл/блок: /First/chart.html
   // Назначение:
@@ -672,7 +666,7 @@
     let currentBar = String(qp.get("bar") || (typeof state === "object" ? state.tf : "1h") || "1h").toLowerCase();
 
     // --- элементы интерфейса ---
-    const img = document.getElementById("candle-img");
+    const img        = document.getElementById("candle-img");
     // Жёсткий сброс «исторических» инлайн-стилей
     if (img){
       try {
@@ -689,9 +683,6 @@
     const tfBtnVal   = document.getElementById("tfBtnVal");
     const btnRefresh = document.getElementById("btnRefresh") || document.getElementById("btn-refresh");
 
-    const SIZE        = "P-M";   // мобильный пресет
-    const DEFAULT_TTL = 900;     // сек — TTL PNG на бэке
-
     // --- синхронизация подписи внизу ---
     if (typeof state === "object") {
       state.pair = `OKX · ${DEFAULT_INST}`;
@@ -703,16 +694,21 @@
     // --- универсальная подгрузка PNG (ChartAPI или прямой URL) ---
     async function loadPng(fresh) {
       const bar = String(currentBar || "1h").toLowerCase();
+      const root = document.getElementById("chartRoot");
+      const r = root?.getBoundingClientRect() || { width: 0, height: 0 };
+      const dpr = Math.max(1, Math.min(3, window.devicePixelRatio || 1));
+      const round = 64;
 
       try {
-        // 1) Если есть ChartAPI и он включён — используем его (он сам выставит src)
         if (window.ChartAPI && window.ChartAPI.enabled && window.ChartAPI.enabled()) {
           const { ok, url } = await window.ChartAPI.fetchCandlePng({
             inst: DEFAULT_INST,
             bar,
-            size: SIZE,
+            cw: Math.round(r.width),
+            ch: Math.round(r.height),
+            dpr,
+            round,
             fresh: fresh ? 1 : 0,
-            scale: 2,
             font_scale: 2
           });
           if (ok && window.ChartAPI.setChartSrc) {
@@ -720,13 +716,20 @@
             return;
           }
         }
-        
-        // 2) Fallback: строим URL напрямую и ставим на <img>
-        const url = candleUrl(DEFAULT_INST, bar, SIZE, fresh ? 0 : DEFAULT_TTL, 2, 2);
-        // timestamp для обхода CDN-кэша при fresh
-        img.src = url + (fresh ? `&_ts=${Date.now()}` : "");
+        // Fallback: прямой URL без size/scale, только контейнер
+        const p = new URLSearchParams({
+          inst: DEFAULT_INST,
+          bar,
+          cw: Math.round(r.width),
+          ch: Math.round(r.height),
+          dpr: dpr.toString(),
+          round: round.toString(),
+          fresh: fresh ? "1" : "0",
+          font_scale: "2"
+        });
+        img.src = (window.OKX_API_BASE || "/") + "render/candle.png?" + p.toString();
       } catch {
-        // тихо игнорируем; при желании можно показать toast
+        /* no-op */
       }
     }
 
@@ -734,13 +737,11 @@
     tfGrid?.addEventListener("click", (e) => {
       const pill = e.target.closest(".pill[data-tf]");
       if (!pill) return;
-
       currentBar = String(pill.dataset.tf || "1h").toLowerCase();
-
       if (tfBtnVal) tfBtnVal.textContent = currentBar;
       if (typeof state === "object") {
         state.tf = currentBar;
-        try { renderBars(); } catch { /* no-op */ }
+        try { renderBars(); } catch {}
       }
       loadPng(true);
     });
@@ -748,12 +749,31 @@
     // --- обработчик Refresh ---
     btnRefresh?.addEventListener("click", () => loadPng(true));
 
-    // --- первый запуск ---
-    window.addEventListener("DOMContentLoaded", () => loadPng(false));
+    // --- первый запуск + авто-ресайз ---
+    window.addEventListener("DOMContentLoaded", () => {
+      loadPng(false);
+      // авто-перерисовка при ресайзе контейнера
+      let ro;
+      const root = document.getElementById("chartRoot");
+      if ("ResizeObserver" in window && root) {
+        let t;
+        ro = new ResizeObserver(() => {
+          clearTimeout(t);
+          t = setTimeout(() => loadPng(false), 220); // debounce
+        });
+        ro.observe(root);
+      } else {
+        window.addEventListener("resize", () => {
+          clearTimeout(window.__chart_resize_t);
+          window.__chart_resize_t = setTimeout(() => loadPng(false), 220);
+        });
+      }
+    });
   })();
-</script>
+  </script>
 
-<script>
+  <!-- ВРЕМЕННЫЙ ОТЛАДОЧНЫЙ БЛОК: теперь БЕЗ size=P-M -->
+  <script>
   // --- ВРЕМЕННЫЙ ОТЛАДОЧНЫЙ БЛОК: вывод JSON вместо графика -----------------
   // Файл/блок: /First/chart.html (debug-json)
   // Что делает:
@@ -774,11 +794,21 @@
 
     async function load(){
       try{
-        // /render/candle даёт {"ok":true,"url":"/render/candle.png?..."}
-        const url = window.OKX_API_BASE + "render/candle"
-                  + "?inst=" + encodeURIComponent(inst)
-                  + "&bar="  + encodeURIComponent(bar)
-                  + "&size=P-M";
+        // /render/candle теперь возвращает URL, сформированный из cw/ch/dpr/round/font_scale
+        const root = document.getElementById("chartRoot");
+        const r = root?.getBoundingClientRect() || { width: 0, height: 0 };
+        const dpr = Math.max(1, Math.min(3, window.devicePixelRatio || 1));
+        const round = 64;
+        const p = new URLSearchParams({
+          inst, bar,
+          cw: Math.round(r.width),
+          ch: Math.round(r.height),
+          dpr: dpr.toString(),
+          round: round.toString(),
+          fresh: "0",
+          font_scale: "2"
+        });
+        const url = window.OKX_API_BASE + "render/candle?" + p.toString();
         const res = await fetch(url, { cache: "no-store" });
         const data = await res.json().catch(()=> ({}));
         show({ endpoint: "/render/candle", status: res.status, ok: res.ok, data });
@@ -800,10 +830,6 @@
     // Первый запуск
     window.addEventListener("DOMContentLoaded", load);
   })();
-  // ---------------------------------------------------------------------------
-</script>
-
-  
-
+  </script>
 </body>
 </html>

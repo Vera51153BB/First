@@ -511,13 +511,14 @@
       window.OKX_API_BASE = "/";
     
       // Построение URL PNG эндпоинта
-      function candleUrl(inst, bar, size = "P-M", ttl = 900, scale = 2) {
+      function candleUrl(inst, bar, size = "P-M", ttl = 900, scale = 2, font_scale = 2) {
         const q = new URLSearchParams({
           inst: inst,
           bar: String(bar || "1h").toLowerCase(),
           size: size,
           ttl: String(ttl),
-          scale: String(scale)   // <-- масштаб отрисовки на сервере
+          scale: String(scale),
+          font_scale: String(font_scale)
         });
         return window.OKX_API_BASE + "render/candle.png?" + q.toString();
       }
@@ -711,7 +712,8 @@
             bar,
             size: SIZE,
             fresh: fresh ? 1 : 0,
-            scale: 2               // <— добавили масштаб
+            scale: 2,
+            font_scale: 2
           });
           if (ok && window.ChartAPI.setChartSrc) {
             window.ChartAPI.setChartSrc(url);
@@ -720,7 +722,7 @@
         }
         
         // 2) Fallback: строим URL напрямую и ставим на <img>
-        const url = candleUrl(DEFAULT_INST, bar, SIZE, fresh ? 0 : DEFAULT_TTL, 2);
+        const url = candleUrl(DEFAULT_INST, bar, SIZE, fresh ? 0 : DEFAULT_TTL, 2, 2);
         // timestamp для обхода CDN-кэша при fresh
         img.src = url + (fresh ? `&_ts=${Date.now()}` : "");
       } catch {

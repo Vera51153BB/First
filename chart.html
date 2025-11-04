@@ -704,90 +704,72 @@
     }
 
     // --- универсальная подгрузка PNG (ChartAPI или прямой URL) ---
-    async function loadPng(fresh) {
-      const bar = String(currentBar || "1h").toLowerCase();
-      const root  = document.getElementById("chartRoot");
-      const img   = document.getElementById("candle-img");
-      const r     = root?.getBoundingClientRect() || { width: 0, height: 0 };
-      const dpr   = Math.max(1, Math.min(3, window.devicePixelRatio || 1));
-      const round = 64;
-      
-      // 1) Высота = фактическая высота контейнера (но минимум 240px для читаемости)
-      const ch0 = Math.max(240, Math.round(r.height));
-      // 2) Ширина под соотношение 3:2
-      const cw0 = Math.round(ch0 * 1.5);
-      
-      // 3) Округляем под round (сервер ждёт кратность для рендер-сетки)
-      const ch = Math.max(240, Math.floor(ch0 / round) * round);
-      const cw = Math.max(360, Math.floor(cw0 / round) * round);
-      
-      // 4) Вдвое меньше подписи/сетка: font_scale=1
-      const fontScale = 1;
-      
-      // 5) Формируем URL и применяем
-      // 5) Формируем безопасный same-origin URL к PNG (без ChartAPI)
-      const root = document.getElementById("chartRoot");
-      const r = root?.getBoundingClientRect() || { width: 0, height: 0 };
-      
-      // высота контейнера = 100% центральной области; держим пропорцию 3:2
-      const ch0 = Math.max(240, Math.round(r.height));
-      const cw0 = Math.round(ch0 * 1.5);
-      
-      const round = 64;
-      const ch = Math.max(240, Math.floor(ch0 / round) * round);
-      const cw = Math.max(360, Math.floor(cw0 / round) * round);
-      
-      const dpr = Math.max(1, Math.min(3, window.devicePixelRatio || 1));
-      
-      // читаем инcтрумент и бар из URL (fallback на дефолты)
-      const qsIn  = new URLSearchParams(location.search);
-      const inst  = (qsIn.get("symbol") || qsIn.get("inst") || "BTC-USDT-SWAP").trim();
-      const bar   = (typeof tf === "string" ? tf : (qsIn.get("bar") || "1h")).toLowerCase();
-      
-      // подписи делаем меньше: font_scale=1
-      const p = new URLSearchParams({
-        inst, bar,
-        cw: String(cw), ch: String(ch),
-        dpr: String(dpr), round: String(round),
-        fresh: "1",
-        font_scale: "1"
-      });
-      
-      // same-origin относительный путь — исключает mixed-content
-      img.src = "/render/candle.png?" + p.toString();
-
+    async function loadPng(forceFresh = false) {
       try {
-        // if (window.ChartAPI && window.ChartAPI.enabled && window.ChartAPI.enabled()) {
-        if (false) { // TEMP: bypass ChartAPI to avoid mixed-content while we restore PNG
-          const { ok, url } = await window.ChartAPI.fetchCandlePng({
-            inst: DEFAULT_INST,
-            bar,
-            cw: Math.round(r.width),
-            ch: Math.round(r.height),
-            dpr,
-            round,
-            fresh: fresh ? 1 : 0,
-            font_scale: 2
-          });
-          if (ok && window.ChartAPI.setChartSrc) {
-            window.ChartAPI.setChartSrc(url);
-            return;
-          }
-        }
-        // Fallback: прямой URL без size/scale, только контейнер
-        const p = new URLSearchParams({
-          inst: DEFAULT_INST,
-          bar,
-          cw: Math.round(r.width),
-          ch: Math.round(r.height),
-          dpr: dpr.toString(),
-          round: round.toString(),
-          fresh: fresh ? "1" : "0",
-          font_scale: "2"
+        const img = document.getElementById("chartImg");
+        if (!img) return;
+    
+        // --- контейнер и размеры (пропорция 3:2, кратность 64 для стабильного кеша)
+        const root = document.getElementById("chartRoot");
+        const r = root?.getBoundingClientRect() || { width: 0, height: 0 };
+    
+        const ch0 = Math.max(240, Math.round(r.height));
+        const cw0 = Math.round(ch0 * 1.5);
+    
+        const round = 64;
+        const ch = Math.max(240, Math.floor(ch0 / round) * round);
+        const cw = Math.max(360, Math.floor(cw0 / round) * round);
+    
+        const dpr = Math.max(1, Math.min(3, window.devicePixelRatio || 1));
+    
+        // --- инструмент и TF: сначала берем из глобалок, затем из query, затем дефолт
+        const qs = new URLSearchParams(location.search);
+        const inst = (window.encInst || qs.get("symbol") || qs.get("inst") || "BTC-USDT-SWAP").trim();
+        const bar  = (window.tf || qs.get("bar") || "1h").toLowerCase();
+    
+        // --- font_scale уменьшили в 2 раза (1 вместо 2), fresh пробиваем при forceFresh
+        const params = new URLSearchParams({
+          inst, bar,
+          cw: String(cw), ch: String(ch),
+          dpr: String(dpr), round: String(round),
+          fresh: forceFresh ? "1" : "0",
+          font_scale: "1"
         });
-        img.src = (window.OKX_API_BASE || "/") + "render/candle.png?" + p.toString();
-      } catch {
-        /* no-op */
+    
+        // 1) Просим у бэка готовую ссылку на PNG:
+        const jsonUrl = "/render/candle?" + params.toString();
+        const r1 = await fetch(jsonUrl, { cache: "no-store" });
+        if (!r1.ok) throw new Error("render/candle JSON http " + r1.status);
+    
+        const j = await r1.json();
+        if (!j || !j.url) throw new Error("render/candle bad JSON");
+    
+        // 2) Ставим src. Дополнительно подцепим onerror для явной диагностики.
+        img.onerror = function () {
+          console.error("PNG load error:", j.url);
+          const dbg = document.getElementById("chartDebug");
+          if (dbg) dbg.textContent = "PNG load error → " + j.url;
+        };
+        img.onload = function () {
+          const dbg = document.getElementById("chartDebug");
+          if (dbg) dbg.textContent = "";
+        };
+        img.src = j.url;
+    
+        // Для явной отладки можно вывести текущий URL
+        let dbg = document.getElementById("chartDebug");
+        if (!dbg) {
+          dbg = document.createElement("div");
+          dbg.id = "chartDebug";
+          dbg.style.cssText = "position:absolute;left:8px;top:8px;color:#8899aa;font:12px/1.2 system-ui;";
+          const host = document.getElementById("chartHost") || document.body;
+          host.appendChild(dbg);
+        }
+        dbg.textContent = "loading " + j.url;
+      } catch (e) {
+        console.error("loadPng error:", e);
+        const dbg = document.getElementById("chartDebug");
+        if (dbg) dbg.textContent = "loadPng error: " + e;
       }
     }
 

@@ -686,7 +686,7 @@
       try {
         // --- реальный контейнер и размеры
         const root = document.getElementById("chartRoot");
-        const r = root?.getBoundingClientRect() || { width: 0, height: 0 };
+        const r = root ? root.getBoundingClientRect() : { width: 0, height: 0 };
     
         // Высота = 100% контейнера, ширина — пропорционально реальной области
         const ch0 = Math.max(240, Math.round(r.height));

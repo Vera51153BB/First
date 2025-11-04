@@ -756,9 +756,9 @@
       // same-origin относительный путь — исключает mixed-content
       img.src = "/render/candle.png?" + p.toString();
 
-
       try {
-        if (window.ChartAPI && window.ChartAPI.enabled && window.ChartAPI.enabled()) {
+        // if (window.ChartAPI && window.ChartAPI.enabled && window.ChartAPI.enabled()) {
+        if (false) { // TEMP: bypass ChartAPI to avoid mixed-content while we restore PNG
           const { ok, url } = await window.ChartAPI.fetchCandlePng({
             inst: DEFAULT_INST,
             bar,

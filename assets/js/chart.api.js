@@ -8,6 +8,7 @@
   const BASE = (typeof window.OKX_API_BASE === "string" && window.OKX_API_BASE.trim() !== "/")
     ? window.OKX_API_BASE
     : "/"; // по умолчанию same-origin
+  const __chartRoot = document.getElementById('chartRoot') || null;
 
   function qs(obj) {
     const p = new URLSearchParams();

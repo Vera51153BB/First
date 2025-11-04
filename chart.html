@@ -358,17 +358,20 @@
     .legend .dot.bad  { --_mid:var(--bad-mid);  --_deep:var(--bad-deep);  --_glow:var(--bad-glow); }
 
     /* PNG-график заполняет центр, не растягиваясь за рамки */
-    #chartRoot {
+    #chartRoot{
+      height: calc(100vh - 132px); /* тот же расчёт, что уже используете под верх/низ */
+      overflow-x: auto;
+      overflow-y: hidden;
+      -webkit-overflow-scrolling: touch;
       position: relative;
-      /* height: 100%;    ВАЖНО: чтобы <img> с height:100% реально заполнял центр */
     }
     
     /* PNG-график: во всю ширину, допускаем выход по высоте (срежется контейнером) */
     #candle-img{
       display:block;
-      width:100% !important;   /* растягиваемся по ширине строки */
-      height:auto !important;  /* пропорции, без принудительной высоты */
-      object-fit:contain;      /* вписываемся без кропа */
+      height:100%;
+      width:auto;           /* ширина автоматом, чтобы соблюсти 3:2 по присланному PNG */
+      object-fit: contain;  /* на всякий случай */
     }
 
     /* ключевые кадры «дыхания» — мягкий пульс ореола */

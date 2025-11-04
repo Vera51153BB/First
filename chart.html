@@ -701,6 +701,10 @@
       const r = root?.getBoundingClientRect() || { width: 0, height: 0 };
       const dpr = Math.max(1, Math.min(3, window.devicePixelRatio || 1));
       const round = 64;
+      // высота контейнера — фиксируем 100%, ширина рендера — под пропорцию 3:2
+      const ch = Math.max(200, Math.round(r.height));        // безопасный минимум
+      const desiredWidth = Math.round(ch * 1.5);             // 3:2
+      const cw = desiredWidth;
 
       try {
         if (window.ChartAPI && window.ChartAPI.enabled && window.ChartAPI.enabled()) {

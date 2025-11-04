@@ -358,20 +358,29 @@
     .legend .dot.bad  { --_mid:var(--bad-mid);  --_deep:var(--bad-deep);  --_glow:var(--bad-glow); }
 
     /* PNG-график заполняет центр, не растягиваясь за рамки */
+    /* Корневой контейнер графика */
     #chartRoot{
-      height: calc(100vh - 132px); /* тот же расчёт, что уже используете под верх/низ */
-      overflow-x: auto;
+      position: relative;
+      height: 100%;                 /* занять доступную высоту области контента */
+      min-height: 240px;            /* страховка */
+      width: 100%;
+      overflow-x: auto;             /* горизонтальная прокрутка при недостатке ширины */
       overflow-y: hidden;
       -webkit-overflow-scrolling: touch;
-      position: relative;
     }
+    #chartRoot.dragging { cursor: grabbing; }
+    #chartRoot { cursor: grab; }
     
-    /* PNG-график: во всю ширину, допускаем выход по высоте (срежется контейнером) */
+    /* PNG-график: Внутри — картинка должна *по высоте* занять 100%, ширина — авто (чтобы держать 3:2) */
     #candle-img{
-      display:block;
-      height:100%;
-      width:auto;           /* ширина автоматом, чтобы соблюсти 3:2 по присланному PNG */
-      object-fit: contain;  /* на всякий случай */
+      display: block;
+      height: 100%;
+      width: auto;
+      max-width: none;              /* не сжимать по ширине — пусть уходит в скролл */
+      object-fit: contain;
+      user-select: none;
+      -webkit-user-drag: none;
+      pointer-events: auto;
     }
 
     /* ключевые кадры «дыхания» — мягкий пульс ореола */
@@ -697,16 +706,30 @@
     // --- универсальная подгрузка PNG (ChartAPI или прямой URL) ---
     async function loadPng(fresh) {
       const bar = String(currentBar || "1h").toLowerCase();
-      const root = document.getElementById("chartRoot");
-      const r = root?.getBoundingClientRect() || { width: 0, height: 0 };
-      const dpr = Math.max(1, Math.min(3, window.devicePixelRatio || 1));
+      const root  = document.getElementById("chartRoot");
+      const img   = document.getElementById("candle-img");
+      const r     = root?.getBoundingClientRect() || { width: 0, height: 0 };
+      const dpr   = Math.max(1, Math.min(3, window.devicePixelRatio || 1));
       const round = 64;
-      // высота контейнера — фиксируем 100%, ширина рендера — под пропорцию 3:2
-      const ch = Math.max(200, Math.round(r.height));        // безопасный минимум
-      const desiredWidth = Math.round(ch * 1.5);             // 3:2
-      // const cw = desiredWidth;
-      // дальше формируем URL:
-      const url = `/render/candle.png?inst=${encInst}&bar=${tf}&cw=${cw}&ch=${ch}&dpr=${dpr}&round=${round}&fresh=0&font_scale=2`;
+      
+      // 1) Высота = фактическая высота контейнера (но минимум 240px для читаемости)
+      const ch0 = Math.max(240, Math.round(r.height));
+      // 2) Ширина под соотношение 3:2
+      const cw0 = Math.round(ch0 * 1.5);
+      
+      // 3) Округляем под round (сервер ждёт кратность для рендер-сетки)
+      const ch = Math.max(240, Math.floor(ch0 / round) * round);
+      const cw = Math.max(360, Math.floor(cw0 / round) * round);
+      
+      // 4) Вдвое меньше подписи/сетка: font_scale=1
+      const fontScale = 1;
+      
+      // 5) Формируем URL и применяем
+      const url = `/render/candle.png` +
+        `?inst=${encInst}&bar=${tf}` +
+        `&cw=${cw}&ch=${ch}&dpr=${dpr}&round=${round}` +
+        `&fresh=0&font_scale=${fontScale}`;
+      
       img.src = url;
 
       try {
@@ -841,5 +864,38 @@
     window.addEventListener("DOMContentLoaded", load);
   })();
   </script>
+  <script>
+  (function(){
+    const wrap = document.getElementById('chartRoot');
+    if (!wrap) return;
+  
+    let isDown = false, startX = 0, scrollLeft = 0;
+  
+    const onDown = (clientX) => {
+      isDown = true;
+      startX = clientX - wrap.offsetLeft;
+      scrollLeft = wrap.scrollLeft;
+      wrap.classList.add('dragging');
+    };
+    const onMove = (clientX) => {
+      if (!isDown) return;
+      const x = clientX - wrap.offsetLeft;
+      wrap.scrollLeft = scrollLeft - (x - startX);
+    };
+    const onUp = () => { isDown = false; wrap.classList.remove('dragging'); };
+  
+    // Мышь
+    wrap.addEventListener('mousedown', e => onDown(e.clientX));
+    wrap.addEventListener('mousemove', e => onMove(e.clientX));
+    wrap.addEventListener('mouseleave', onUp);
+    wrap.addEventListener('mouseup', onUp);
+  
+    // Тач
+    wrap.addEventListener('touchstart', e => onDown(e.touches[0].clientX), {passive:true});
+    wrap.addEventListener('touchmove',  e => onMove(e.touches[0].clientX), {passive:true});
+    wrap.addEventListener('touchend', onUp);
+  })();
+  </script>
+
 </body>
 </html>

@@ -674,13 +674,12 @@
     });
   </script>
 
-  <!-- ИНИЦИАЛИЗАЦИЯ ГРАФИКА (container-aware) -->
   <script>
   // --- ИНИЦИАЛИЗАЦИЯ ГРАФИКА (связка с API)
   // Файл/блок: /First/chart.html
   // Назначение:
   //   • На старте и при смене TF/нажатии Refresh — запрашивать PNG и подменять <img>.
-  (function () {
+  (async function () {
     // --- входные параметры из URL ---
     const qp = new URLSearchParams(location.search);
     const DEFAULT_INST = (qp.get("symbol") || "BTC-USDT-SWAP").trim();

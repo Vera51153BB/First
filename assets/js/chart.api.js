@@ -55,14 +55,17 @@
     },
 
     /** Установить src на <img id="candle-img"> */
+    // REPLACE: function setChartSrc(...) { ... }
     setChartSrc(pngUrl) {
       const img = document.getElementById("candle-img");
       if (!img) return;
       img.src = pngUrl;
       img.alt = "Candlestick chart";
+    
+      // ВАЖНО: картинка всегда во всю высоту центра, ширина — авто (чтобы не срезались цены)
       img.style.display   = "block";
-      img.style.width     = "100%";
-      img.style.height    = "auto";
+      img.style.height    = "100%";
+      img.style.width     = "auto";
       img.style.objectFit = "contain";
       img.style.removeProperty?.("max-height");
     }

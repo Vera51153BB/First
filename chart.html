@@ -704,7 +704,10 @@
       // высота контейнера — фиксируем 100%, ширина рендера — под пропорцию 3:2
       const ch = Math.max(200, Math.round(r.height));        // безопасный минимум
       const desiredWidth = Math.round(ch * 1.5);             // 3:2
-      const cw = desiredWidth;
+      // const cw = desiredWidth;
+      // дальше формируем URL:
+      const url = `/render/candle.png?inst=${encInst}&bar=${tf}&cw=${cw}&ch=${ch}&dpr=${dpr}&round=${round}&fresh=0&font_scale=2`;
+      img.src = url;
 
       try {
         if (window.ChartAPI && window.ChartAPI.enabled && window.ChartAPI.enabled()) {

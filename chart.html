@@ -726,35 +726,40 @@
           fresh: forceFresh ? "1" : "0",
           font_scale: String(fontScale)
         });
-    
+        
         const jsonUrl = "/render/candle?" + params.toString();
-        const r1 = await fetch(jsonUrl, { cache: "no-store" });
-        if (!r1.ok) throw new Error("render/candle JSON http " + r1.status);
-    
-        const j = await r1.json();
-        if (!j || !j.url) throw new Error("render/candle bad JSON");
-    
-        // Диагностика/отладка
-        let dbg = document.getElementById("chartDebug");
-        if (!dbg) {
-          dbg = document.createElement("div");
-          dbg.id = "chartDebug";
-          dbg.style.cssText = "position:absolute;left:8px;top:8px;color:#8899aa;font:12px/1.2 system-ui;";
-          (document.getElementById("chartHost") || document.body).appendChild(dbg);
-        }
-        dbg.textContent = "loading " + j.url;
-    
-        // Подмена PNG
-        img.onerror = function () {
-          console.error("PNG load error:", j.url);
-          const d = document.getElementById("chartDebug");
-          if (d) d.textContent = "PNG load error → " + j.url;
-        };
-        img.onload = function () {
-          const d = document.getElementById("chartDebug");
-          if (d) d.textContent = "";
-        };
-        img.src = j.url;
+        
+        // ВАЖНО: без await — через Promise-цепочку, чтобы исключить падения от парсера
+        return fetch(jsonUrl, { cache: "no-store" })
+          .then(r1 => {
+            if (!r1.ok) throw new Error("render/candle JSON http " + r1.status);
+            return r1.json();
+          })
+          .then(j => {
+            if (!j || !j.url) throw new Error("render/candle bad JSON");
+        
+            // Диагностика/отладка
+            let dbg = document.getElementById("chartDebug");
+            if (!dbg) {
+              dbg = document.createElement("div");
+              dbg.id = "chartDebug";
+              dbg.style.cssText = "position:absolute;left:8px;top:8px;color:#8899aa;font:12px/1.2 system-ui;";
+              (document.getElementById("chartHost") || document.body).appendChild(dbg);
+            }
+            dbg.textContent = "loading " + j.url;
+        
+            // Подмена PNG
+            img.onerror = function () {
+              const d = document.getElementById("chartDebug");
+              if (d) d.textContent = "PNG load error → " + j.url;
+            };
+            img.onload = function () {
+              const d = document.getElementById("chartDebug");
+              if (d) d.textContent = "";
+            };
+            img.src = j.url;
+          });
+
     
       } catch (e) {
         console.error("loadPng error:", e);

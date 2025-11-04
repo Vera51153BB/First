@@ -686,8 +686,8 @@
         img.style.removeProperty && img.style.removeProperty('max-height');
       } catch(_) {}
       img.style.display   = 'block';
-      img.style.width     = '100%';
-      img.style.height    = 'auto';
+      img.style.width     = 'auto';   // пусть ширина подчиняется пропорции
+      img.style.height    = '100%';   // картинка всегда на всю высоту центра
       img.style.objectFit = 'contain';
     }
     const pairEl     = document.getElementById("pair");
@@ -706,7 +706,7 @@
     // --- универсальная подгрузка PNG (ChartAPI или прямой URL) ---
     async function loadPng(forceFresh = false) {
       try {
-        const img = document.getElementById("chartImg");
+        const img = document.getElementById("candle-img");
         if (!img) return;
     
         // --- контейнер и размеры (пропорция 3:2, кратность 64 для стабильного кеша)
@@ -725,7 +725,7 @@
         // --- инструмент и TF: сначала берем из глобалок, затем из query, затем дефолт
         const qs = new URLSearchParams(location.search);
         const inst = (window.encInst || qs.get("symbol") || qs.get("inst") || "BTC-USDT-SWAP").trim();
-        const bar  = (window.tf || qs.get("bar") || "1h").toLowerCase();
+        const bar  = (currentBar || qs.get("bar") || "1h").toLowerCase();
     
         // --- font_scale уменьшили в 2 раза (1 вместо 2), fresh пробиваем при forceFresh
         const params = new URLSearchParams({

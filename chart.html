@@ -725,12 +725,37 @@
       const fontScale = 1;
       
       // 5) Формируем URL и применяем
-      const url = `/render/candle.png` +
-        `?inst=${encInst}&bar=${tf}` +
-        `&cw=${cw}&ch=${ch}&dpr=${dpr}&round=${round}` +
-        `&fresh=0&font_scale=${fontScale}`;
+      // 5) Формируем безопасный same-origin URL к PNG (без ChartAPI)
+      const root = document.getElementById("chartRoot");
+      const r = root?.getBoundingClientRect() || { width: 0, height: 0 };
       
-      img.src = url;
+      // высота контейнера = 100% центральной области; держим пропорцию 3:2
+      const ch0 = Math.max(240, Math.round(r.height));
+      const cw0 = Math.round(ch0 * 1.5);
+      
+      const round = 64;
+      const ch = Math.max(240, Math.floor(ch0 / round) * round);
+      const cw = Math.max(360, Math.floor(cw0 / round) * round);
+      
+      const dpr = Math.max(1, Math.min(3, window.devicePixelRatio || 1));
+      
+      // читаем инcтрумент и бар из URL (fallback на дефолты)
+      const qsIn  = new URLSearchParams(location.search);
+      const inst  = (qsIn.get("symbol") || qsIn.get("inst") || "BTC-USDT-SWAP").trim();
+      const bar   = (typeof tf === "string" ? tf : (qsIn.get("bar") || "1h")).toLowerCase();
+      
+      // подписи делаем меньше: font_scale=1
+      const p = new URLSearchParams({
+        inst, bar,
+        cw: String(cw), ch: String(ch),
+        dpr: String(dpr), round: String(round),
+        fresh: "1",
+        font_scale: "1"
+      });
+      
+      // same-origin относительный путь — исключает mixed-content
+      img.src = "/render/candle.png?" + p.toString();
+
 
       try {
         if (window.ChartAPI && window.ChartAPI.enabled && window.ChartAPI.enabled()) {

@@ -679,145 +679,150 @@
   // Файл/блок: /First/chart.html
   // Назначение:
   //   • На старте и при смене TF/нажатии Refresh — запрашивать PNG и подменять <img>.
-    async function loadPng(forceFresh = false) {
-      const img = document.getElementById("candle-img");
-      if (!img) return;
-    
-      try {
-        // --- реальный контейнер и размеры
-        const root = document.getElementById("chartRoot");
-        const r = root ? root.getBoundingClientRect() : { width: 0, height: 0 };
-    
-        // Высота = 100% контейнера, ширина — пропорционально реальной области
-        const ch0 = Math.max(240, Math.round(r.height));
-        const ratio = (r.width > 0 && r.height > 0) ? (r.width / r.height) : 1.5;
-        const cw0 = Math.max(360, Math.round(ch0 * ratio));
-    
-        // Округление под кеш (стабильные URL у бэка)
-        const round = 64;
-        const ch = Math.max(240, Math.floor(ch0 / round) * round);
-        const cw = Math.max(360, Math.floor(cw0 / round) * round);
-    
-        // Мягкий масштаб шрифтов
-        let fontScale = 1.0;
-        if (ch < 420) fontScale = 0.95;
-        else if (ch > 720) fontScale = 1.2;
-    
-        // DPR
-        const dpr = Math.max(1, Math.min(3, window.devicePixelRatio || 1));
-    
-        // Инструмент/TF
-        const qs = new URLSearchParams(location.search);
-        const inst = (window.encInst || qs.get("symbol") || qs.get("inst") || "BTC-USDT-SWAP").trim();
-        const bar  = (typeof currentBar === "string" && currentBar) ? currentBar.toLowerCase()
-                   : (qs.get("bar") || "1h").toLowerCase();
-    
-        // Гарантируем нужные CSS на <img>
-        img.style.display   = "block";
-        img.style.width     = "auto";
-        img.style.height    = "100%";
-        img.style.objectFit = "contain";
-    
-        // JSON-прокладка → отдаёт готовый URL PNG
-        const params = new URLSearchParams({
-          inst, bar,
-          cw: String(cw), ch: String(ch),
-          dpr: String(dpr), round: String(round),
-          fresh: forceFresh ? "1" : "0",
-          font_scale: String(fontScale)
+  function loadPng(forceFresh = false) {
+    const img = document.getElementById("candle-img");
+    if (!img) return;
+  
+    try {
+      // --- реальный контейнер и размеры
+      const root = document.getElementById("chartRoot");
+      const r = (root && root.getBoundingClientRect) ? root.getBoundingClientRect() : { width: 0, height: 0 };
+  
+      // высота = 100% контейнера, ширина — по факту области
+      const ch0   = Math.max(240, Math.round(r.height || 0));
+      const ratio = (r.width > 0 && r.height > 0) ? (r.width / r.height) : 1.5;
+      const cw0   = Math.max(360, Math.round(ch0 * ratio));
+  
+      // округление под кеш (стабильные URL)
+      const round = 64;
+      const ch = Math.max(240, Math.floor(ch0 / round) * round);
+      const cw = Math.max(360, Math.floor(cw0 / round) * round);
+  
+      // мягкий масштаб шрифтов (страховка)
+      let fontScale = 1.0;
+      if (ch < 420) fontScale = 0.95;
+      else if (ch > 720) fontScale = 1.2;
+  
+      // DPR
+      const dpr = Math.max(1, Math.min(3, window.devicePixelRatio || 1));
+  
+      // инструмент/TF
+      const qs   = new URLSearchParams(location.search);
+      const inst = (window.encInst || qs.get("symbol") || qs.get("inst") || "BTC-USDT-SWAP").trim();
+      const bar  = (typeof window.currentBar === "string" && window.currentBar)
+                    ? window.currentBar.toLowerCase()
+                    : (qs.get("bar") || "1h").toLowerCase();
+  
+      // гарантируем нужные CSS на <img>
+      img.style.display   = "block";
+      img.style.width     = "auto";
+      img.style.height    = "100%";
+      img.style.objectFit = "contain";
+  
+      // --- запрос JSON-прокладки → отдаёт готовый URL PNG
+      const params = new URLSearchParams({
+        inst, bar,
+        cw: String(cw), ch: String(ch),
+        dpr: String(dpr), round: String(round),
+        fresh: forceFresh ? "1" : "0",
+        font_scale: String(fontScale)
+      });
+  
+      const jsonUrl = "/render/candle?" + params.toString();
+  
+      // ВАЖНО: без await — promise-цепочка, исключаем претензии парсера к верхнему уровню
+      return fetch(jsonUrl, { cache: "no-store" })
+        .then(function (r1) {
+          if (!r1.ok) throw new Error("render/candle JSON http " + r1.status);
+          return r1.json();
+        })
+        .then(function (j) {
+          if (!j || !j.url) throw new Error("render/candle bad JSON");
+  
+          // отладка (видно текущий URL)
+          var dbg = document.getElementById("chartDebug");
+          if (!dbg) {
+            dbg = document.createElement("div");
+            dbg.id = "chartDebug";
+            dbg.style.cssText = "position:absolute;left:8px;top:8px;color:#8899aa;font:12px/1.2 system-ui;";
+            (document.getElementById("chartHost") || document.body).appendChild(dbg);
+          }
+          dbg.textContent = "loading " + j.url;
+  
+          // подмена PNG + обработчики
+          img.onerror = function () {
+            var d = document.getElementById("chartDebug");
+            if (d) d.textContent = "PNG load error → " + j.url;
+          };
+          img.onload = function () {
+            var d = document.getElementById("chartDebug");
+            if (d) d.textContent = "";
+          };
+          img.src = j.url;
+        })
+        .catch(function (e) {
+          console.error("loadPng error (promise):", e);
+          var dbg = document.getElementById("chartDebug");
+          if (dbg) dbg.textContent = "loadPng error: " + e;
         });
-        
-        const jsonUrl = "/render/candle?" + params.toString();
-        
-        // ВАЖНО: без await — через Promise-цепочку, чтобы исключить падения от парсера
-        return fetch(jsonUrl, { cache: "no-store" })
-          .then(r1 => {
-            if (!r1.ok) throw new Error("render/candle JSON http " + r1.status);
-            return r1.json();
-          })
-          .then(j => {
-            if (!j || !j.url) throw new Error("render/candle bad JSON");
-        
-            // Диагностика/отладка
-            let dbg = document.getElementById("chartDebug");
-            if (!dbg) {
-              dbg = document.createElement("div");
-              dbg.id = "chartDebug";
-              dbg.style.cssText = "position:absolute;left:8px;top:8px;color:#8899aa;font:12px/1.2 system-ui;";
-              (document.getElementById("chartHost") || document.body).appendChild(dbg);
-            }
-            dbg.textContent = "loading " + j.url;
-        
-            // Подмена PNG
-            img.onerror = function () {
-              const d = document.getElementById("chartDebug");
-              if (d) d.textContent = "PNG load error → " + j.url;
-            };
-            img.onload = function () {
-              const d = document.getElementById("chartDebug");
-              if (d) d.textContent = "";
-            };
-            img.src = j.url;
-          });
-
-    
-      } catch (e) {
-        console.error("loadPng error:", e);
-        const dbg = document.getElementById("chartDebug");
-        if (dbg) dbg.textContent = "loadPng error: " + e;
-      }
+  
+    } catch (e) {
+      console.error("loadPng error (sync):", e);
+      const dbg = document.getElementById("chartDebug");
+      if (dbg) dbg.textContent = "loadPng error: " + e;
     }
+  }
 
-        // --- инструмент и TF: сначала берем из глобалок, затем из query, затем дефолт
-        const qs = new URLSearchParams(location.search);
-        const inst = (window.encInst || qs.get("symbol") || qs.get("inst") || "BTC-USDT-SWAP").trim();
-        const bar  = (currentBar || qs.get("bar") || "1h").toLowerCase();
-    
-        // --- font_scale уменьшили в 2 раза (1 вместо 2), fresh пробиваем при forceFresh
-        const params = new URLSearchParams({
-          inst, bar,
-          cw: String(cw), ch: String(ch),
-          dpr: String(dpr), round: String(round),
-          fresh: forceFresh ? "1" : "0",
-          font_scale: "1"
-        });
-    
-        // 1) Просим у бэка готовую ссылку на PNG:
-        const jsonUrl = "/render/candle?" + params.toString();
-        const r1 = await fetch(jsonUrl, { cache: "no-store" });
-        if (!r1.ok) throw new Error("render/candle JSON http " + r1.status);
-    
-        const j = await r1.json();
-        if (!j || !j.url) throw new Error("render/candle bad JSON");
-    
-        // 2) Ставим src. Дополнительно подцепим onerror для явной диагностики.
-        img.onerror = function () {
-          console.error("PNG load error:", j.url);
-          const dbg = document.getElementById("chartDebug");
-          if (dbg) dbg.textContent = "PNG load error → " + j.url;
-        };
-        img.onload = function () {
-          const dbg = document.getElementById("chartDebug");
-          if (dbg) dbg.textContent = "";
-        };
-        img.src = j.url;
-    
-        // Для явной отладки можно вывести текущий URL
-        let dbg = document.getElementById("chartDebug");
-        if (!dbg) {
-          dbg = document.createElement("div");
-          dbg.id = "chartDebug";
-          dbg.style.cssText = "position:absolute;left:8px;top:8px;color:#8899aa;font:12px/1.2 system-ui;";
-          const host = document.getElementById("chartHost") || document.body;
-          host.appendChild(dbg);
-        }
-        dbg.textContent = "loading " + j.url;
-      } catch (e) {
-        console.error("loadPng error:", e);
+      // --- инструмент и TF: сначала берем из глобалок, затем из query, затем дефолт
+      const qs = new URLSearchParams(location.search);
+      const inst = (window.encInst || qs.get("symbol") || qs.get("inst") || "BTC-USDT-SWAP").trim();
+      const bar  = (currentBar || qs.get("bar") || "1h").toLowerCase();
+  
+      // --- font_scale уменьшили в 2 раза (1 вместо 2), fresh пробиваем при forceFresh
+      const params = new URLSearchParams({
+        inst, bar,
+        cw: String(cw), ch: String(ch),
+        dpr: String(dpr), round: String(round),
+        fresh: forceFresh ? "1" : "0",
+        font_scale: "1"
+      });
+  
+      // 1) Просим у бэка готовую ссылку на PNG:
+      const jsonUrl = "/render/candle?" + params.toString();
+      const r1 = await fetch(jsonUrl, { cache: "no-store" });
+      if (!r1.ok) throw new Error("render/candle JSON http " + r1.status);
+  
+      const j = await r1.json();
+      if (!j || !j.url) throw new Error("render/candle bad JSON");
+  
+      // 2) Ставим src. Дополнительно подцепим onerror для явной диагностики.
+      img.onerror = function () {
+        console.error("PNG load error:", j.url);
         const dbg = document.getElementById("chartDebug");
-        if (dbg) dbg.textContent = "loadPng error: " + e;
+        if (dbg) dbg.textContent = "PNG load error → " + j.url;
+      };
+      img.onload = function () {
+        const dbg = document.getElementById("chartDebug");
+        if (dbg) dbg.textContent = "";
+      };
+      img.src = j.url;
+  
+      // Для явной отладки можно вывести текущий URL
+      let dbg = document.getElementById("chartDebug");
+      if (!dbg) {
+        dbg = document.createElement("div");
+        dbg.id = "chartDebug";
+        dbg.style.cssText = "position:absolute;left:8px;top:8px;color:#8899aa;font:12px/1.2 system-ui;";
+        const host = document.getElementById("chartHost") || document.body;
+        host.appendChild(dbg);
       }
+      dbg.textContent = "loading " + j.url;
+    } catch (e) {
+      console.error("loadPng error:", e);
+      const dbg = document.getElementById("chartDebug");
+      if (dbg) dbg.textContent = "loadPng error: " + e;
     }
+  }
 
     // --- обработчик смены TF ---
     tfGrid?.addEventListener("click", (e) => {

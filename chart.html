@@ -744,8 +744,8 @@
     
         // мягкий масштаб шрифтов (страховка)
         let fontScale = 1.0;
-        if (ch < 420) fontScale = 0.95;
-        else if (ch > 720) fontScale = 1.2;
+        if (ch < 420) fontScale = 1.2;  // 0.95;
+        else if (ch > 720) fontScale = 1  // 1.2;
     
         // DPR
         const dpr = Math.max(1, Math.min(3, window.devicePixelRatio || 1));
@@ -770,6 +770,12 @@
           dpr: String(dpr), round: String(round),
           fresh: forceFresh ? "1" : "0",
           font_scale: String(fontScale)
+
+          // --- Новые флаги рендера (нужна поддержка на бэке) ---
+          sub: "0",        // убрать нижнюю мини-панель
+          //  yfmt: "plain",   // без SI-суффиксов (k, m, μ, n)
+          //  prec: "6",       // 6 знаков после запятой (подправишь под монету)
+          //  pad_y: "0.06"    // 6% «воздуха» сверху и снизу
         });
     
         const jsonUrl = "/render/candle?" + params.toString();

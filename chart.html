@@ -117,7 +117,7 @@
       background: var(--bg);
       display: flex;
       align-items: stretch;   /* по поперечной оси — во всю высоту строки */
-      justify-content: center;  /*  ← убрать */
+      /* justify-content: center;  — УБРАНО. Центрирование ломало ширину скролл-контейнера */
       overflow: hidden;
       padding: 0;
     }
@@ -361,13 +361,23 @@
     /* Корневой контейнер графика */
     #chartRoot{
       position: relative;
-      height: 100%;                 /* занять доступную высоту области контента */
-      min-height: 240px;            /* страховка */
+      height: 100%;
+      min-height: 240px;
       width: 100%;
-      overflow-x: auto;             /* горизонтальная прокрутка при недостатке ширины */
+    
+      /* КЛЮЧЕВОЕ для flex-внутренностей: разрешаем сжиматься и не упираться в min-content */
+      flex: 1 1 auto;
+      min-width: 0;
+    
+      overflow-x: auto;
       overflow-y: hidden;
+    
+      /* Мобилки: горизонтальный пан, без «подпрыгиваний» */
       -webkit-overflow-scrolling: touch;
+      touch-action: pan-x;
+      overscroll-behavior-x: contain;
     }
+
     #chartRoot.dragging { cursor: grabbing; }
     #chartRoot { cursor: grab; }
     
@@ -377,7 +387,7 @@
       height: 100%;
       width: auto;
       max-width: none;              /* не сжимать по ширине — пусть уходит в скролл */
-      object-fit: contain;
+      /* object-fit: contain;   — УБРАНО, чтобы не ужимал ширину */
       user-select: none;
       -webkit-user-drag: none;
       pointer-events: auto;

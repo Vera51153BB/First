@@ -381,25 +381,17 @@
     #chartRoot.dragging { cursor: grabbing; }
     #chartRoot { cursor: grab; }
     
-    /* PNG-график: Внутри — картинка должна *по высоте* занять 100%, ширина — авто (чтобы держать 3:2) */
-    #candle-img{
-      display: block;
-      height: 100%;
-      width: auto;
-      max-width: none;              /* не сжимать по ширине — пусть уходит в скролл */
-      /* object-fit: contain;   — УБРАНО, чтобы не ужимал ширину */
-      user-select: none;
-      -webkit-user-drag: none;
-      pointer-events: auto;
-    }
     /* --- PNG: всегда 100% по высоте, ширина — авто, без центрирования --- */
-    #chartImg {
-      height: 100%;
-      width: auto;
-      max-width: none;
-      display: block;
-      margin-left: 0;   /* важно: прижать слева */
-      margin-right: 0;
+    #chartRoot img,
+    #candle-img,
+    #chartImg{
+      display: block !important;
+      height: 100% !important;
+      width: auto !important;
+      max-width: none !important;   /* критично для появления горизонтального скролла */
+      object-fit: unset !important; /* «contain» может уменьшать ширину */
+      -webkit-user-drag: none;
+      user-select: none;
     }
 
     /* ключевые кадры «дыхания» — мягкий пульс ореола */

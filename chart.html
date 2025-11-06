@@ -758,6 +758,8 @@
         img.style.objectFit = "contain";
     
         // --- запрос JSON-прокладки → отдаёт готовый URL PNG
+        // берём текущую тему из <html data-theme="...">, по умолчанию 'blue'
+        const theme = document.documentElement.getAttribute("data-theme") || "blue";
         const params = new URLSearchParams({
           inst, bar,
           cw: String(cw), ch: String(ch),

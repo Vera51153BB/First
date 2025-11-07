@@ -603,10 +603,17 @@
     $('#btnCloseSettings').addEventListener('click', ()=>hide(dlgSettings));
     dlgSettings.addEventListener('click', (e)=>{ if(e.target===dlgSettings) hide(dlgSettings); });
 
+    // $('#themeGrid').addEventListener('click', (e)=>{
+      // const p = e.target.closest('.pill[data-theme]'); if(!p) return;
+      // $$('#themeGrid .pill').forEach(x=>x.classList.toggle('active', x===p));
+      // setTheme(p.dataset.theme);
+    // });
     $('#themeGrid').addEventListener('click', (e)=>{
       const p = e.target.closest('.pill[data-theme]'); if(!p) return;
       $$('#themeGrid .pill').forEach(x=>x.classList.toggle('active', x===p));
       setTheme(p.dataset.theme);
+      // NEW: сразу перерисовать PNG с новой темой
+      try { window.__okx_loadPng?.(true); } catch {}   // безопасный вызов, если уже объявлен
     });
 
     $$('#dlgSettings [data-timezone]').forEach(p=>p.addEventListener('click', ()=>{
@@ -795,6 +802,7 @@
   
     // -------- Основная функция загрузки PNG -------------------------------
     async function loadPng(forceFresh = false) {
+      window.__okx_loadPng = loadPng;   // даём доступ обработчикам UI
       if (!img || !chartRoot) return;
   
       // гарантируем нужные стили у <img>

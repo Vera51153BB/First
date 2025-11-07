@@ -662,150 +662,158 @@
     });
   </script>
 
-  <script>
-  // --- ИНИЦИАЛИЗАЦИЯ ГРАФИКА (связка с API)
-  // Файл/блок: /First/chart.html
-  // Назначение:
-  //   • На старте и при смене TF/нажатии Refresh — запрашивать PNG и подменять <img>.
-  //   • Без дублей и «оторванных» кусков.
-  (function () {
+    <script>
+  /* -------------------------------------------------------------------------
+     /First/chart.html — ЕДИНЫЙ скрипт рендера PNG-графика
+     Назначение:
+       • На старте, при смене TF и нажатии Refresh — запрашивать JSON → URL PNG и подменять <img>.
+       • Без дублей переменных и «оторванных» обработчиков.
+       • Горизонтальный drag-scroll контейнера.
+       • Автоперерисовка при ресайзе (ResizeObserver, с дебаунсом).
+     Важно:
+       • Флаги yfmt/prec/pad_ticks по умолчанию отключены (см. FEATURE_FLAGS ниже),
+         чтобы не ловить 500, пока бэк их не примет.
+  --------------------------------------------------------------------------- */
+  
+  (() => {
+    // ---------- FEATURE FLAGS (можно включить позже) ----------
+    // new: централизованный тумблер «экспериментальных» параметров рендера
+    const FEATURE_FLAGS = {
+      EXP_RENDER_FLAGS: false,   // true → в запрос добавятся yfmt/prec/pad_ticks
+      DEBUG_JSON:       false    // true → будем писать отладку в #chartDebug
+    };
+  
     // --- входные параметры из URL ---
     const qp = new URLSearchParams(location.search);
-    const DEFAULT_INST = (qp.get("symbol") || "BTC-USDT-SWAP").trim();
+    const DEFAULT_INST = (qp.get("symbol") || qp.get("inst") || "BTC-USDT-SWAP").trim();
+  
     // Храним выбранный TF глобально, чтобы не плодить локальные дубли
+    // (берём из URL → из state.tf → '1h')
     window.currentBar = String(qp.get("bar") || (typeof state === "object" ? state.tf : "1h") || "1h").toLowerCase();
   
     // --- элементы интерфейса ---
     const img        = document.getElementById("candle-img");
-    const pairEl     = document.getElementById("pair");
     const tfGrid     = document.getElementById("tfGrid");
     const tfBtnVal   = document.getElementById("tfBtnVal");
     const btnRefresh = document.getElementById("btnRefresh") || document.getElementById("btn-refresh");
+    const root       = document.getElementById("chartRoot");       // контейнер со скроллом
+    const debugOut   = document.getElementById("chartDebug");      // new: общий отладочный вывод
   
-    // --- синхронизация подписи внизу ---
+    if (!img || !root) {
+      console.error("[chart] required nodes missing: img/root");
+      return;
+    }
+  
+    // --- синхронизация подписи внизу (если используете нижнюю плашку state.*) ---
     if (typeof state === "object") {
       state.pair = `OKX · ${DEFAULT_INST}`;
       state.tf   = window.currentBar;
-      try { renderBars(); } catch { /* no-op */ }
+      try { renderBars(); } catch {/* no-op */}
       if (tfBtnVal) tfBtnVal.textContent = state.tf;
     }
   
     // --- реальный контейнер и округление размеров под кеш ---
     function resolveCanvas() {
-      const root = document.getElementById("chartRoot");
       const r = (root && root.getBoundingClientRect) ? root.getBoundingClientRect() : { width: 0, height: 0 };
   
-      // Высота = 100% контейнера; ширина — по фактическому соотношению области
-      const ch0   = Math.max(240, Math.round(r.height || 0));
-      const ratio = (r.width > 0 && r.height > 0) ? (r.width / r.height) : 1.5;
-      const cw0   = Math.max(360, Math.round(ch0 * ratio));
+      // Высота = 100% контейнера
+      const ch0 = Math.max(240, Math.round(r.height || 0));
   
-      const round = 64; // кратность для стабильных URL в кешах
+      // Минимум 2:3 (H:W) → W/H >= 1.5
+      const MIN_AR = 1.5;
+      const liveAR = (r.width > 0 && r.height > 0) ? (r.width / r.height) : MIN_AR;
+      const ratio  = Math.max(liveAR, MIN_AR);
+  
+      // Ширина полотна рендера под нужное соотношение
+      const cw0 = Math.max(360, Math.round(ch0 * ratio));
+  
+      // Округление под кеш (стабильные URL у CDN)
+      const round = 64;
       const ch = Math.max(240, Math.floor(ch0 / round) * round);
       const cw = Math.max(360, Math.floor(cw0 / round) * round);
   
       return { cw, ch, round };
     }
   
-    // --- ЕДИНСТВЕННАЯ функция загрузки PNG (async/await ТОЛЬКО тут) ---
-    // --- ИНИЦИАЛИЗАЦИЯ ГРАФИКА (связка с API)
-    // Файл/блок: /First/chart.html
-    //   • На старте и при смене TF/нажатии Refresh — запрашивать PNG и подменять <img>.
-    async function loadPng(forceFresh = false) {
-      const img = document.getElementById("candle-img");
-      if (!img) return;
-    
+    // --- ЕДИНСТВЕННАЯ функция загрузки PNG (видна везде) ---
+    window.loadPng = async function loadPng(forceFresh = false) {
       try {
-        // --- реальный контейнер и размеры
-        const root = document.getElementById("chartRoot");
-        const r = (root && root.getBoundingClientRect) ? root.getBoundingClientRect() : { width: 0, height: 0 };
-        
-        // высота = 100% контейнера
-        const ch0 = Math.max(240, Math.round(r.height || 0));
-        
-        // Минимум 2:3 (H:W) → W/H >= 1.5
-        const MIN_AR = 1.5;
-        const liveAR = (r.width > 0 && r.height > 0) ? (r.width / r.height) : MIN_AR;
-        const ratio  = Math.max(liveAR, MIN_AR);
-        
-        // ширина полотна рендера под нужное соотношение
-        const cw0 = Math.max(360, Math.round(ch0 * ratio));
-    
-        // округление под кеш (стабильные URL)
-        const round = 64;
-        const ch = Math.max(240, Math.floor(ch0 / round) * round);
-        const cw = Math.max(360, Math.floor(cw0 / round) * round);
-    
-        // мягкий масштаб шрифтов (страховка)
+        const { cw, ch, round } = resolveCanvas();
+  
+        // Мягкий масштаб шрифтов (страховка под очень низкие/высокие контейнеры)
         let fontScale = 1.0;
-        if (ch < 420) fontScale = 0.95  // 0.95;
-        else if (ch > 720) fontScale = 1.1 // 1.2;
-    
+        if (ch < 420) fontScale = 0.95;
+        else if (ch > 720) fontScale = 1.1;
+  
         // DPR
         const dpr = Math.max(1, Math.min(3, window.devicePixelRatio || 1));
-    
-        // инструмент/TF
+  
+        // Инструмент/TF
         const qs   = new URLSearchParams(location.search);
-        const inst = (window.encInst || qs.get("symbol") || qs.get("inst") || "BTC-USDT-SWAP").trim();
+        const inst = (window.encInst || qs.get("symbol") || qs.get("inst") || DEFAULT_INST).trim();
         const bar  = (typeof window.currentBar === "string" && window.currentBar)
                       ? window.currentBar.toLowerCase()
                       : (qs.get("bar") || "1h").toLowerCase();
-    
-        // гарантируем нужные CSS на <img>
+  
+        // Гарантируем нужные CSS на <img> (высота = 100%, ширина авто → горизонтальный скролл работает)
         img.style.display   = "block";
         img.style.width     = "auto";
         img.style.height    = "100%";
         img.style.objectFit = "contain";
-    
-        // --- запрос JSON-прокладки → отдаёт готовый URL PNG
-        // берём текущую тему из <html data-theme="...">, по умолчанию 'blue'
+        img.style.marginLeft = "0";   // прижать слева
+        img.style.marginRight = "0";
+  
+        // Текущая тема интерфейса (если нужно влиять на рендер на бэке)
         const theme = document.documentElement.getAttribute("data-theme") || "blue";
+  
+        // Параметры JSON-прокладки → отдаёт URL PNG
         const params = new URLSearchParams({
           inst, bar,
           cw: String(cw), ch: String(ch),
           dpr: String(dpr), round: String(round),
           fresh: forceFresh ? "1" : "0",
           font_scale: String(fontScale),
-
-          // --- Новые флаги рендера (нужна поддержка на бэке) ---
-          //  yfmt: "plain",   // без SI-суффиксов (k, m, μ, n) поменять «SI-суффиксы» yfmt на "si"
-          //  prec: "6",       // 6 знаков после запятой (подправишь под монету)
-          pad_ticks: "0"           // 0 — базовый; +1 расширяет; -1 сужает
+          theme // new: можно использовать на бэке для подбора палитры
         });
-    
+  
+        // Экспериментальные (включайте только когда бэк готов)
+        if (FEATURE_FLAGS.EXP_RENDER_FLAGS) {
+          params.set("yfmt", "plain"); // либо "si"
+          params.set("prec", "6");
+          params.set("pad_ticks", "0"); // 0 — базовый; +1 расширяет; -1 сужает
+        }
+  
         const jsonUrl = "/render/candle?" + params.toString();
         const r1 = await fetch(jsonUrl, { cache: "no-store" });
         if (!r1.ok) throw new Error("render/candle JSON http " + r1.status);
-    
+  
         const j = await r1.json();
         if (!j || !j.url) throw new Error("render/candle bad JSON");
-    
-        // прод: только логи
-        console.log("[chart] loading", j.url);
-    
-        // Подмена PNG + обработчики без оверлея
+  
+        if (FEATURE_FLAGS.DEBUG_JSON && debugOut) {
+          debugOut.textContent = "[json] " + JSON.stringify(j, null, 2);
+        }
+  
+        // Обработчики без оверлея
         img.onerror = function () {
-          var d = document.getElementById("chartDebug");
-          if (d) d.textContent = "PNG load error → " + j.url;
-          /* на всякий случай — при ошибке тоже ставим старт в начало */
-          const root = document.getElementById("chartRoot");
-          if (root) root.scrollLeft = 0;
+          if (debugOut) debugOut.textContent = "PNG load error → " + j.url;
+          root.scrollLeft = 0; // при ошибке тоже старт с левого края
         };
         img.onload = function () {
-          /* после успешной подмены PNG — начать с левого края */
-          const root = document.getElementById("chartRoot");
-          if (root) root.scrollLeft = 0;
-        
-          var d = document.getElementById("chartDebug");
-          if (d) d.textContent = "";
+          root.scrollLeft = 0; // после подмены PNG — в начало
+          if (debugOut) debugOut.textContent = "";
         };
+  
         img.src = j.url;
-    
+        console.debug("[chart] loading", j.url);
+  
       } catch (e) {
-        // прод: только логи
         console.error("[chart] loadPng error:", e);
+        if (FEATURE_FLAGS.DEBUG_JSON && debugOut) {
+          debugOut.textContent = "[error] " + String(e);
+        }
       }
-    }
+    };
   
     // --- обработчик смены TF ---
     tfGrid?.addEventListener("click", (e) => {
@@ -817,128 +825,66 @@
         state.tf = window.currentBar;
         try { renderBars(); } catch {}
       }
-      loadPng(true);
+      window.loadPng(true);
     });
   
     // --- обработчик Refresh ---
-    btnRefresh?.addEventListener("click", () => loadPng(true));
+    btnRefresh?.addEventListener("click", () => window.loadPng(true));
   
     // --- первый запуск + авто-ресайз ---
     window.addEventListener("DOMContentLoaded", () => {
-      loadPng(false);
-      // сразу прижимаем скролл к началу
-      const root = document.getElementById("chartRoot");
-      if (root) root.scrollLeft = 0;
-      
-      if ("ResizeObserver" in window && root) {
+      root.scrollLeft = 0;       // сразу прижимаем скролл к началу
+      window.loadPng(false);
+  
+      if ("ResizeObserver" in window) {
         let t;
         const ro = new ResizeObserver(() => {
           clearTimeout(t);
-          t = setTimeout(() => loadPng(false), 220); // debounce
+          t = setTimeout(() => window.loadPng(false), 220); // debounce
         });
         ro.observe(root);
       } else {
+        let t2;
         window.addEventListener("resize", () => {
-          clearTimeout(window.__chart_resize_t);
-          window.__chart_resize_t = setTimeout(() => loadPng(false), 220);
+          clearTimeout(t2);
+          t2 = setTimeout(() => window.loadPng(false), 220);
         });
       }
     });
+  
+    // --- drag-scroll по графику (мышь + тач) ---
+    (function attachDragScroll(wrap){
+      if (!wrap) return;
+      let isDown = false, startX = 0, scrollLeft = 0;
+  
+      const onDown = (clientX) => {
+        isDown = true;
+        startX = clientX - wrap.offsetLeft;
+        scrollLeft = wrap.scrollLeft;
+        wrap.classList.add('dragging');
+      };
+      const onMove = (clientX) => {
+        if (!isDown) return;
+        const x = clientX - wrap.offsetLeft;
+        wrap.scrollLeft = scrollLeft - (x - startX);
+      };
+      const onUp = () => { isDown = false; wrap.classList.remove('dragging'); };
+  
+      // Мышь
+      wrap.addEventListener('mousedown', e => onDown(e.clientX));
+      wrap.addEventListener('mousemove', e => onMove(e.clientX));
+      wrap.addEventListener('mouseleave', onUp);
+      wrap.addEventListener('mouseup', onUp);
+  
+      // Тач
+      wrap.addEventListener('touchstart', e => onDown(e.touches[0].clientX), { passive:true });
+      wrap.addEventListener('touchmove',  e => onMove(e.touches[0].clientX), { passive:true });
+      wrap.addEventListener('touchend', onUp);
+    })(root);
+  
   })();
   </script>
 
-  <!-- ВРЕМЕННЫЙ ОТЛАДОЧНЫЙ БЛОК: теперь БЕЗ size=P-M -->
-  <script>
-  // --- ВРЕМЕННЫЙ ОТЛАДОЧНЫЙ БЛОК: вывод JSON вместо графика -----------------
-  // Файл/блок: /First/chart.html (debug-json)
-  // Что делает:
-  //   • На старте, при смене TF и при нажатии Refresh — делает fetch JSON
-  //     на /render/candle (лёгкий JSON-эндпоинт) и печатает в <pre id="json-view">.
-  (function(){
-    // поддержка ?symbol=... и ?bar=...
-    const qp   = new URLSearchParams(location.search);
-    const inst = (qp.get("symbol") || "BTC-USDT-SWAP").trim();
-    let   bar  = String(qp.get("bar") || "1h").toLowerCase();
-
-    const out  = document.getElementById("json-view");
-
-    function show(obj){
-      if (!out) return;
-      out.textContent = JSON.stringify(obj, null, 2);
-    }
-
-    async function load(){
-      try{
-        // /render/candle теперь возвращает URL, сформированный из cw/ch/dpr/round/font_scale
-        const root = document.getElementById("chartRoot");
-        const r = root?.getBoundingClientRect() || { width: 0, height: 0 };
-        const dpr = Math.max(1, Math.min(3, window.devicePixelRatio || 1));
-        const round = 64;
-        const p = new URLSearchParams({
-          inst, bar,
-          cw: Math.round(r.width),
-          ch: Math.round(r.height),
-          dpr: dpr.toString(),
-          round: round.toString(),
-          fresh: "0",
-          font_scale: "2"
-        });
-        const url = window.OKX_API_BASE + "render/candle?" + p.toString();
-        const res = await fetch(url, { cache: "no-store" });
-        const data = await res.json().catch(()=> ({}));
-        show({ endpoint: "/render/candle", status: res.status, ok: res.ok, data });
-      }catch(e){
-        show({ endpoint: "/render/candle", error: String(e) });
-      }
-    }
-
-    // Хуки на TF и Refresh — перезагружаем JSON
-    document.getElementById("tfGrid")?.addEventListener("click", (e)=>{
-      const p = e.target.closest(".pill[data-tf]");
-      if (!p) return;
-      bar = String(p.dataset.tf || "1h").toLowerCase();
-      load();
-    });
-
-    document.getElementById("btnRefresh")?.addEventListener("click", () => loadPng(true));
-
-    // Первый запуск
-    window.addEventListener("DOMContentLoaded", () => loadPng(false));
-
-  })();
-  </script>
-  <script>
-  (function(){
-    const wrap = document.getElementById('chartRoot');
-    if (!wrap) return;
-  
-    let isDown = false, startX = 0, scrollLeft = 0;
-  
-    const onDown = (clientX) => {
-      isDown = true;
-      startX = clientX - wrap.offsetLeft;
-      scrollLeft = wrap.scrollLeft;
-      wrap.classList.add('dragging');
-    };
-    const onMove = (clientX) => {
-      if (!isDown) return;
-      const x = clientX - wrap.offsetLeft;
-      wrap.scrollLeft = scrollLeft - (x - startX);
-    };
-    const onUp = () => { isDown = false; wrap.classList.remove('dragging'); };
-  
-    // Мышь
-    wrap.addEventListener('mousedown', e => onDown(e.clientX));
-    wrap.addEventListener('mousemove', e => onMove(e.clientX));
-    wrap.addEventListener('mouseleave', onUp);
-    wrap.addEventListener('mouseup', onUp);
-  
-    // Тач
-    wrap.addEventListener('touchstart', e => onDown(e.touches[0].clientX), {passive:true});
-    wrap.addEventListener('touchmove',  e => onMove(e.touches[0].clientX), {passive:true});
-    wrap.addEventListener('touchend', onUp);
-  })();
-  </script>
 
 </body>
 </html>

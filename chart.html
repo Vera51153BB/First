@@ -662,72 +662,82 @@
     });
   </script>
 
-    <script>
-  /* -------------------------------------------------------------------------
-     /First/chart.html — ЕДИНЫЙ скрипт рендера PNG-графика
-     Назначение:
-       • На старте, при смене TF и нажатии Refresh — запрашивать JSON → URL PNG и подменять <img>.
-       • Без дублей переменных и «оторванных» обработчиков.
-       • Горизонтальный drag-scroll контейнера.
-       • Автоперерисовка при ресайзе (ResizeObserver, с дебаунсом).
-     Важно:
-       • Флаги yfmt/prec/pad_ticks по умолчанию отключены (см. FEATURE_FLAGS ниже),
-         чтобы не ловить 500, пока бэк их не примет.
-  --------------------------------------------------------------------------- */
+  <script>
+  /* -*- coding: utf-8 -*-
+   * Файл/блок: /First/chart.html
+   * Назначение:
+   *   • ЕДИНАЯ инициализация графика OKX (PNG-рендер через бэкенд).
+   *   • Без дублей слушателей и переменных.
+   *   • Поддержка тем (theme), форматирования оси Y (yfmt/prec) и паддинга (pad_ticks).
+   *
+   * Кратко по параметрам, которые мы отправляем на бек:
+   *   inst        — инструмент (BTC-USDT-SWAP и т.п.)
+   *   bar         — TF (1h, 4h, 1D...); держим в window.currentBar
+   *   cw,ch,dpr   — реальные размеры контейнера и devicePixelRatio
+   *   round       — кратность округления размеров для стабильных URL (кеш)
+   *   font_scale  — мягкий масштаб шрифтов
+   *   theme       — "blue" | "dark" | "light" (см. /render/candle в бек)
+   *   yfmt        — "si" (по умолчанию) или "plain"
+   *   prec        — "" (авто) или целое число знаков (0..)
+   *   pad_ticks   — ...,-1,0,+1,... сдвиг границ по «количеству делений»
+   *
+   * Важное:
+   *   • Контейнер с изображением — #chartRoot (скроллим по X).
+   *   • Сам PNG — <img id="candle-img"> (высота 100% контейнера, ширина авто).
+   */
   
-  (() => {
-    // ---------- FEATURE FLAGS (можно включить позже) ----------
-    // new: централизованный тумблер «экспериментальных» параметров рендера
+  (function () {
+    // ---------- ФЛАГИ (можно подкрутить) ----------
     const FEATURE_FLAGS = {
-      EXP_RENDER_FLAGS: false,   // true → в запрос добавятся yfmt/prec/pad_ticks
-      DEBUG_JSON:       false    // true → будем писать отладку в #chartDebug
+      DEBUG_JSON: false,      // если true и есть <pre id="json-view"> — печатать диагностический JSON
+      EXP_RENDER_FLAGS: true  // если true — прокидываем yfmt/prec/pad_ticks
     };
   
-    // --- входные параметры из URL ---
+    // ---------- ВХОДНЫЕ ПАРАМЕТРЫ ----------
     const qp = new URLSearchParams(location.search);
     const DEFAULT_INST = (qp.get("symbol") || qp.get("inst") || "BTC-USDT-SWAP").trim();
+    // Текущий TF храним глобально, чтобы не плодить локальных копий
+    window.currentBar = String(
+      qp.get("bar") || (typeof window.state === "object" ? window.state.tf : "1h") || "1h"
+    ).toLowerCase();
   
-    // Храним выбранный TF глобально, чтобы не плодить локальные дубли
-    // (берём из URL → из state.tf → '1h')
-    window.currentBar = String(qp.get("bar") || (typeof state === "object" ? state.tf : "1h") || "1h").toLowerCase();
+    // Тема: читаем из <html data-theme="...">, иначе 'blue'
+    function getTheme() {
+      return (document.documentElement.getAttribute("data-theme") || "blue").toLowerCase();
+    }
   
-    // --- элементы интерфейса ---
+    // Формат оси Y: берём из QS или дефолты (совместимы с беком)
+    const yfmtDefault = qp.get("yfmt") || "si";        // "si" | "plain"
+    const precDefault = qp.has("prec") ? (qp.get("prec") || "") : ""; // "" = авто
+    const padTicksDefault = parseInt(qp.get("pad_ticks") || "0", 10); // -1|0|+1 ...
+  
+    // ---------- ЭЛЕМЕНТЫ UI ----------
     const img        = document.getElementById("candle-img");
     const tfGrid     = document.getElementById("tfGrid");
     const tfBtnVal   = document.getElementById("tfBtnVal");
     const btnRefresh = document.getElementById("btnRefresh") || document.getElementById("btn-refresh");
-    const root       = document.getElementById("chartRoot");       // контейнер со скроллом
-    const debugOut   = document.getElementById("chartDebug");      // new: общий отладочный вывод
+    const debugOut   = document.getElementById("json-view");
   
-    if (!img || !root) {
-      console.error("[chart] required nodes missing: img/root");
-      return;
+    // Нижняя подпись/состояние (если присутствует ваш state/renderBars)
+    if (typeof window.state === "object") {
+      window.state.pair = `OKX · ${DEFAULT_INST}`;
+      window.state.tf   = window.currentBar;
+      try { window.renderBars && window.renderBars(); } catch {}
+      if (tfBtnVal) tfBtnVal.textContent = window.state.tf;
     }
   
-    // --- синхронизация подписи внизу (если используете нижнюю плашку state.*) ---
-    if (typeof state === "object") {
-      state.pair = `OKX · ${DEFAULT_INST}`;
-      state.tf   = window.currentBar;
-      try { renderBars(); } catch {/* no-op */}
-      if (tfBtnVal) tfBtnVal.textContent = state.tf;
-    }
-  
-    // --- реальный контейнер и округление размеров под кеш ---
+    // ---------- РАСЧЁТ РАЗМЕРОВ ПОЛОТНА ----------
     function resolveCanvas() {
-      const r = (root && root.getBoundingClientRect) ? root.getBoundingClientRect() : { width: 0, height: 0 };
+      const root = document.getElementById("chartRoot");
+      const r = root?.getBoundingClientRect?.() || { width: 0, height: 0 };
   
-      // Высота = 100% контейнера
-      const ch0 = Math.max(240, Math.round(r.height || 0));
+      // Высота = вся доступная область центра; ширина — по фактическому AR, но не ниже 3:2 (W/H >= 1.5)
+      const ch0   = Math.max(240, Math.round(r.height || 0));
+      const liveAR = (r.width > 0 && r.height > 0) ? (r.width / r.height) : 1.5;
+      const ratio  = Math.max(liveAR, 1.5);
+      const cw0   = Math.max(360, Math.round(ch0 * ratio));
   
-      // Минимум 2:3 (H:W) → W/H >= 1.5
-      const MIN_AR = 1.5;
-      const liveAR = (r.width > 0 && r.height > 0) ? (r.width / r.height) : MIN_AR;
-      const ratio  = Math.max(liveAR, MIN_AR);
-  
-      // Ширина полотна рендера под нужное соотношение
-      const cw0 = Math.max(360, Math.round(ch0 * ratio));
-  
-      // Округление под кеш (стабильные URL у CDN)
+      // Округление под кеш
       const round = 64;
       const ch = Math.max(240, Math.floor(ch0 / round) * round);
       const cw = Math.max(360, Math.floor(cw0 / round) * round);
@@ -735,53 +745,47 @@
       return { cw, ch, round };
     }
   
-    // --- ЕДИНСТВЕННАЯ функция загрузки PNG (видна везде) ---
-    window.loadPng = async function loadPng(forceFresh = false) {
+    // ---------- ОСНОВНАЯ ЗАГРУЗКА PNG ----------
+    async function loadPng(forceFresh = false, opts = {}) {
+      if (!img) return;
+  
       try {
+        const root = document.getElementById("chartRoot");
         const { cw, ch, round } = resolveCanvas();
-  
-        // Мягкий масштаб шрифтов (страховка под очень низкие/высокие контейнеры)
-        let fontScale = 1.0;
-        if (ch < 420) fontScale = 0.95;
-        else if (ch > 720) fontScale = 1.1;
-  
-        // DPR
         const dpr = Math.max(1, Math.min(3, window.devicePixelRatio || 1));
   
-        // Инструмент/TF
-        const qs   = new URLSearchParams(location.search);
-        const inst = (window.encInst || qs.get("symbol") || qs.get("inst") || DEFAULT_INST).trim();
-        const bar  = (typeof window.currentBar === "string" && window.currentBar)
-                      ? window.currentBar.toLowerCase()
-                      : (qs.get("bar") || "1h").toLowerCase();
+        // мягкий масштаб шрифтов
+        let fontScale = 1.0;
+        if (ch < 420) fontScale = 0.95;
+        else if (ch > 720) fontScale = 1.10;
   
-        // Гарантируем нужные CSS на <img> (высота = 100%, ширина авто → горизонтальный скролл работает)
+        const inst = (window.encInst || DEFAULT_INST);
+        const bar  = (typeof window.currentBar === "string" && window.currentBar) ? window.currentBar : "1h";
+  
+        // Гарантируем нужные CSS у <img>
         img.style.display   = "block";
         img.style.width     = "auto";
         img.style.height    = "100%";
         img.style.objectFit = "contain";
-        img.style.marginLeft = "0";   // прижать слева
-        img.style.marginRight = "0";
   
-        // Текущая тема интерфейса (если нужно влиять на рендер на бэке)
-        const theme = document.documentElement.getAttribute("data-theme") || "blue";
+        // Форматирование Y и тема
+        const theme      = getTheme();
+        const yfmt       = opts.yfmt ?? yfmtDefault;            // "si"|"plain"
+        const prec       = opts.prec ?? precDefault;            // "" либо "6" и т.п.
+        const pad_ticks  = (opts.pad_ticks ?? padTicksDefault); // -1|0|+1...
   
-        // Параметры JSON-прокладки → отдаёт URL PNG
+        // Собираем query на JSON-роут (он вернёт URL PNG 1:1)
         const params = new URLSearchParams({
           inst, bar,
           cw: String(cw), ch: String(ch),
           dpr: String(dpr), round: String(round),
           fresh: forceFresh ? "1" : "0",
           font_scale: String(fontScale),
-          theme // new: можно использовать на бэке для подбора палитры
+          theme, yfmt,
+          pad_ticks: String(pad_ticks)
         });
-  
-        // Экспериментальные (включайте только когда бэк готов)
-        if (FEATURE_FLAGS.EXP_RENDER_FLAGS) {
-          params.set("yfmt", "plain"); // либо "si"
-          params.set("prec", "6");
-          params.set("pad_ticks", "0"); // 0 — базовый; +1 расширяет; -1 сужает
-        }
+        // 'prec' добавляем только если задано явно ("" = авто — не шлём)
+        if (String(prec).trim() !== "") params.set("prec", String(prec).trim());
   
         const jsonUrl = "/render/candle?" + params.toString();
         const r1 = await fetch(jsonUrl, { cache: "no-store" });
@@ -794,16 +798,14 @@
           debugOut.textContent = "[json] " + JSON.stringify(j, null, 2);
         }
   
-        // Обработчики без оверлея
         img.onerror = function () {
           if (debugOut) debugOut.textContent = "PNG load error → " + j.url;
-          root.scrollLeft = 0; // при ошибке тоже старт с левого края
+          if (root) root.scrollLeft = 0;
         };
         img.onload = function () {
-          root.scrollLeft = 0; // после подмены PNG — в начало
+          if (root) root.scrollLeft = 0;        // после подмены PNG — к началу
           if (debugOut) debugOut.textContent = "";
         };
-  
         img.src = j.url;
         console.debug("[chart] loading", j.url);
   
@@ -813,47 +815,27 @@
           debugOut.textContent = "[error] " + String(e);
         }
       }
-    };
+    }
   
-    // --- обработчик смены TF ---
+    // ---------- СМЕНА TF ----------
     tfGrid?.addEventListener("click", (e) => {
       const pill = e.target.closest(".pill[data-tf]");
       if (!pill) return;
       window.currentBar = String(pill.dataset.tf || "1h").toLowerCase();
       if (tfBtnVal) tfBtnVal.textContent = window.currentBar;
-      if (typeof state === "object") {
-        state.tf = window.currentBar;
-        try { renderBars(); } catch {}
+      if (typeof window.state === "object") {
+        window.state.tf = window.currentBar;
+        try { window.renderBars && window.renderBars(); } catch {}
       }
-      window.loadPng(true);
+      loadPng(true);
     });
   
-    // --- обработчик Refresh ---
-    btnRefresh?.addEventListener("click", () => window.loadPng(true));
+    // ---------- REFRESH ----------
+    btnRefresh?.addEventListener("click", () => loadPng(true));
   
-    // --- первый запуск + авто-ресайз ---
-    window.addEventListener("DOMContentLoaded", () => {
-      root.scrollLeft = 0;       // сразу прижимаем скролл к началу
-      window.loadPng(false);
-  
-      if ("ResizeObserver" in window) {
-        let t;
-        const ro = new ResizeObserver(() => {
-          clearTimeout(t);
-          t = setTimeout(() => window.loadPng(false), 220); // debounce
-        });
-        ro.observe(root);
-      } else {
-        let t2;
-        window.addEventListener("resize", () => {
-          clearTimeout(t2);
-          t2 = setTimeout(() => window.loadPng(false), 220);
-        });
-      }
-    });
-  
-    // --- drag-scroll по графику (мышь + тач) ---
-    (function attachDragScroll(wrap){
+    // ---------- ПЕРЕТАСКИВАНИЕ/СКРОЛЛ ПО X ----------
+    (function initDragScroll(){
+      const wrap = document.getElementById("chartRoot");
       if (!wrap) return;
       let isDown = false, startX = 0, scrollLeft = 0;
   
@@ -861,30 +843,49 @@
         isDown = true;
         startX = clientX - wrap.offsetLeft;
         scrollLeft = wrap.scrollLeft;
-        wrap.classList.add('dragging');
+        wrap.classList.add("dragging");
       };
       const onMove = (clientX) => {
         if (!isDown) return;
         const x = clientX - wrap.offsetLeft;
         wrap.scrollLeft = scrollLeft - (x - startX);
       };
-      const onUp = () => { isDown = false; wrap.classList.remove('dragging'); };
+      const onUp = () => { isDown = false; wrap.classList.remove("dragging"); };
   
       // Мышь
-      wrap.addEventListener('mousedown', e => onDown(e.clientX));
-      wrap.addEventListener('mousemove', e => onMove(e.clientX));
-      wrap.addEventListener('mouseleave', onUp);
-      wrap.addEventListener('mouseup', onUp);
+      wrap.addEventListener("mousedown", e => onDown(e.clientX));
+      wrap.addEventListener("mousemove", e => onMove(e.clientX));
+      wrap.addEventListener("mouseleave", onUp);
+      wrap.addEventListener("mouseup", onUp);
   
       // Тач
-      wrap.addEventListener('touchstart', e => onDown(e.touches[0].clientX), { passive:true });
-      wrap.addEventListener('touchmove',  e => onMove(e.touches[0].clientX), { passive:true });
-      wrap.addEventListener('touchend', onUp);
-    })(root);
+      wrap.addEventListener("touchstart", e => onDown(e.touches[0].clientX), {passive:true});
+      wrap.addEventListener("touchmove",  e => onMove(e.touches[0].clientX), {passive:true});
+      wrap.addEventListener("touchend", onUp);
+    })();
   
+    // ---------- ПЕРВЫЙ ЗАПУСК + АВТО-РЕСАЙЗ ----------
+    window.addEventListener("DOMContentLoaded", () => {
+      loadPng(false);
+      const root = document.getElementById("chartRoot");
+      if (root) root.scrollLeft = 0;
+  
+      if ("ResizeObserver" in window && root) {
+        let t;
+        const ro = new ResizeObserver(() => {
+          clearTimeout(t);
+          t = setTimeout(() => loadPng(false), 220); // debounce
+        });
+        ro.observe(root);
+      } else {
+        window.addEventListener("resize", () => {
+          clearTimeout(window.__chart_resize_t);
+          window.__chart_resize_t = setTimeout(() => loadPng(false), 220);
+        });
+      }
+    });
   })();
   </script>
-
 
 </body>
 </html>

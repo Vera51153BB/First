@@ -674,7 +674,7 @@
     Файл/блок: /chart.html
     Назначение:
       • Единый модуль загрузки PNG-графика свечей.
-      • Поддержка тем (blue/dark/light) и форматирования подписей (yfmt/prec/pad_ticks/sub).
+      • Поддержка тем (blue/dark/light) и форматирования подписей (yfmt/prec/pad_ticks/).
       • Без дублей и рассинхронов. Все сетевые запросы идут через loadPng().
   
     ВАЖНО:
@@ -686,7 +686,7 @@
     // ---------- ФЛАГИ/НАСТРОЙКИ ----------
     const FEATURE_FLAGS = {
       DEBUG_JSON: false,               // true → печатать JSON/ошибки в #chartDebug
-      EXP_RENDER_FLAGS: true,          // true → отправляем yfmt/prec/pad_ticks/sub
+      EXP_RENDER_FLAGS: true,          // true → отправляем yfmt/prec/pad_ticks
       ENDPOINT: "/render/candle.png"   // PNG-эндпоинт
     };
   
@@ -733,10 +733,6 @@
         const n = Number(qp.get("pad_ticks"));
         return Number.isFinite(n) && [-1,0,1].includes(n) ? n : 0;
       })(),
-      sub  : (function(){
-        const n = Number(qp.get("sub"));
-        return (n === 1) ? 1 : 0;
-      })()
     };
   
     // подпишем кнопку TF, если она есть
@@ -784,7 +780,6 @@
         p.set("yfmt", state.yfmt);
         if (state.prec !== "") p.set("prec", state.prec);  // пустое не шлём
         p.set("pad_ticks", String(state.pad));
-        p.set("sub", String(state.sub));
       }
       return p;
     }

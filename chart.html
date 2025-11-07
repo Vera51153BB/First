@@ -401,6 +401,96 @@
       .pair .sep-tf,
       .pair .tf{ display:none; }
     }
+    
+    /* ====== BRAND LOGO (inline-SVG) + THEMES ====== */
+    /* Базовые переменные (основная синяя тема) */
+    :root{
+      --logo-fg: #F4F7FF;              /* цвет текста лого */
+      --logo-neon: #00E5FF;            /* цвет неона и LED (циан) */
+      --logo-glow: rgba(0,229,255,.38);/* свечение неона */
+      --logo-stroke-dark: rgba(0,0,0,.42);   /* внешний тёмный halo */
+      --logo-stroke-light: rgba(255,255,255,.34); /* внутренний светлый halo */
+      --logo-size: 28px;               /* высота капов */
+    }
+    
+    /* Чёрная тема */
+    [data-theme="dark"]{
+      --logo-fg:#F4F7FF;
+      --logo-neon:#00E5FF;
+      --logo-glow:rgba(0,229,255,.42);
+      --logo-stroke-dark:rgba(0,0,0,.46);
+      --logo-stroke-light:rgba(255,255,255,.30);
+    }
+    
+    /* Белая тема */
+    [data-theme="light"]{
+      --logo-fg:#121620;
+      --logo-neon:#0CB6C5;
+      --logo-glow:rgba(12,182,197,.28);
+      --logo-stroke-dark:rgba(0,0,0,.48);
+      --logo-stroke-light:rgba(255,255,255,.26);
+    }
+    
+    /* Контейнер плейсхолдера: поверх центра, клики пропускает */
+    .brand-holder{
+      position:absolute;
+      inset:0;
+      display:none;            /* по умолчанию скрыт — покажем отложено */
+      align-items:center;
+      justify-content:center;
+      pointer-events:none;
+      z-index:3;               /* над графиком, но не перехватывает клики */
+      background: transparent; /* без затемнения */
+    }
+    
+    /* Враппер лого, чтобы легко центрировать */
+    .brand-wrap{
+      display:flex; align-items:center; gap:10px;
+      padding:8px 10px;
+    }
+    
+    /* SVG в масштабе: не ломает макет */
+    .brand-logo{
+      height: calc(var(--logo-size) + 8px);
+      width: auto;
+      filter: none;
+    }
+    
+    /* LED-точка слева от слова */
+    .brand-led{
+      width:8px; height:8px; border-radius:50%;
+      background: var(--logo-neon);
+      box-shadow: 0 0 6px var(--logo-glow);
+      opacity:1;
+    }
+    
+    /* ---- Анимации: одноразовые. Уважаем prefers-reduced-motion ---- */
+    @media (prefers-reduced-motion: no-preference){
+      .led-flash{
+        animation: ledFlash 320ms ease-out 1 forwards;
+      }
+      .sweep-run .sweep-mask{
+        animation: sweep 1.05s cubic-bezier(.2,.6,.2,1) 1 forwards;
+      }
+    }
+    @keyframes ledFlash{
+      0%{ opacity:.35; box-shadow:0 0 0 var(--logo-glow); }
+      50%{ opacity:1;  box-shadow:0 0 10px var(--logo-glow); }
+      100%{ opacity:.85; box-shadow:0 0 6px var(--logo-glow); }
+    }
+    @keyframes sweep{
+      0%{ transform: translateX(-105%); }
+      100%{ transform: translateX(105%); }
+    }
+    
+    /* Тонкая двойная окантовка (halo) — в SVG через два контура */
+    .brand-text{ fill: var(--logo-fg); }
+    .brand-stroke-dark{ stroke: var(--logo-stroke-dark); stroke-width:1; }
+    .brand-stroke-light{ stroke: var(--logo-stroke-light); stroke-width:.7; }
+    
+    /* Размещение плейсхолдера ровно над центральной областью */
+    .center{ position: relative; } /* у вас уже есть .center — добавляем позиционирование */
+
   </style>
   
 </head>
@@ -408,6 +498,52 @@
   <div class="viewport">
     <!-- верхняя технологическая зона 40px (пустая, для системных панелей; по ТЗ оставляем) -->
     <div class="topbar">
+            <!-- BRAND: botcryptosignal -->
+      <div class="brand-wrap" aria-label="botcryptosignal logo" role="img">
+        <div class="brand-led"></div>
+        <!-- Inline-SVG логотип. Текст через системный стек, halo контурами -->
+        <svg class="brand-logo" viewBox="0 0 780 120" xmlns="http://www.w3.org/2000/svg">
+          <!-- Маска для неонового свипа -->
+          <defs>
+            <linearGradient id="sweepGrad" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0" stop-color="transparent"/>
+              <stop offset=".45" stop-color="white"/>
+              <stop offset="1" stop-color="transparent"/>
+            </linearGradient>
+            <mask id="sweepMask">
+              <rect class="sweep-mask" x="-100%" y="0" width="300%" height="100%" fill="url(#sweepGrad)"/>
+            </mask>
+          </defs>
+      
+          <!-- Тёмный внешний halo -->
+          <text x="0" y="86"
+                class="brand-stroke-dark"
+                style="font:700 86px/1.05 -apple-system,Segoe UI,Roboto,Inter,system-ui,sans-serif;">
+            botcryptosignal
+          </text>
+          <!-- Светлый внутренний halo -->
+          <text x="0" y="86"
+                class="brand-stroke-light"
+                style="font:700 86px/1.05 -apple-system,Segoe UI,Roboto,Inter,system-ui,sans-serif;">
+            botcryptosignal
+          </text>
+          <!-- Основной контур + слой со свипом -->
+          <g mask="url(#sweepMask)">
+            <text x="0" y="86"
+                  class="brand-text"
+                  style="font:700 86px/1.05 -apple-system,Segoe UI,Roboto,Inter,system-ui,sans-serif;">
+              botcryptosignal
+            </text>
+          </g>
+          <!-- Подложка (статичный текст) для случая reduced-motion -->
+          <text x="0" y="86"
+                class="brand-text"
+                style="font:700 86px/1.05 -apple-system,Segoe UI,Roboto,Inter,system-ui,sans-serif; opacity:.001;">
+            botcryptosignal
+          </text>
+        </svg>
+      </div>
+
       <div class="left">
         <button class="btn" id="btnTF"><b>TF · <span id="tfBtnVal">1h</span></b></button>
         <!-- Кнопка Настройки -->
@@ -425,6 +561,43 @@
 
     <!-- центральная область: чистая (под реальный график)  -->
     <div class="center" id="chartRoot">
+      <!-- BRAND PLACEHOLDER: поверх центра, показывается, если график грузится "долго" -->
+      <div id="brandHolder" class="brand-holder">
+        <div class="brand-wrap">
+          <div class="brand-led"></div>
+          <svg class="brand-logo" viewBox="0 0 780 120" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <linearGradient id="sweepGradPh" x1="0" y1="0" x2="1" y2="0">
+                <stop offset="0" stop-color="transparent"/>
+                <stop offset=".45" stop-color="white"/>
+                <stop offset="1" stop-color="transparent"/>
+              </linearGradient>
+              <mask id="sweepMaskPh">
+                <rect class="sweep-mask" x="-100%" y="0" width="300%" height="100%" fill="url(#sweepGradPh)"/>
+              </mask>
+            </defs>
+            <text x="0" y="86" class="brand-stroke-dark"
+                  style="font:700 86px/1.05 -apple-system,Segoe UI,Roboto,Inter,system-ui,sans-serif;">
+              botcryptosignal
+            </text>
+            <text x="0" y="86" class="brand-stroke-light"
+                  style="font:700 86px/1.05 -apple-system,Segoe UI,Roboto,Inter,system-ui,sans-serif;">
+              botcryptosignal
+            </text>
+            <g mask="url(#sweepMaskPh)">
+              <text x="0" y="86" class="brand-text"
+                    style="font:700 86px/1.05 -apple-system,Segoe UI,Roboto,Inter,system-ui,sans-serif;">
+                botcryptosignal
+              </text>
+            </g>
+            <text x="0" y="86" class="brand-text"
+                  style="font:700 86px/1.05 -apple-system,Segoe UI,Roboto,Inter,system-ui,sans-serif; opacity:.001;">
+              botcryptosignal
+            </text>
+          </svg>
+        </div>
+      </div>
+
       <img id="candle-img" alt="Candlestick chart">
     </div>
 
@@ -510,7 +683,7 @@
       <button class="btn close" id="btnCloseLegend">Понятно</button>
     </div>
   </div>
-    <!-- Скрипты -->
+
     <!-- Скрипты -->
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
@@ -756,6 +929,21 @@
         img.style.width     = "auto";
         img.style.height    = "100%";
         img.style.objectFit = "contain";
+
+        /* BRAND_PLACEHOLDER: запускаем отложенный показ плейсхолдера (если будет "долго") */
+        const brandHolder = document.getElementById('brandHolder');
+        const startTs = Date.now();
+        let brandTimer = null;
+        
+        /* Порог 120 мс: если график успеет загрузиться быстрее — плейсхолдер не покажем */
+        brandTimer = setTimeout(() => {
+          if (!brandHolder) return;
+          brandHolder.style.display = 'flex';
+          /* включаем одноразовые анимации: LED и sweep */
+          brandHolder.querySelectorAll('.brand-led').forEach(n => n.classList.add('led-flash'));
+          brandHolder.classList.add('sweep-run');
+        }, 120);
+
     
         // --- запрос JSON-прокладки → отдаёт готовый URL PNG
         const params = new URLSearchParams({
@@ -796,6 +984,15 @@
         
           var d = document.getElementById("chartDebug");
           if (d) d.textContent = "";
+          /* BRAND_PLACEHOLDER: график готов — скрываем плейсхолдер и обнуляем таймер */
+          try{
+            if (brandTimer) { clearTimeout(brandTimer); brandTimer = null; }
+            if (brandHolder) {
+              brandHolder.style.display = 'none';
+              brandHolder.classList.remove('sweep-run');
+              brandHolder.querySelectorAll('.brand-led').forEach(n => n.classList.remove('led-flash'));
+            }
+          }catch(_){}
         };
         img.src = j.url;
     

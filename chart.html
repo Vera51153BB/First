@@ -685,127 +685,148 @@
    *   • Контейнер с изображением — #chartRoot (скроллим по X).
    *   • Сам PNG — <img id="candle-img"> (высота 100% контейнера, ширина авто).
    */
+  /* ======================================================================
+     OKX Candle PNG Loader (единый модуль)
+     Файл/блок: /First/chart.html
+     Что делает:
+       • На старте, смене TF и по Refresh тянет /render/candle (JSON) и подменяет <img id="candle-img">.
+       • Передаёт в бэкенд тему/формат подписей/сетку: theme, yfmt, prec, pad_ticks, sub.
+       • Гарантирует минимальное соотношение H:W ≥ 2:3 → ширина рассчитывается, горизонтальный скролл включён.
+       • Поддерживает drag-to-scroll (мышь/тач) без конфликтов.
+     ---------------------------------------------------------------------- */
   
   (function () {
-    // ---------- ФЛАГИ (можно подкрутить) ----------
+    // -------- ФЛАГИ/НАСТРОЙКИ (можно править центрально) -----------------
     const FEATURE_FLAGS = {
-      DEBUG_JSON: false,      // если true и есть <pre id="json-view"> — печатать диагностический JSON
-      EXP_RENDER_FLAGS: true  // если true — прокидываем yfmt/prec/pad_ticks
+      EXP_RENDER_FLAGS : true,     // слать на бэк yfmt/prec/pad_ticks/sub
+      DEBUG_JSON       : false     // писать ответы JSON в #json-view/#chartDebug
     };
   
-    // ---------- ВХОДНЫЕ ПАРАМЕТРЫ ----------
+    // Источники параметров: URL → дефолты
     const qp = new URLSearchParams(location.search);
-    const DEFAULT_INST = (qp.get("symbol") || qp.get("inst") || "BTC-USDT-SWAP").trim();
-    // Текущий TF храним глобально, чтобы не плодить локальных копий
-    window.currentBar = String(
-      qp.get("bar") || (typeof window.state === "object" ? window.state.tf : "1h") || "1h"
-    ).toLowerCase();
   
-    // Тема: читаем из <html data-theme="...">, иначе 'blue'
-    function getTheme() {
-      return (document.documentElement.getAttribute("data-theme") || "blue").toLowerCase();
-    }
+    const DEFAULTS = {
+      inst      : (qp.get("symbol") || qp.get("inst") || "BTC-USDT-SWAP").trim(),
+      bar       : String(qp.get("bar") || (typeof window.state === "object" ? window.state.tf : "1h") || "1h").toLowerCase(),
+      theme     : (document.documentElement.getAttribute("data-theme") || qp.get("theme") || "blue"),
+      yfmt      : (qp.get("yfmt") || "si"),      // "si" | "plain"
+      prec      : qp.get("prec"),                // null → авто, либо "6", "8" и т.п.
+      pad_ticks : qp.get("pad") ?? "0",          // "-1" | "0" | "1"
+      sub       : qp.get("sub") ?? "1"           // "1" → показывать подзаголовок
+    };
   
-    // Формат оси Y: берём из QS или дефолты (совместимы с беком)
-    const yfmtDefault = qp.get("yfmt") || "si";        // "si" | "plain"
-    const precDefault = qp.has("prec") ? (qp.get("prec") || "") : ""; // "" = авто
-    const padTicksDefault = parseInt(qp.get("pad_ticks") || "0", 10); // -1|0|+1 ...
-  
-    // ---------- ЭЛЕМЕНТЫ UI ----------
+    // Доступ к элементам интерфейса
     const img        = document.getElementById("candle-img");
+    const pairEl     = document.getElementById("pair");
     const tfGrid     = document.getElementById("tfGrid");
     const tfBtnVal   = document.getElementById("tfBtnVal");
     const btnRefresh = document.getElementById("btnRefresh") || document.getElementById("btn-refresh");
-    const debugOut   = document.getElementById("json-view");
+    const chartRoot  = document.getElementById("chartRoot");
+    const debugOut   = document.getElementById("json-view") || document.getElementById("chartDebug");
   
-    // Нижняя подпись/состояние (если присутствует ваш state/renderBars)
+    // Текущее состояние клиента
+    const state = {
+      inst  : DEFAULTS.inst,
+      bar   : DEFAULTS.bar,
+      theme : DEFAULTS.theme,
+      yfmt  : DEFAULTS.yfmt,
+      prec  : DEFAULTS.prec,
+      pad   : DEFAULTS.pad_ticks,
+      sub   : DEFAULTS.sub
+    };
+  
+    // Синхронизируем подписи внизу/кнопку TF, если используются
     if (typeof window.state === "object") {
-      window.state.pair = `OKX · ${DEFAULT_INST}`;
-      window.state.tf   = window.currentBar;
-      try { window.renderBars && window.renderBars(); } catch {}
-      if (tfBtnVal) tfBtnVal.textContent = window.state.tf;
+      window.state.pair = `OKX · ${state.inst}`;
+      window.state.tf   = state.bar;
+      try { window.renderBars?.(); } catch {}
     }
+    if (tfBtnVal) tfBtnVal.textContent = state.bar;
+    if (pairEl)   pairEl.textContent   = `OKX · ${state.inst} · `;
   
-    // ---------- РАСЧЁТ РАЗМЕРОВ ПОЛОТНА ----------
+    // -------- Вспомогательные функции ------------------------------------
+    // 1) Квантуем размеры полотна под кеш CDN и соблюдаем H:W ≥ 1.5 (т.е. 2:3 по твоему ТЗ)
     function resolveCanvas() {
-      const root = document.getElementById("chartRoot");
-      const r = root?.getBoundingClientRect?.() || { width: 0, height: 0 };
+      if (!chartRoot) return { cw: 960, ch: 640, round: 64, dpr: 1, fontScale: 1 };
+      const r = chartRoot.getBoundingClientRect();
+      const MIN_AR = 1.5;                                 // W/H ≥ 1.5 (2:3)
+      const h0 = Math.max(240, Math.round(r.height || 0));
+      const liveAR = (r.width > 0 && r.height > 0) ? (r.width / r.height) : MIN_AR;
+      const ratio = Math.max(liveAR, MIN_AR);
+      const w0 = Math.max(360, Math.round(h0 * ratio));
   
-      // Высота = вся доступная область центра; ширина — по фактическому AR, но не ниже 3:2 (W/H >= 1.5)
-      const ch0   = Math.max(240, Math.round(r.height || 0));
-      const liveAR = (r.width > 0 && r.height > 0) ? (r.width / r.height) : 1.5;
-      const ratio  = Math.max(liveAR, 1.5);
-      const cw0   = Math.max(360, Math.round(ch0 * ratio));
+      const round = 64;                                   // для стабильных URL
+      const ch = Math.max(240, Math.floor(h0 / round) * round);
+      const cw = Math.max(360, Math.floor(w0 / round) * round);
   
-      // Округление под кеш
-      const round = 64;
-      const ch = Math.max(240, Math.floor(ch0 / round) * round);
-      const cw = Math.max(360, Math.floor(cw0 / round) * round);
+      const dpr = Math.max(1, Math.min(3, window.devicePixelRatio || 1));
   
-      return { cw, ch, round };
+      // мягкая подстройка шрифта (страховка)
+      let fontScale = 1.0;
+      if (ch < 420)      fontScale = 0.95;
+      else if (ch > 720) fontScale = 1.10;
+  
+      return { cw, ch, round, dpr, fontScale };
     }
   
-    // ---------- ОСНОВНАЯ ЗАГРУЗКА PNG ----------
-    async function loadPng(forceFresh = false, opts = {}) {
-      if (!img) return;
+    // 2) Собираем параметры для /render/candle
+    function buildParams(forceFresh) {
+      const { cw, ch, round, dpr, fontScale } = resolveCanvas();
+      const p = new URLSearchParams({
+        inst       : state.inst,
+        bar        : state.bar,
+        cw         : String(cw),
+        ch         : String(ch),
+        dpr        : String(dpr),
+        round      : String(round),
+        fresh      : forceFresh ? "1" : "0",
+        font_scale : String(fontScale),
+        theme      : state.theme
+      });
+  
+      if (FEATURE_FLAGS.EXP_RENDER_FLAGS) {
+        p.set("yfmt", state.yfmt);
+        if (state.prec != null && state.prec !== "") p.set("prec", String(state.prec));
+        p.set("pad_ticks", String(state.pad));
+        p.set("sub", String(state.sub));
+      }
+      return p;
+    }
+  
+    // -------- Основная функция загрузки PNG -------------------------------
+    async function loadPng(forceFresh = false) {
+      if (!img || !chartRoot) return;
+  
+      // гарантируем нужные стили у <img>
+      img.style.display   = "block";
+      img.style.width     = "auto";
+      img.style.height    = "100%";
+      img.style.objectFit = "contain";
+  
+      const params = buildParams(forceFresh);
+      const jsonUrl = "/render/candle?" + params.toString();
   
       try {
-        const root = document.getElementById("chartRoot");
-        const { cw, ch, round } = resolveCanvas();
-        const dpr = Math.max(1, Math.min(3, window.devicePixelRatio || 1));
-  
-        // мягкий масштаб шрифтов
-        let fontScale = 1.0;
-        if (ch < 420) fontScale = 0.95;
-        else if (ch > 720) fontScale = 1.10;
-  
-        const inst = (window.encInst || DEFAULT_INST);
-        const bar  = (typeof window.currentBar === "string" && window.currentBar) ? window.currentBar : "1h";
-  
-        // Гарантируем нужные CSS у <img>
-        img.style.display   = "block";
-        img.style.width     = "auto";
-        img.style.height    = "100%";
-        img.style.objectFit = "contain";
-  
-        // Форматирование Y и тема
-        const theme      = getTheme();
-        const yfmt       = opts.yfmt ?? yfmtDefault;            // "si"|"plain"
-        const prec       = opts.prec ?? precDefault;            // "" либо "6" и т.п.
-        const pad_ticks  = (opts.pad_ticks ?? padTicksDefault); // -1|0|+1...
-  
-        // Собираем query на JSON-роут (он вернёт URL PNG 1:1)
-        const params = new URLSearchParams({
-          inst, bar,
-          cw: String(cw), ch: String(ch),
-          dpr: String(dpr), round: String(round),
-          fresh: forceFresh ? "1" : "0",
-          font_scale: String(fontScale),
-          theme, yfmt,
-          pad_ticks: String(pad_ticks)
-        });
-        // 'prec' добавляем только если задано явно ("" = авто — не шлём)
-        if (String(prec).trim() !== "") params.set("prec", String(prec).trim());
-  
-        const jsonUrl = "/render/candle?" + params.toString();
-        const r1 = await fetch(jsonUrl, { cache: "no-store" });
-        if (!r1.ok) throw new Error("render/candle JSON http " + r1.status);
-  
-        const j = await r1.json();
+        // тянем JSON-прокладку (она вернёт конечный png-URL)
+        const r = await fetch(jsonUrl, { cache: "no-store" });
+        if (!r.ok) throw new Error("render/candle JSON http " + r.status);
+        const j = await r.json();
         if (!j || !j.url) throw new Error("render/candle bad JSON");
   
         if (FEATURE_FLAGS.DEBUG_JSON && debugOut) {
           debugOut.textContent = "[json] " + JSON.stringify(j, null, 2);
         }
   
+        img.onload = function () {
+          // после подмены PNG — к левому краю
+          chartRoot.scrollLeft = 0;
+          if (FEATURE_FLAGS.DEBUG_JSON && debugOut) debugOut.textContent = "";
+        };
         img.onerror = function () {
           if (debugOut) debugOut.textContent = "PNG load error → " + j.url;
-          if (root) root.scrollLeft = 0;
+          chartRoot.scrollLeft = 0;
         };
-        img.onload = function () {
-          if (root) root.scrollLeft = 0;        // после подмены PNG — к началу
-          if (debugOut) debugOut.textContent = "";
-        };
+  
         img.src = j.url;
         console.debug("[chart] loading", j.url);
   
@@ -817,75 +838,78 @@
       }
     }
   
-    // ---------- СМЕНА TF ----------
-    tfGrid?.addEventListener("click", (e) => {
-      const pill = e.target.closest(".pill[data-tf]");
+    // -------- Смена TF (клики по .pill[data-tf]) --------------------------
+    tfGrid?.addEventListener("click", (ev) => {
+      const pill = ev.target.closest(".pill[data-tf]");
       if (!pill) return;
-      window.currentBar = String(pill.dataset.tf || "1h").toLowerCase();
-      if (tfBtnVal) tfBtnVal.textContent = window.currentBar;
+      state.bar = String(pill.dataset.tf || "1h").toLowerCase();
+      if (tfBtnVal) tfBtnVal.textContent = state.bar;
       if (typeof window.state === "object") {
-        window.state.tf = window.currentBar;
-        try { window.renderBars && window.renderBars(); } catch {}
+        window.state.tf = state.bar;
+        try { window.renderBars?.(); } catch {}
       }
       loadPng(true);
     });
   
-    // ---------- REFRESH ----------
+    // -------- Кнопка Refresh ----------------------------------------------
     btnRefresh?.addEventListener("click", () => loadPng(true));
   
-    // ---------- ПЕРЕТАСКИВАНИЕ/СКРОЛЛ ПО X ----------
-    (function initDragScroll(){
-      const wrap = document.getElementById("chartRoot");
-      if (!wrap) return;
+    // -------- Drag-to-scroll (мышь/тач) -----------------------------------
+    (function attachDragScroll() {
+      if (!chartRoot) return;
       let isDown = false, startX = 0, scrollLeft = 0;
   
       const onDown = (clientX) => {
         isDown = true;
-        startX = clientX - wrap.offsetLeft;
-        scrollLeft = wrap.scrollLeft;
-        wrap.classList.add("dragging");
+        startX = clientX - chartRoot.offsetLeft;
+        scrollLeft = chartRoot.scrollLeft;
+        chartRoot.classList.add("dragging");
       };
       const onMove = (clientX) => {
         if (!isDown) return;
-        const x = clientX - wrap.offsetLeft;
-        wrap.scrollLeft = scrollLeft - (x - startX);
+        const x = clientX - chartRoot.offsetLeft;
+        chartRoot.scrollLeft = scrollLeft - (x - startX);
       };
-      const onUp = () => { isDown = false; wrap.classList.remove("dragging"); };
+      const onUp = () => { isDown = false; chartRoot.classList.remove("dragging"); };
   
-      // Мышь
-      wrap.addEventListener("mousedown", e => onDown(e.clientX));
-      wrap.addEventListener("mousemove", e => onMove(e.clientX));
-      wrap.addEventListener("mouseleave", onUp);
-      wrap.addEventListener("mouseup", onUp);
+      // мышь
+      chartRoot.addEventListener("mousedown", e => onDown(e.clientX));
+      chartRoot.addEventListener("mousemove", e => onMove(e.clientX));
+      chartRoot.addEventListener("mouseleave", onUp);
+      chartRoot.addEventListener("mouseup", onUp);
   
-      // Тач
-      wrap.addEventListener("touchstart", e => onDown(e.touches[0].clientX), {passive:true});
-      wrap.addEventListener("touchmove",  e => onMove(e.touches[0].clientX), {passive:true});
-      wrap.addEventListener("touchend", onUp);
+      // тач
+      chartRoot.addEventListener("touchstart", e => onDown(e.touches[0].clientX), { passive:true });
+      chartRoot.addEventListener("touchmove",  e => onMove(e.touches[0].clientX), { passive:true });
+      chartRoot.addEventListener("touchend", onUp);
     })();
   
-    // ---------- ПЕРВЫЙ ЗАПУСК + АВТО-РЕСАЙЗ ----------
+    // -------- Первый запуск + авто-ресайз ---------------------------------
     window.addEventListener("DOMContentLoaded", () => {
+      // стартовая загрузка
       loadPng(false);
-      const root = document.getElementById("chartRoot");
-      if (root) root.scrollLeft = 0;
+      // прижать в начало
+      if (chartRoot) chartRoot.scrollLeft = 0;
   
-      if ("ResizeObserver" in window && root) {
+      if ("ResizeObserver" in window && chartRoot) {
         let t;
         const ro = new ResizeObserver(() => {
           clearTimeout(t);
-          t = setTimeout(() => loadPng(false), 220); // debounce
+          t = setTimeout(() => loadPng(false), 220);   // дебаунс
         });
-        ro.observe(root);
+        ro.observe(chartRoot);
       } else {
+        // запасной путь
+        let t;
         window.addEventListener("resize", () => {
-          clearTimeout(window.__chart_resize_t);
-          window.__chart_resize_t = setTimeout(() => loadPng(false), 220);
+          clearTimeout(t);
+          t = setTimeout(() => loadPng(false), 220);
         });
       }
     });
   })();
   </script>
+
 
 </body>
 </html>

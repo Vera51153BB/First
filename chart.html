@@ -474,9 +474,10 @@
       }
     }
     @keyframes ledFlash{
-      0%{ opacity:.35; box-shadow:0 0 0 var(--logo-glow); }
-      50%{ opacity:1;  box-shadow:0 0 10px var(--logo-glow); }
-      100%{ opacity:.85; box-shadow:0 0 6px var(--logo-glow); }
+      0%   { opacity:.35; box-shadow:0 0 0 var(--logo-glow-green); background: #00D76A; }
+      40%  { opacity:1;   box-shadow:0 0 12px var(--logo-glow-green); background: #2AFF6A; }
+      60%  { opacity:1;   box-shadow:0 0 10px var(--logo-glow-red);   background: #FF4A4A; }
+      100% { opacity:.9;  box-shadow:0 0 6px  var(--logo-glow-red);   background: #FF3A3A; }
     }
     @keyframes sweep{
       0%{ transform: translateX(-105%); }

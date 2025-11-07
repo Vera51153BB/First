@@ -479,6 +479,12 @@
       60%  { opacity:1;   box-shadow:0 0 10px var(--logo-glow-red);   background: #FF4A4A; }
       100% { opacity:.9;  box-shadow:0 0 6px  var(--logo-glow-red);   background: #FF3A3A; }
     }
+    /* Запускаем свечение текста одновременно со свипом */
+    @media (prefers-reduced-motion: no-preference){
+      .sweep-run .brand-text{
+        animation: wordGlow 1.05s cubic-bezier(.2,.6,.2,1) 1 forwards;
+      }
+    }
     @keyframes sweep{
       0%{ transform: translateX(-105%); }
       100%{ transform: translateX(105%); }

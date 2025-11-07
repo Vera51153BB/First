@@ -497,53 +497,7 @@
 <body>
   <div class="viewport">
     <!-- верхняя технологическая зона 40px (пустая, для системных панелей; по ТЗ оставляем) -->
-    <div class="topbar">
-            <!-- BRAND: botcryptosignal -->
-      <div class="brand-wrap" aria-label="botcryptosignal logo" role="img">
-        <div class="brand-led"></div>
-        <!-- Inline-SVG логотип. Текст через системный стек, halo контурами -->
-        <svg class="brand-logo" viewBox="0 0 780 120" xmlns="http://www.w3.org/2000/svg">
-          <!-- Маска для неонового свипа -->
-          <defs>
-            <linearGradient id="sweepGrad" x1="0" y1="0" x2="1" y2="0">
-              <stop offset="0" stop-color="transparent"/>
-              <stop offset=".45" stop-color="white"/>
-              <stop offset="1" stop-color="transparent"/>
-            </linearGradient>
-            <mask id="sweepMask">
-              <rect class="sweep-mask" x="-100%" y="0" width="300%" height="100%" fill="url(#sweepGrad)"/>
-            </mask>
-          </defs>
-      
-          <!-- Тёмный внешний halo -->
-          <text x="0" y="86"
-                class="brand-stroke-dark"
-                style="font:700 86px/1.05 -apple-system,Segoe UI,Roboto,Inter,system-ui,sans-serif;">
-            botcryptosignal
-          </text>
-          <!-- Светлый внутренний halo -->
-          <text x="0" y="86"
-                class="brand-stroke-light"
-                style="font:700 86px/1.05 -apple-system,Segoe UI,Roboto,Inter,system-ui,sans-serif;">
-            botcryptosignal
-          </text>
-          <!-- Основной контур + слой со свипом -->
-          <g mask="url(#sweepMask)">
-            <text x="0" y="86"
-                  class="brand-text"
-                  style="font:700 86px/1.05 -apple-system,Segoe UI,Roboto,Inter,system-ui,sans-serif;">
-              botcryptosignal
-            </text>
-          </g>
-          <!-- Подложка (статичный текст) для случая reduced-motion -->
-          <text x="0" y="86"
-                class="brand-text"
-                style="font:700 86px/1.05 -apple-system,Segoe UI,Roboto,Inter,system-ui,sans-serif; opacity:.001;">
-            botcryptosignal
-          </text>
-        </svg>
-      </div>
-
+    <div class="topbar">           
       <div class="left">
         <button class="btn" id="btnTF"><b>TF · <span id="tfBtnVal">1h</span></b></button>
         <!-- Кнопка Настройки -->

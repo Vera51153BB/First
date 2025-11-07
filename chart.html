@@ -809,10 +809,21 @@
         chartRoot.scrollLeft = 0; // после подмены — к началу
         if (FEATURE_FLAGS.DEBUG_JSON && debugOut) debugOut.textContent = "[ok] " + url;
       };
-      img.onerror = function () {
-        if (FEATURE_FLAGS.DEBUG_JSON && debugOut) debugOut.textContent = "[error] png load\n" + url;
+      img.onerror = async function(){
         console.error("[chart] png load error:", url);
+        if (FEATURE_FLAGS.DEBUG_JSON && debugOut) {
+          debugOut.textContent = "[error] png load\n" + url;
+          try {
+            // пробный JSON для диагностики бэка с теми же параметрами
+            const probe = await fetch("/render/candle?" + params.toString(), { cache: "no-store" });
+            const text  = await probe.text();
+            debugOut.textContent += `\n[probe] /render/candle → ${probe.status}\n` + text.slice(0, 2000);
+          } catch (e) {
+            debugOut.textContent += "\n[probe failed] " + String(e);
+          }
+        }
       };
+
   
       // сам запрос делает браузер
       img.src = url;

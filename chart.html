@@ -823,19 +823,29 @@
   
     // --- первый запуск + авто-ресайз ---
     window.addEventListener("DOMContentLoaded", () => {
-      loadPng(false);
       // сразу прижимаем скролл к началу
       const root = document.getElementById("chartRoot");
       if (root) root.scrollLeft = 0;
-      
+    
+      // первый запрос PNG — только после стабилизации размеров контейнера
+      let firstRun = true;
+      let t;
+    
       if ("ResizeObserver" in window && root) {
-        let t;
         const ro = new ResizeObserver(() => {
           clearTimeout(t);
-          t = setTimeout(() => loadPng(false), 220); // debounce
+          t = setTimeout(() => {
+            loadPng(false);
+            firstRun = false;
+          }, 220); // debounce
         });
         ro.observe(root);
+    
+        // страховка: если RO не сработал (экзотика), через короткую задержку сделаем один старт
+        setTimeout(() => { if (firstRun) loadPng(false); }, 300);
       } else {
+        // без RO даём отложенный единичный старт
+        setTimeout(() => loadPng(false), 220);
         window.addEventListener("resize", () => {
           clearTimeout(window.__chart_resize_t);
           window.__chart_resize_t = setTimeout(() => loadPng(false), 220);
@@ -898,10 +908,10 @@
       load();
     });
 
-    document.getElementById("btnRefresh")?.addEventListener("click", () => loadPng(true));
+    document.getElementById("btnRefresh")?.addEventListener("click", () => loadPng());
 
     // Первый запуск
-    window.addEventListener("DOMContentLoaded", () => loadPng(false));
+    // window.addEventListener("DOMContentLoaded", () => loadPng(false));
 
   })();
   </script>

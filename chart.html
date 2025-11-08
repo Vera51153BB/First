@@ -19,37 +19,53 @@
 
     /* === BRAND PLACEHOLDER: белый текст + базовая тонкая тень и анимация тени === */
     /* База: белый текст и базовая тень для читаемости на светлом фоне */
-    .brand-logo text {
-      fill: #fff; /* Белый текст (единый для всех тем) */
-      text-shadow: 0 0 5px rgba(0,0,0,.3); /* Базовая тонкая тень */
+    /* --- слой плейсхолдера поверх графика --- */
+    #chartRoot{ position:relative; }
+    .brand-holder{
+      position:absolute; inset:0;
+      display:none;                      /* включается JS */
+      justify-content:center; align-items:center;
+      z-index:10; pointer-events:none;
+    }
+    .brand-wrap{ transform:translateY(-4%); }
+    .brand-logo{ width:min(92vw,960px); height:auto; display:block; }
+    
+    /* Белый текст + базовая тонкая тень (едино для всех тем) */
+    .brand-logo text{
+      fill:#fff;
+      text-shadow:0 0 5px rgba(0,0,0,.3);
     }
     
-    /* Включаем “мигающую” и цвето-меняющуюся тень на время загрузки */
-    .brand-anim {
-      /* Один цикл ~2s, бесконечно, но мы жёстко отключаем по onload */
-      animation: brandShadowPulse 2s ease-in-out infinite;
-      will-change: filter, text-shadow;
+    /* Мигающая цветная тень (красный ↔ зелёный), цикл ~2s */
+    .brand-anim{
+      animation:brandShadowPulse 2s ease-in-out infinite;
+      will-change:text-shadow;
+    }
+    @keyframes brandShadowPulse{
+      0%{
+        text-shadow:
+          0 0 5px rgba(0,0,0,.30),
+          0 0 6px rgba(255,59,48,.65);   /* red */
+      }
+      50%{
+        text-shadow:
+          0 0 5px rgba(0,0,0,.30),
+          0 0 6px rgba(0,0,0,.10);       /* почти пропала цветная компонента */
+      }
+      100%{
+        text-shadow:
+          0 0 5px rgba(0,0,0,.30),
+          0 0 6px rgba(52,199,89,.70);   /* green */
+      }
     }
     
-    /* Ключевые кадры: плавный переход красный ↔ зелёный и изменение прозрачности */
-    @keyframes brandShadowPulse {
-      0% {
-        /* пик красного, заметная, но не предельная насыщенность */
-        text-shadow:
-          0 0 5px rgba(0,0,0,.30),       /* базовая тонкая тень */
-          0 0 6px rgba(255, 59, 48, .65); /* красная компонента (iOS red) */
-      }
-      50% {
-        /* почти пропала цветная компонента (мигание) */
+    /* Экономия/доступность */
+    @media (prefers-reduced-motion:reduce){
+      .brand-anim{
+        animation:none!important;
         text-shadow:
           0 0 5px rgba(0,0,0,.30),
-          0 0 6px rgba(0, 0, 0, .10);
-      }
-      100% {
-        /* пик зелёного */
-        text-shadow:
-          0 0 5px rgba(0,0,0,.30),
-          0 0 6px rgba(52, 199, 89, .70); /* зелёная компонента (iOS green) */
+          0 0 6px #d6aa7e;              /* тёплая «заморозка» */
       }
     }
     

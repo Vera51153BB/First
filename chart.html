@@ -17,6 +17,52 @@
       font-display:swap;
     }
 
+    /* === BRAND PLACEHOLDER: белый текст + базовая тонкая тень и анимация тени === */
+    /* База: белый текст и базовая тень для читаемости на светлом фоне */
+    .brand-logo text {
+      fill: #fff; /* Белый текст (единый для всех тем) */
+      text-shadow: 0 0 5px rgba(0,0,0,.3); /* Базовая тонкая тень */
+    }
+    
+    /* Включаем “мигающую” и цвето-меняющуюся тень на время загрузки */
+    .brand-anim {
+      /* Один цикл ~2s, бесконечно, но мы жёстко отключаем по onload */
+      animation: brandShadowPulse 2s ease-in-out infinite;
+      will-change: filter, text-shadow;
+    }
+    
+    /* Ключевые кадры: плавный переход красный ↔ зелёный и изменение прозрачности */
+    @keyframes brandShadowPulse {
+      0% {
+        /* пик красного, заметная, но не предельная насыщенность */
+        text-shadow:
+          0 0 5px rgba(0,0,0,.30),       /* базовая тонкая тень */
+          0 0 6px rgba(255, 59, 48, .65); /* красная компонента (iOS red) */
+      }
+      50% {
+        /* почти пропала цветная компонента (мигание) */
+        text-shadow:
+          0 0 5px rgba(0,0,0,.30),
+          0 0 6px rgba(0, 0, 0, .10);
+      }
+      100% {
+        /* пик зелёного */
+        text-shadow:
+          0 0 5px rgba(0,0,0,.30),
+          0 0 6px rgba(52, 199, 89, .70); /* зелёная компонента (iOS green) */
+      }
+    }
+    
+    /* Экономия: если пользователь просит уменьшить анимации — оставляем статичный вид */
+    @media (prefers-reduced-motion: reduce) {
+      .brand-anim {
+        animation: none !important;
+        text-shadow:
+          0 0 5px rgba(0,0,0,.30),
+          0 0 6px #d6aa7e; /* заморозка обводкой тёплого тона */
+      }
+    }
+    
     :root{
       --sep:#a7a093;
       --green:#79c172;
@@ -412,95 +458,7 @@
       .pair .tf{ display:none; }
     }
     
-    /* ====== BRAND LOGO (inline-SVG) + THEMES ====== */
-    /* Базовые переменные (основная синяя тема) */
-    :root{
-      --logo-fg: #F4F7FF;              /* цвет текста лого */
-      --logo-neon: #00E5FF;            /* цвет неона и LED (циан) */
-      --logo-glow: rgba(0,229,255,.38);/* свечение неона */
-      --logo-stroke-dark: rgba(0,0,0,.42);   /* внешний тёмный halo */
-      --logo-stroke-light: rgba(255,255,255,.34); /* внутренний светлый halo */
-      --logo-size: 28px;               /* высота капов */
-    }
-    
-    /* Чёрная тема */
-    [data-theme="dark"]{
-      --logo-fg:#F4F7FF;
-      --logo-neon:#00E5FF;
-      --logo-glow:rgba(0,229,255,.42);
-      --logo-stroke-dark:rgba(0,0,0,.46);
-      --logo-stroke-light:rgba(255,255,255,.30);
-    }
-    
-    /* Белая тема */
-    [data-theme="light"]{
-      --logo-fg:#121620;
-      --logo-neon:#0CB6C5;
-      --logo-glow:rgba(12,182,197,.28);
-      --logo-stroke-dark:rgba(0,0,0,.48);
-      --logo-stroke-light:rgba(255,255,255,.26);
-    }
-    
-    /* Контейнер плейсхолдера: поверх центра, клики пропускает */
-    .brand-holder{
-      position:absolute;
-      inset:0;
-      display:none;            /* по умолчанию скрыт — покажем отложено */
-      align-items:center;
-      justify-content:center;
-      pointer-events:none;
-      z-index:3;               /* над графиком, но не перехватывает клики */
-      background: transparent; /* без затемнения */
-    }
-    
-    /* Враппер лого, чтобы легко центрировать */
-    .brand-wrap{
-      display:flex; align-items:center; gap:10px;
-      padding:8px 10px;
-    }
-    
-    /* SVG в масштабе: не ломает макет */
-    .brand-logo{
-      height: calc(var(--logo-size) + 8px);
-      width: auto;
-      filter: none;
-    }
-    
-    /* ---- Анимации: одноразовые. Уважаем prefers-reduced-motion ---- */
-    @media (prefers-reduced-motion: no-preference){
-      .led-flash{
-        animation: ledFlash 320ms ease-out 1 forwards;
-      }
-      .sweep-run .sweep-mask{
-        animation: sweep 1.05s cubic-bezier(.2,.6,.2,1) 1 forwards;
-      }
-    }
-    @keyframes ledFlash{
-      0%   { opacity:.35; box-shadow:0 0 0 var(--logo-glow-green); background: #00D76A; }
-      40%  { opacity:1;   box-shadow:0 0 12px var(--logo-glow-green); background: #2AFF6A; }
-      60%  { opacity:1;   box-shadow:0 0 10px var(--logo-glow-red);   background: #FF4A4A; }
-      100% { opacity:.9;  box-shadow:0 0 6px  var(--logo-glow-red);   background: #FF3A3A; }
-    }
-    /* Запускаем свечение текста одновременно со свипом */
-    @media (prefers-reduced-motion: no-preference){
-      .sweep-run .brand-text{
-        animation: wordGlow 1.05s cubic-bezier(.2,.6,.2,1) 1 forwards;
-      }
-    }
-    @keyframes sweep{
-      0%{ transform: translateX(-105%); }
-      100%{ transform: translateX(105%); }
-    }
-    
-    /* Тонкая двойная окантовка (halo) — в SVG через два контура */
-    .brand-text{ fill: var(--logo-fg); }
-    .brand-stroke-dark{ stroke: var(--logo-stroke-dark); stroke-width:1; }
-    .brand-stroke-light{ stroke: var(--logo-stroke-light); stroke-width:.7; }
-    
-    /* Размещение плейсхолдера ровно над центральной областью */
-    .center{ position: relative; } /* у вас уже есть .center — добавляем позиционирование */
-
-  </style>
+   </style>
   
 </head>
 <body>
@@ -524,42 +482,34 @@
 
     <!-- центральная область: чистая (под реальный график)  -->
     <div class="center" id="chartRoot">
-      <!-- BRAND PLACEHOLDER: поверх центра, показывается, если график грузится "долго" -->
+      <!-- BRAND PLACEHOLDER: поверх центра, показывается во время загрузки PNG -->
       <div id="brandHolder" class="brand-holder">
         <div class="brand-wrap">
-          <svg class="brand-logo" viewBox="0 0 780 120" xmlns="http://www.w3.org/2000/svg">
-            <defs>
-              <linearGradient id="sweepGradPh" x1="0" y1="0" x2="1" y2="0">
-                <stop offset="0" stop-color="transparent"/>
-                <stop offset=".45" stop-color="white"/>
-                <stop offset="1" stop-color="transparent"/>
-              </linearGradient>
-              <mask id="sweepMaskPh">
-                <rect class="sweep-mask" x="-100%" y="0" width="300%" height="100%" fill="url(#sweepGradPh)"/>
-              </mask>
-            </defs>
-            <text x="0" y="86" class="brand-stroke-dark"
-                  style="font:400 86px/1.05 'Momo Trust Display',-apple-system,Segoe UI,Roboto,Inter,system-ui,sans-serif;">
+          <!-- Было 780×120 и y=86; стало 1014×156 и y=112 (×1.3) -->
+          <svg class="brand-logo" viewBox="0 0 1014 156" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
+            <!-- Три активных слоя (анимация тени по ТЗ) -->
+            <text x="0" y="112" class="brand-stroke-dark brand-anim"
+                  style="font:400 112px/1.05 'Momo Trust Display',-apple-system,Segoe UI,Roboto,Inter,system-ui,sans-serif;">
               botcryptosignal
             </text>
-            <text x="0" y="86" class="brand-stroke-light"
-                  style="font:400 86px/1.05 'Momo Trust Display',-apple-system,Segoe UI,Roboto,Inter,system-ui,sans-serif;">
+            <text x="0" y="112" class="brand-stroke-light brand-anim"
+                  style="font:400 112px/1.05 'Momo Trust Display',-apple-system,Segoe UI,Roboto,Inter,system-ui,sans-serif;">
               botcryptosignal
             </text>
-            <g mask="url(#sweepMaskPh)">
-              <text x="0" y="86" class="brand-text"
-                    style="font:400 86px/1.05 'Momo Trust Display',-apple-system,Segoe UI,Roboto,Inter,system-ui,sans-serif;">
-                botcryptosignal
-              </text>
-            </g>
-            <text x="0" y="86" class="brand-text"
-                  style="font:400 86px/1.05 'Momo Trust Display',-apple-system,Segoe UI,Roboto,Inter,system-ui,sans-serif; opacity:.001;">
+            <text x="0" y="112" class="brand-text brand-anim"
+                  style="font:400 112px/1.05 'Momo Trust Display',-apple-system,Segoe UI,Roboto,Inter,system-ui,sans-serif;">
+              botcryptosignal
+            </text>
+      
+            <!-- Вспомогательный невидимый дубль (стабилизация рендера), без анимации -->
+            <text x="0" y="112" class="brand-text"
+                  style="font:400 112px/1.05 'Momo Trust Display',-apple-system,Segoe UI,Roboto,Inter,system-ui,sans-serif; opacity:.001;">
               botcryptosignal
             </text>
           </svg>
         </div>
       </div>
-
+      
       <img id="candle-img" alt="Candlestick chart">
     </div>
 
@@ -892,21 +842,14 @@
         img.style.height    = "100%";
         img.style.objectFit = "contain";
 
-        /* BRAND_PLACEHOLDER: запускаем отложенный показ плейсхолдера (если будет "долго") */
-        const brandHolder = document.getElementById('brandHolder');
-        const startTs = Date.now();
-        let brandTimer = null;
+        /* BRAND_PLACEHOLDER (по ТЗ): показать сразу + фейл-сейф 15s */
+        const brand = document.getElementById('brandHolder');
+        let brandFailT = null;
+        if (brand) {
+          brand.style.display = 'flex';
+          brandFailT = setTimeout(() => { try { brand.remove(); } catch (_) {} }, 15000);
+        }
         
-        /* Порог 120 мс: если график успеет загрузиться быстрее — плейсхолдер не покажем */
-        brandTimer = setTimeout(() => {
-          if (!brandHolder) return;
-          brandHolder.style.display = 'flex';
-          /* включаем одноразовые анимации: LED и sweep */
-          brandHolder.querySelectorAll('.brand-led').forEach(n => n.classList.add('led-flash'));
-          brandHolder.classList.add('sweep-run');
-        }, 120);
-
-    
         // --- запрос JSON-прокладки → отдаёт готовый URL PNG
         const params = new URLSearchParams({
           inst, bar,
@@ -946,15 +889,12 @@
         
           var d = document.getElementById("chartDebug");
           if (d) d.textContent = "";
-          /* BRAND_PLACEHOLDER: график готов — скрываем плейсхолдер и обнуляем таймер */
-          try{
-            if (brandTimer) { clearTimeout(brandTimer); brandTimer = null; }
-            if (brandHolder) {
-              brandHolder.style.display = 'none';
-              brandHolder.classList.remove('sweep-run');
-              brandHolder.querySelectorAll('.brand-led').forEach(n => n.classList.remove('led-flash'));
-            }
-          }catch(_){}
+          /* BRAND_PLACEHOLDER: ошибка загрузки — убрать плейсхолдер, чтобы не крутить бесконечно */
+          try {
+            const brand = document.getElementById('brandHolder');
+            if (brand) brand.remove();
+            if (brandFailT) { clearTimeout(brandFailT); brandFailT = null; }
+          } catch (_) {}
         };
         img.src = j.url;
     

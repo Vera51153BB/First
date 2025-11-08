@@ -456,14 +456,6 @@
       filter: none;
     }
     
-    /* LED-точка слева от слова */
-    .brand-led{
-      width:8px; height:8px; border-radius:50%;
-      background: var(--logo-neon);
-      box-shadow: 0 0 6px var(--logo-glow);
-      opacity:1;
-    }
-    
     /* ---- Анимации: одноразовые. Уважаем prefers-reduced-motion ---- */
     @media (prefers-reduced-motion: no-preference){
       .led-flash{
@@ -525,7 +517,6 @@
       <!-- BRAND PLACEHOLDER: поверх центра, показывается, если график грузится "долго" -->
       <div id="brandHolder" class="brand-holder">
         <div class="brand-wrap">
-          <div class="brand-led"></div>
           <svg class="brand-logo" viewBox="0 0 780 120" xmlns="http://www.w3.org/2000/svg">
             <defs>
               <linearGradient id="sweepGradPh" x1="0" y1="0" x2="1" y2="0">

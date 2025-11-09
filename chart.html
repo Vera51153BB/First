@@ -876,13 +876,9 @@
         img.style.height    = "100%";
         img.style.objectFit = "contain";
 
-        /* BRAND_PLACEHOLDER (по ТЗ): показать сразу + фейл-сейф 15s */
+        /* BRAND_PLACEHOLDER: держим до УСПЕШНОЙ загрузки PNG */
         const brand = document.getElementById('brandHolder');
-        let brandFailT = null;
-        if (brand) {
-          brand.style.display = 'flex';
-          brandFailT = setTimeout(() => { try { brand.remove(); } catch (_) {} }, 15000);
-        }
+        if (brand) brand.style.display = 'flex';
         
         // --- запрос JSON-прокладки → отдаёт готовый URL PNG
         const currentTheme =
@@ -912,29 +908,40 @@
         // прод: только логи
         console.log("[chart] loading", j.url);
     
-        // Подмена PNG + обработчики без оверлея
-        img.onerror = function () {
-          var d = document.getElementById("chartDebug");
-          if (d) d.textContent = "PNG load error → " + j.url;
-          /* на всякий случай — при ошибке тоже ставим старт в начало */
-          const root = document.getElementById("chartRoot");
-          if (root) root.scrollLeft = 0;
-        };
-        img.onload = function () {
-          /* после успешной подмены PNG — начать с левого края */
+        /* Подмена PNG БЕЗ «битого» кадра:
+           1) грузим в off-DOM пробник,
+           2) на onload — подменяем видимый <img>,
+           3) на error — оставляем плейсхолдер и НЕ трогаем видимый <img>.
+        */
+        const probe = new Image();
+        probe.decoding = 'async';
+        probe.referrerPolicy = 'no-referrer';
+        
+        probe.onload = function () {
+          // успешная загрузка: подменяем видимый <img> и убираем плейсхолдер
+          img.src = j.url;
+        
+          // прижимаем скролл к началу
           const root = document.getElementById("chartRoot");
           if (root) root.scrollLeft = 0;
         
-          var d = document.getElementById("chartDebug");
+          const d = document.getElementById("chartDebug");
           if (d) d.textContent = "";
-          /* BRAND_PLACEHOLDER: ошибка загрузки — убрать плейсхолдер, чтобы не крутить бесконечно */
+        
           try {
             const brand = document.getElementById('brandHolder');
             if (brand) brand.remove();
-            if (brandFailT) { clearTimeout(brandFailT); brandFailT = null; }
           } catch (_) {}
         };
-        img.src = j.url;
+        
+        probe.onerror = function () {
+          // НЕ трогаем видимый <img>, плейсхолдер остаётся
+          const d = document.getElementById("chartDebug");
+          if (d) d.textContent = "PNG load error → " + j.url;
+        };
+        
+        // Старт загрузки «в стороне»
+        probe.src = j.url;
     
       } catch (e) {
         // прод: только логи

@@ -527,12 +527,7 @@
         </div>
       </div>
       
-        <img id="candle-img"
-         alt=""
-         role="presentation"
-         aria-hidden="true"
-         style="display:none;width:auto;height:100%;object-fit:contain;">
-
+      <img id="candle-img" alt="Candlestick chart">
     </div>
 
     <div class="divider"></div>
@@ -874,13 +869,20 @@
         const bar  = (typeof window.currentBar === "string" && window.currentBar)
                       ? window.currentBar.toLowerCase()
                       : (qs.get("bar") || "1h").toLowerCase();
-
-        // гарантируем нужные CSS на <img>, не показывая до прогрева
+    
+        // гарантируем нужные CSS на <img>
+        img.style.display   = "block";
         img.style.width     = "auto";
         img.style.height    = "100%";
         img.style.objectFit = "contain";
-        img.style.display   = "none";
-        try { img.removeAttribute("src"); } catch (_) {}
+
+        /* BRAND_PLACEHOLDER (по ТЗ): показать сразу + фейл-сейф 15s */
+        const brand = document.getElementById('brandHolder');
+        let brandFailT = null;
+        if (brand) {
+          brand.style.display = 'flex';
+          brandFailT = setTimeout(() => { try { brand.remove(); } catch (_) {} }, 15000);
+        }
         
         // --- запрос JSON-прокладки → отдаёт готовый URL PNG
         const currentTheme =
@@ -910,70 +912,29 @@
         // прод: только логи
         console.log("[chart] loading", j.url);
     
-        // --- off-DOM прогрев PNG: подменяем src только после успешной загрузки
-        const url = j.url;
-
-        // --- off-DOM прогрев PNG + надёжный сторож ---
-        let brandFailT = null;                    // если выше уже есть let brandFailT = null; — эту строку не дублировать
-        const brand = document.getElementById('brandHolder');
-        if (brand) {
-          brand.style.display = 'flex';
-          brandFailT = setTimeout(() => { try { brand.remove(); } catch(_){} }, 15000);
-        }
-        
-        // не показываем <img> до готовности
-        img.style.display = 'none';
-        try { img.removeAttribute('src'); } catch(_){}
-        
-        // off-DOM картинка
-        const pre = new Image();
-        try { pre.decoding = 'async'; } catch(_){}
-        try { pre.fetchPriority = 'high'; } catch(_){}
-        
-        // сторож: если onload не сработал, всё равно подставим src
-        let watchdog = setTimeout(() => {
-          // если по какой-то причине onload не пришёл, но запрос был — подставим URL и покажем
-          img.src = url;
-          img.style.display = 'block';
-          try {
-            const bh = document.getElementById('brandHolder');
-            if (bh) bh.remove();
-            if (brandFailT) { clearTimeout(brandFailT); brandFailT = null; }
-          } catch(_){}
-          console.warn('[chart] PNG watchdog triggered → forced show');
-        }, 5000); // 5s — можно 4000–6000
-        
-        pre.onload = function () {
-          try { clearTimeout(watchdog); } catch(_){}
-          img.src = url;
-          img.style.display = 'block';
-        
-          const root = document.getElementById('chartRoot');
+        // Подмена PNG + обработчики без оверлея
+        img.onerror = function () {
+          var d = document.getElementById("chartDebug");
+          if (d) d.textContent = "PNG load error → " + j.url;
+          /* на всякий случай — при ошибке тоже ставим старт в начало */
+          const root = document.getElementById("chartRoot");
+          if (root) root.scrollLeft = 0;
+        };
+        img.onload = function () {
+          /* после успешной подмены PNG — начать с левого края */
+          const root = document.getElementById("chartRoot");
           if (root) root.scrollLeft = 0;
         
+          var d = document.getElementById("chartDebug");
+          if (d) d.textContent = "";
+          /* BRAND_PLACEHOLDER: ошибка загрузки — убрать плейсхолдер, чтобы не крутить бесконечно */
           try {
-            const bh = document.getElementById('brandHolder');
-            if (bh) bh.remove();
+            const brand = document.getElementById('brandHolder');
+            if (brand) brand.remove();
             if (brandFailT) { clearTimeout(brandFailT); brandFailT = null; }
-          } catch(_){}
+          } catch (_) {}
         };
-        
-        pre.onerror = function () {
-          try { clearTimeout(watchdog); } catch(_){}
-          // оставляем бренд как фоллбэк, пишем в debug
-          const d = document.getElementById('chartDebug');
-          if (d) d.textContent = 'PNG load error → ' + url;
-          console.error('[chart] PNG onerror →', url);
-        };
-        
-        // ВАЖНО: запуск прогрева — в самом конце
-        pre.src = url;
-        console.log('[chart] loading', url);
-
-
-        // запуск off-DOM загрузки
-        pre.src = url;
-
+        img.src = j.url;
     
       } catch (e) {
         // прод: только логи

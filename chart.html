@@ -828,29 +828,40 @@
         // высота = 100% контейнера
         const ch0 = Math.max(240, Math.round(r.height || 0));
         
-          // Соотношение сторон: минимум 1.5 (шире — ок, уже — не даём)
+        // --- геометрия рендера ------------------------------------------------
+        // Минимум 2:3 (H:W) → W/H >= 1.5
         const MIN_AR = 1.5;
         const liveAR = (r.width > 0 && r.height > 0) ? (r.width / r.height) : MIN_AR;
         const ratio  = Math.max(liveAR, MIN_AR);
 
-        // --- ШАРП-ПРОФИЛЬ ---
-        // 1) Минимальная РЕНДЕР-высота PNG = 512 (кратно 64), чтобы на портретах не мылить
-        const round       = 64;        // кратность для стабильных URL
-        const CH_TARGET   = 512;       // целевая мин. высота рендера PNG
-        const chRounded   = Math.max(CH_TARGET, Math.floor(ch0 / round) * round);
-        // ширину тоже считаем от chRounded и округляем
-        const cwRounded0  = Math.round(chRounded * ratio);
-        const cwRounded   = Math.max(360, Math.floor(cwRounded0 / round) * round);
+        // базовая высота контейнера
+        const ch0 = Math.max(240, Math.round(r.height || 0));
 
-        // 2) Лёгкий оверсэмпл DPR × 1.2 с квантацией до шага 0.05, верхняя планка = 3
-        const DPR_BASE    = Math.max(1, Math.min(3, window.devicePixelRatio || 1));
-        const DPR_BOOST   = 1.2;                 // ≈ +20% резкости
-        const DPR_STEP    = 20;                  // 1/20 = 0.05 шаг для стабильных урлов
-        const dpr         = Math.min(3, Math.round(DPR_BASE * DPR_BOOST * DPR_STEP) / DPR_STEP);
+        // округление под кеш (кратно 64) + гарантируем не ниже 512 по высоте
+        const ROUND = 64;
+        const ch_base = Math.max(512, Math.floor(ch0 / ROUND) * ROUND);     // было: >=240 → стало: >=512
+        const cw_base = Math.max(360, Math.floor((ch_base * ratio) / ROUND) * ROUND);
 
-        // Итоговые размеры для запроса
-        const ch = chRounded;
-        const cw = cwRounded;
+        // лёгкий апскейл рендера (делаем PNG чуть крупнее для резкости на вертикали)
+        // 1.2 — безопасно по скорости/весу, выше 1.33 обычно не нужно
+        const UPSCALE = 1.2;
+        const cw_req = Math.min(
+          2048,
+          Math.max(360, Math.floor((cw_base * UPSCALE) / ROUND) * ROUND)
+        );
+        const ch_req = Math.min(
+          1536,
+          Math.max(512, Math.floor((ch_base * UPSCALE) / ROUND) * ROUND)
+        );
+
+        // мягкий масштаб шрифтов (страховка) — оставляем как было
+        let fontScale = 1.0;
+        if (ch_base < 420) fontScale = 0.95;
+        else if (ch_base > 720) fontScale = 1.1;
+
+        // DPR (без изменений, не множим его на UPSCALE — масштаб уже учтён в cw_req/ch_req)
+        const dpr = Math.max(1, Math.min(3, window.devicePixelRatio || 1));
+
     
         // инструмент/TF
         const qs   = new URLSearchParams(location.search);
@@ -879,7 +890,7 @@
         
         const params = new URLSearchParams({
           inst, bar,
-          cw: String(cw), ch: String(ch),
+          cw: String(cw_req), ch: String(ch_req),
           dpr: String(dpr), round: String(round),
           fresh: forceFresh ? "1" : "0",
           font_scale: String(fontScale),

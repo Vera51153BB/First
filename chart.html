@@ -835,7 +835,7 @@
         const ratio  = Math.max(liveAR, MIN_AR);
 
         // базовая высота контейнера
-        const ch0 = Math.max(240, Math.round(r.height || 0));
+        // const ch0 = Math.max(240, Math.round(r.height || 0));
 
         // округление под кеш (кратно 64) + гарантируем не ниже 512 по высоте
         const ROUND = 64;
@@ -891,7 +891,7 @@
         const params = new URLSearchParams({
           inst, bar,
           cw: String(cw_req), ch: String(ch_req),
-          dpr: String(dpr), round: String(round),
+          dpr: String(dpr), round: String(ROUND),
           fresh: forceFresh ? "1" : "0",
           font_scale: String(fontScale),
 

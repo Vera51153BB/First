@@ -527,7 +527,13 @@
         </div>
       </div>
       
-      <img id="candle-img" alt="Candlestick chart">
+        <img id="candle-img"
+       alt=""
+       role="presentation"
+       decoding="async"
+       style="display:block;width:auto;height:100%;object-fit:contain"
+       src='data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="1" height="1"></svg>'>
+
     </div>
 
     <div class="divider"></div>
@@ -876,9 +882,13 @@
         img.style.height    = "100%";
         img.style.objectFit = "contain";
 
-        /* BRAND_PLACEHOLDER: держим до УСПЕШНОЙ загрузки PNG */
+        /* BRAND_PLACEHOLDER (по ТЗ): показать сразу + фейл-сейф 15s */
         const brand = document.getElementById('brandHolder');
-        if (brand) brand.style.display = 'flex';
+        let brandFailT = null;
+        if (brand) {
+          brand.style.display = 'flex';
+          brandFailT = setTimeout(() => { try { brand.remove(); } catch (_) {} }, 15000);
+        }
         
         // --- запрос JSON-прокладки → отдаёт готовый URL PNG
         const currentTheme =
@@ -908,40 +918,29 @@
         // прод: только логи
         console.log("[chart] loading", j.url);
     
-        /* Подмена PNG БЕЗ «битого» кадра:
-           1) грузим в off-DOM пробник,
-           2) на onload — подменяем видимый <img>,
-           3) на error — оставляем плейсхолдер и НЕ трогаем видимый <img>.
-        */
-        const probe = new Image();
-        probe.decoding = 'async';
-        probe.referrerPolicy = 'no-referrer';
-        
-        probe.onload = function () {
-          // успешная загрузка: подменяем видимый <img> и убираем плейсхолдер
-          img.src = j.url;
-        
-          // прижимаем скролл к началу
+        // Подмена PNG + обработчики без оверлея
+        img.onerror = function () {
+          var d = document.getElementById("chartDebug");
+          if (d) d.textContent = "PNG load error → " + j.url;
+          /* на всякий случай — при ошибке тоже ставим старт в начало */
+          const root = document.getElementById("chartRoot");
+          if (root) root.scrollLeft = 0;
+        };
+        img.onload = function () {
+          /* после успешной подмены PNG — начать с левого края */
           const root = document.getElementById("chartRoot");
           if (root) root.scrollLeft = 0;
         
-          const d = document.getElementById("chartDebug");
+          var d = document.getElementById("chartDebug");
           if (d) d.textContent = "";
-        
+          /* BRAND_PLACEHOLDER: ошибка загрузки — убрать плейсхолдер, чтобы не крутить бесконечно */
           try {
             const brand = document.getElementById('brandHolder');
             if (brand) brand.remove();
+            if (brandFailT) { clearTimeout(brandFailT); brandFailT = null; }
           } catch (_) {}
         };
-        
-        probe.onerror = function () {
-          // НЕ трогаем видимый <img>, плейсхолдер остаётся
-          const d = document.getElementById("chartDebug");
-          if (d) d.textContent = "PNG load error → " + j.url;
-        };
-        
-        // Старт загрузки «в стороне»
-        probe.src = j.url;
+        img.src = j.url;
     
       } catch (e) {
         // прод: только логи

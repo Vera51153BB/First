@@ -874,20 +874,13 @@
         const bar  = (typeof window.currentBar === "string" && window.currentBar)
                       ? window.currentBar.toLowerCase()
                       : (qs.get("bar") || "1h").toLowerCase();
-    
-        // гарантируем нужные CSS на <img>
-        img.style.display   = "block";
+
+        // гарантируем нужные CSS на <img>, не показывая до прогрева
         img.style.width     = "auto";
         img.style.height    = "100%";
         img.style.objectFit = "contain";
-
-        /* BRAND_PLACEHOLDER (по ТЗ): показать сразу + фейл-сейф 15s */
-        const brand = document.getElementById('brandHolder');
-        let brandFailT = null;
-        if (brand) {
-          brand.style.display = 'flex';
-          brandFailT = setTimeout(() => { try { brand.remove(); } catch (_) {} }, 15000);
-        }
+        img.style.display   = "none";
+        try { img.removeAttribute("src"); } catch (_) {}
         
         // --- запрос JSON-прокладки → отдаёт готовый URL PNG
         const currentTheme =
@@ -920,12 +913,12 @@
         // --- off-DOM прогрев PNG: подменяем src только после успешной загрузки
         const url = j.url;
 
-        // страхуемся от длинной загрузки — уберём бренд через 15с даже при провале сети
+        // единый бренд-плейсхолдер (один раз на функцию)
         let brandFailT = null;
         const brand = document.getElementById('brandHolder');
         if (brand) {
           brand.style.display = 'flex';
-          brandFailT = setTimeout(() => { try { brand.remove(); } catch(_) {} }, 15000);
+          brandFailT = setTimeout(() => { try { brand.remove(); } catch (_) {} }, 15000);
         }
 
         // создаём off-DOM Image, грузим в памяти

@@ -527,8 +527,7 @@
         </div>
       </div>
       
-      <img id="candle-img" alt="Candlestick chart" fetchpriority="high" decoding="async">
-
+      <img id="candle-img" alt="Candlestick chart">
     </div>
 
     <div class="divider"></div>
@@ -935,19 +934,8 @@
             if (brandFailT) { clearTimeout(brandFailT); brandFailT = null; }
           } catch (_) {}
         };
-        
-        // Prefetch PNG в фоновый кэш (как только знаем точный URL)
-        let pre = document.querySelector('link[data-prefetch="chart"]');
-        if (!pre) {
-          pre = document.createElement('link');
-          pre.rel = 'prefetch';
-          pre.as = 'image';
-          pre.dataset.prefetch = 'chart';
-          document.head.appendChild(pre);
-        }
-        pre.href = j.url
         img.src = j.url;
-
+    
       } catch (e) {
         // прод: только логи
         console.error("[chart] loadPng error:", e);

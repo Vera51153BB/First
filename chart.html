@@ -602,6 +602,13 @@
         <div class="pill" data-tf="12h">12h</div>
         <div class="pill" data-tf="1d">1d</div>
       </div>
+      <!-- LQDZ: вкладки режимов зон (SRFL|TPCL|STLC); базовый SRFL -->
+      <div id="lqdzTabs" class="pill-group" style="margin-left:12px">
+        <span class="pill-title">Zones:</span>
+        <button type="button" class="pill lqdz-tab is-active" data-mode="srfl">SRFL</button>
+        <button type="button" class="pill lqdz-tab" data-mode="tpcl">TPCL</button>
+        <button type="button" class="pill lqdz-tab" data-mode="stlc">STLC</button>
+      </div>
       <button class="btn close" id="btnCloseTF">Закрыть</button>
     </div>
   </div>
@@ -646,6 +653,26 @@
       pair: 'OKX · BTC-USDT-SWAP'
     };
 
+    // LQDZ: режим зон. Базовый — SRFL (S/R Flip).
+    let currentMode = 'srfl';
+    
+    // Навесить клик по табам зон (SRFL|TPCL|STLC)
+    const lqdzTabs = document.getElementById('lqdzTabs');
+    if (lqdzTabs) {
+      lqdzTabs.addEventListener('click', (e) => {
+        const btn = e.target.closest('.lqdz-tab');
+        if (!btn) return;
+        // активная пилюля
+        lqdzTabs.querySelectorAll('.lqdz-tab').forEach(b => b.classList.remove('is-active'));
+        btn.classList.add('is-active');
+        // смена режима и перезагрузка PNG
+        currentMode = String(btn.dataset.mode || 'srfl');
+        if (typeof window.loadChartPng === 'function') {
+          window.loadChartPng({ reason: 'mode-change' });
+        }
+      });
+    }
+      
     // --- helpers
     const $ = s => document.querySelector(s);
     const $$ = s => Array.from(document.querySelectorAll(s));
@@ -906,6 +933,7 @@
           //  prec: "6",       // 6 знаков после запятой (подправишь под монету)
           pad_ticks: "0",           // 0 — базовый; +1 расширяет; -1 сужает
           theme: currentTheme
+          mode: currentMode,  // LQDZ: прокидываем режим зон srfl|tpcl|stlc
         });
     
         const jsonUrl = "/render/candle?" + params.toString();

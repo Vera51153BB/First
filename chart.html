@@ -889,19 +889,9 @@
 
         // мягкий масштаб шрифтов (страховка) — оставляем как было
         let fontScale = 1.0;
-        // if (ch_base < 420) fontScale = 1.29;
-        // else if (ch_base > 720) fontScale = 1.1;
-        // мобильные — делаем заметно крупнее
-        if (isMobile) {
-          if (vh < 420)      fontScale *= 1.30;   // очень маленькие дисплеи
-          else if (vh < 720) fontScale *= 1.18;   // типичные смартфоны
-          else               fontScale *= 1.10;   // высокие/планшеты
-        } else {
-          // десктопы: выравниваем под размер окна, чтобы не «орало»
-          if (vh < 600)      fontScale *= 0.95;   // маленькие ноутбуки
-          else if (vh > 1000)fontScale *= 1.05;   // большие 2K/4K
-        }
-
+        if (ch_base < 420) fontScale = 1.29;
+        else if (ch_base > 720) fontScale = 1.1;
+        
         // DPR (без изменений, не множим его на UPSCALE — масштаб уже учтён в cw_req/ch_req)
         const dpr = Math.max(1, Math.min(3, window.devicePixelRatio || 1));
 

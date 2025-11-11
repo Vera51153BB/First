@@ -889,7 +889,7 @@
 
         // мягкий масштаб шрифтов (страховка) — оставляем как было
         let fontScale = 1.0;
-        if (ch_base < 420) fontScale = 0.95;
+        if (ch_base < 420) fontScale = 1.29;
         else if (ch_base > 720) fontScale = 1.1;
 
         // DPR (без изменений, не множим его на UPSCALE — масштаб уже учтён в cw_req/ch_req)

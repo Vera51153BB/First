@@ -656,19 +656,30 @@
     // LQDZ: режим зон. Базовый — SRFL (S/R Flip).
     let currentMode = 'srfl';
     
-    // Навесить клик по табам зон (SRFL|TPCL|STLC)
+    // Навесить клик по табам зон (SRFL|TPCL|STLC) LQDZ: вкладки SRFL/TPCL/STLC
     const lqdzTabs = document.getElementById('lqdzTabs');
     if (lqdzTabs) {
+      // начальная подсветка
+      lqdzTabs.querySelectorAll('button.btn[data-mode]').forEach(b=>{
+        b.classList.toggle('active', (b.dataset.mode === currentMode));
+      });
+    
       lqdzTabs.addEventListener('click', (e) => {
-        const btn = e.target.closest('.lqdz-tab');
+        const btn = e.target.closest('button.btn[data-mode]');
         if (!btn) return;
-        // активная пилюля
-        lqdzTabs.querySelectorAll('.lqdz-tab').forEach(b => b.classList.remove('is-active'));
-        btn.classList.add('is-active');
-        // смена режима и перезагрузка PNG
+    
         currentMode = String(btn.dataset.mode || 'srfl');
+    
+        // подсветка активной «пилюли»
+        lqdzTabs.querySelectorAll('button.btn[data-mode]').forEach(b=>{
+          b.classList.toggle('active', b === btn);
+        });
+    
+        // перерисовать PNG
         if (typeof window.loadChartPng === 'function') {
-          window.loadChartPng({ reason: 'mode-change' });
+          window.loadChartPng(true);
+        } else if (typeof loadPng === 'function') {
+          loadPng(true);
         }
       });
     }
@@ -888,9 +899,9 @@
         );
 
         // мягкий масштаб шрифтов (страховка) — оставляем как было
-        let fontScale = 1.0;
-        if (ch_base < 420) fontScale = 1.29;
-        else if (ch_base > 720) fontScale = 1.1;
+        let font_Scale = 1.0;
+        if (ch_base < 420) font_Scale = 1.29;
+        else if (ch_base > 720) font_Scale = 1.1;
         
         // DPR (без изменений, не множим его на UPSCALE — масштаб уже учтён в cw_req/ch_req)
         const dpr = Math.max(1, Math.min(3, window.devicePixelRatio || 1));
@@ -926,7 +937,8 @@
           cw: String(cw_req), ch: String(ch_req),
           dpr: String(dpr), round: String(ROUND),
           fresh: forceFresh ? "1" : "0",
-          font_scale: String(fontScale),
+          font_scale: String(font_Scale),
+          mode: currentMode,               // ← LQDZ режим пробрасываем в бек
 
           // --- Новые флаги рендера (нужна поддержка на бэке) ---
           yfmt: "si",   // без SI-суффиксов (k, m, μ, n) поменять «SI-суффиксы» yfmt на "si"

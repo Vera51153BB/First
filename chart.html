@@ -233,6 +233,11 @@
       margin-left:8px;
       flex:0 0 auto;
     }
+    /* Активная вкладка в группе зон — только перекраска текста в цвет .time */
+    .pill-group .btn.is-active{
+      color: var(--muted);
+      font-weight: inherit; /* не утолщаем, только цвет */
+    }
     
     /* Обновить — всегда видима, не сжимать, небольшой зазор слева */
     #btnRefresh{
@@ -497,7 +502,7 @@
               <!-- LQDZ: вкладки режимов зон (SRFL|TPCL|STLC); базовый SRFL -->
         <div id="lqdzTabs" class="pill-group">
           <span class="time">Zones:</span>
-          <button type="button" class="btn" data-mode="srfl">SRFL</button>
+          <button type="button" class="btn is-active" data-mode="srfl">SRFL</button>
           <button type="button" class="btn" data-mode="tpcl">TPCL</button>
           <button type="button" class="btn" data-mode="stlc">STLC</button>
         </div>
@@ -659,30 +664,23 @@
     // LQDZ: режим зон. Базовый — SRFL (S/R Flip).
     let currentMode = 'srfl';
     
-    // Навесить клик по табам зон (SRFL|TPCL|STLC) LQDZ: вкладки SRFL/TPCL/STLC
+    // Навесить клик по табам зон (SRFL|TPCL|STLC)
     const lqdzTabs = document.getElementById('lqdzTabs');
     if (lqdzTabs) {
-      // начальная подсветка
-      lqdzTabs.querySelectorAll('button.btn[data-mode]').forEach(b=>{
-        b.classList.toggle('active', (b.dataset.mode === currentMode));
-      });
-    
       lqdzTabs.addEventListener('click', (e) => {
-        const btn = e.target.closest('button.btn[data-mode]');
-        if (!btn) return;
-    
+        const btn = e.target.closest('[data-mode]');
+        if (!btn || !lqdzTabs.contains(btn)) return;
+  
+        // сбрасываем предыдущую "выбранность" только в пределах этой группы
+        lqdzTabs.querySelectorAll('.btn.is-active').forEach(b => b.classList.remove('is-active'));
+  
+        // ставим выбранную вкладку
+        btn.classList.add('is-active');
+  
+        // меняем режим и перерисовываем график
         currentMode = String(btn.dataset.mode || 'srfl');
-    
-        // подсветка активной «пилюли»
-        lqdzTabs.querySelectorAll('button.btn[data-mode]').forEach(b=>{
-          b.classList.toggle('active', b === btn);
-        });
-    
-        // перерисовать PNG
         if (typeof window.loadChartPng === 'function') {
-          window.loadChartPng(true);
-        } else if (typeof loadPng === 'function') {
-          loadPng(true);
+          window.loadChartPng({ reason: 'mode-change' });
         }
       });
     }

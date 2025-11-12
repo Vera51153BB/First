@@ -500,10 +500,10 @@
     
     /* спиннер как оверлей, «свисающий» под панелью */
     .topbar .chart-spinner{
-      position: absolute;
-      right: 120px;                 /* ваш базовый отступ справа */
-      top: 100%;                   /* привязка к нижнему краю topbar */
-      transform: translateY(20px); /* вылет в область графика (12–20px по ТЗ) */
+      position: absolute !important;
+      right: 120px !important;                 /* ваш базовый отступ справа */
+      top: 100% !important;                   /* привязка к нижнему краю topbar */
+      transform: translateY(20px) !important; /* вылет в область графика (12–20px по ТЗ) */
       z-index: 30;                 /* выше графика */
       pointer-events: none;        /* чтобы не кликался */
     }

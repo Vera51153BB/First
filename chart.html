@@ -349,12 +349,6 @@
       fill: currentColor;                                /* на всякий случай */
     }
 
-    /* увеличить только спиннер, не трогая остальные иконки */
-    .spinner-btn svg{
-      width:  calc(var(--icon) * 1.2);
-      height: calc(var(--icon) * 1.2);
-    }
-    
     /* HOVER для иконок */
     .btn-icon:hover{
       background: linear-gradient(180deg, var(--panel), rgba(255,255,255,.04));
@@ -529,10 +523,10 @@
     
     /* Сам значок — увеличен ×1.2 и крутится медленнее */
     .chart-spinner .spinner-btn svg{
-      width:  calc(var(--icon) * 1.2);
-      height: calc(var(--icon) * 1.2);
+      width:  calc(var(--icon) * 1.5);
+      height: calc(var(--icon) * 1.5);
       display: block;
-      animation: chartSpin .30s linear infinite;  /* было ~0.15s → стало вдвое медленнее */
+      animation: chartSpin .40s linear infinite;  /* было ~0.15s → стало вдвое медленнее */
       opacity: .95;
       color: var(--text); /* наследует тему */
     }

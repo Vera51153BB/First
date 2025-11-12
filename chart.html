@@ -521,9 +521,9 @@
     
     /* вращение медленнее (в 2 раза): 280–320ms на оборот */
     .topbar .chart-spinner .spinner-btn svg{
-      width: var(--icon);
-      height: var(--icon);
-      animation: spin 0.5s linear infinite;
+      width: calc(var(--icon) * 1.5);
+      height: calc(var(--icon) * 1.5);
+      animation: spin 0.7s linear infinite;
       fill: currentColor;
     }
     

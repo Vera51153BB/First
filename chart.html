@@ -233,10 +233,22 @@
       margin-left:8px;
       flex:0 0 auto;
     }
-    /* Активная вкладка в группе зон — только перекраска текста в цвет .time */
+
+    /* LQDZ: Активная вкладка (SRFL|TPCL|STLC) — только перекрашиваем текст в цвет .time */
     .pill-group .btn.is-active{
-      color: var(--muted);
-      font-weight: 600 /* inherit;  не утолщаем, только цвет */
+      /* НЕ трогаем font-weight и font-size */
+      color: var(--muted) !important;     /* тот же цвет, что у .time */
+    }
+    
+    /* Сохраняем поведение при hover/active, но фиксируем цвет */
+    .pill-group .btn.is-active:hover,
+    .pill-group .btn.is-active:active,
+    .pill-group .btn.is-active:focus{
+      color: var(--muted) !important;
+      /* фон оставляем как у обычной кнопки, чтобы не менять визуал */
+      background: linear-gradient(180deg, var(--panel), var(--panel2));
+      /* без дополнительных теней, чтобы не «утолщалось» */
+      box-shadow: none;
     }
     
     /* Обновить — всегда видима, не сжимать, небольшой зазор слева */

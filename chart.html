@@ -348,6 +348,12 @@
       display: block;
       fill: currentColor;                                /* на всякий случай */
     }
+
+    /* увеличить только спиннер, не трогая остальные иконки */
+    .spinner-btn svg{
+      width:  calc(var(--icon) * 1.2);
+      height: calc(var(--icon) * 1.2);
+    }
     
     /* HOVER для иконок */
     .btn-icon:hover{
@@ -495,42 +501,56 @@
     }
 
     /* --- Индикатор крутилка загрузки PNG (не перехватывает клики) 🔄 ----------------------------------------- */
+    /* Контейнер индикатора поверх графика */
     .chart-spinner{
       position: absolute;
-      top: var(--spinTop, 16px);
-      right: var(--spinRight, 40px);
-      z-index: 20;
-      pointer-events: none;
+      top: 16px;           /* ваш базовый отступ сверху */
+      right: 40px;         /* ваш базовый отступ справа */
+      z-index: 10;
+      pointer-events: none;  /* индикатор не кликается */
       opacity: 0;
-      transform: scale(0.92);
-      transition: opacity .12s ease, transform .12s ease;
-      color: var(--muted);
+      transform: scale(0.96);
+      transition: opacity .15s ease, transform .15s ease;
     }
+    
+    /* Видимая «пилюля» индикатора без фона/рамок/кольца */
+    .chart-spinner .spinner-btn{
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width:  calc(var(--uiSize) * 1.0);  /* хитбокс компактный */
+      height: calc(var(--uiSize) * 1.0);
+      background: transparent;
+      border: none;
+      box-shadow: none;
+      border-radius: 0;
+      outline: none;
+    }
+    
+    /* Сам значок — увеличен ×1.2 и крутится медленнее */
+    .chart-spinner .spinner-btn svg{
+      width:  calc(var(--icon) * 1.2);
+      height: calc(var(--icon) * 1.2);
+      display: block;
+      animation: chartSpin .30s linear infinite;  /* было ~0.15s → стало вдвое медленнее */
+      opacity: .95;
+      color: var(--text); /* наследует тему */
+    }
+    
+    /* Показ/скрытие */
     .chart-spinner.show{
       opacity: 1;
       transform: scale(1);
     }
-    .chart-spinner .spinner-btn{
-      width: calc(var(--uiSize) * 1.15);
-      height: calc(var(--uiSize) * 1.15);
-    }
-    .chart-spinner .spinner-btn svg{
-      width: var(--icon);
-      height: var(--icon);
-      display: block;
-      fill: currentColor;
-      animation: okx-spin .15s linear infinite; /* ~150 мс/оборот */
-    }
-    @keyframes okx-spin{ from{transform:rotate(0)} to{transform:rotate(360deg)} }
     
-    /* короткие “тики” статуса: 150 мс */
-    .chart-spinner.ok    { color:#22c55e; }
-    .chart-spinner.error { color:#ef4444; }
+    /* Цветовые вспышки результата (150 мс) */
+    .chart-spinner.ok   .spinner-btn svg{ color: #34d399; } /* зелёный тик */
+    .chart-spinner.error .spinner-btn svg{ color: #ef4444; } /* красный тик */
     
-    @media (prefers-reduced-motion: reduce){
-      .chart-spinner .spinner-btn svg{ animation:none; }
+    @keyframes chartSpin {
+      from { transform: rotate(0deg); }
+      to   { transform: rotate(360deg); }
     }
-
     
    </style>
   
@@ -594,12 +614,12 @@
 
       <!-- индикатор крутилка загрузки PNG (не перехватывает клики) 🔄 -->
       <div id="chartSpinner" class="chart-spinner" aria-hidden="true">
-        <button class="btn btn-icon spinner-btn" type="button" tabindex="-1" aria-hidden="true">
+        <div class="spinner-btn" tabindex="-1">
           <svg viewBox="0 0 24 24" aria-hidden="true">
             <path fill="currentColor"
               d="M12 6v3l4-4-4-4v3c-4.42 0-8 3.58-8 8 0 1.57.46 3.03 1.24 4.26L6.7 14.8c-.45-.83-.7-1.79-.7-2.8 0-3.31 2.69-6 6-6zm6.76 1.74L17.3 9.2c.44.84.7 1.79.7 2.8 0 3.31-2.69 6-6 6v-3l-4 4 4 4v-3c4.42 0 8-3.58 8-8 0-1.57-.46-3.03-1.24-4.26z"/>
           </svg>
-        </button>
+        </div>
       </div>      
       
         <img id="candle-img"

@@ -493,6 +493,44 @@
       .pair .sep-tf,
       .pair .tf{ display:none; }
     }
+
+    /* --- Индикатор крутилка загрузки PNG (не перехватывает клики) 🔄 ----------------------------------------- */
+    .chart-spinner{
+      position: absolute;
+      top: var(--spinTop, 16px);
+      right: var(--spinRight, 40px);
+      z-index: 20;
+      pointer-events: none;
+      opacity: 0;
+      transform: scale(0.92);
+      transition: opacity .12s ease, transform .12s ease;
+      color: var(--muted);
+    }
+    .chart-spinner.show{
+      opacity: 1;
+      transform: scale(1);
+    }
+    .chart-spinner .spinner-btn{
+      width: calc(var(--uiSize) * 1.15);
+      height: calc(var(--uiSize) * 1.15);
+    }
+    .chart-spinner .spinner-btn svg{
+      width: var(--icon);
+      height: var(--icon);
+      display: block;
+      fill: currentColor;
+      animation: okx-spin .15s linear infinite; /* ~150 мс/оборот */
+    }
+    @keyframes okx-spin{ from{transform:rotate(0)} to{transform:rotate(360deg)} }
+    
+    /* короткие “тики” статуса: 150 мс */
+    .chart-spinner.ok    { color:#22c55e; }
+    .chart-spinner.error { color:#ef4444; }
+    
+    @media (prefers-reduced-motion: reduce){
+      .chart-spinner .spinner-btn svg{ animation:none; }
+    }
+
     
    </style>
   
@@ -553,6 +591,16 @@
           </svg>
         </div>
       </div>
+
+      <!-- индикатор крутилка загрузки PNG (не перехватывает клики) 🔄 -->
+      <div id="chartSpinner" class="chart-spinner" aria-hidden="true">
+        <button class="btn btn-icon spinner-btn" type="button" tabindex="-1" aria-hidden="true">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path fill="currentColor"
+              d="M12 6v3l4-4-4-4v3c-4.42 0-8 3.58-8 8 0 1.57.46 3.03 1.24 4.26L6.7 14.8c-.45-.83-.7-1.79-.7-2.8 0-3.31 2.69-6 6-6zm6.76 1.74L17.3 9.2c.44.84.7 1.79.7 2.8 0 3.31-2.69 6-6 6v-3l-4 4 4 4v-3c4.42 0 8-3.58 8-8 0-1.57-.46-3.03-1.24-4.26z"/>
+          </svg>
+        </button>
+      </div>      
       
         <img id="candle-img"
        alt=""
@@ -748,8 +796,10 @@
       document.documentElement.setAttribute('data-theme', t);
       applyAutoContrast();
     
-      // попросим перерисовать график, если загрузчик уже инициализирован
-      if (window.loadChartPng) { window.loadChartPng(true); }
+      // перерисовать график при смене темы (с индикацией)
+      if (typeof window.loadChartPng === 'function') {
+        window.loadChartPng({ reason: 'theme-change', forceFresh: false });
+      }
     }
 
     // --- модалки
@@ -843,6 +893,33 @@
     const tfGrid     = document.getElementById("tfGrid");
     const tfBtnVal   = document.getElementById("tfBtnVal");
     const btnRefresh = document.getElementById("btnRefresh") || document.getElementById("btn-refresh");
+
+    // --- Крутилка сметы TF, Темы и SRFL/TPCL/STLC ---
+    const spinner = document.getElementById('chartSpinner');
+    let _spinTimer = null;
+    
+    function spinShow(){
+      if (!spinner) return;
+      spinner.classList.remove('ok','error');
+      spinner.classList.add('show');
+    }
+    function spinSuccess(){
+      if (!spinner) return;
+      spinner.classList.add('ok');
+      clearTimeout(_spinTimer);
+      _spinTimer = setTimeout(()=>{ spinner.classList.remove('ok','show'); }, 150);
+    }
+    function spinError(){
+      if (!spinner) return;
+      spinner.classList.add('error');
+      clearTimeout(_spinTimer);
+      _spinTimer = setTimeout(()=>{ spinner.classList.remove('error','show'); }, 150);
+    }
+    function spinHide(){
+      if (!spinner) return;
+      spinner.classList.remove('ok','error','show');
+    }
+
   
     // --- синхронизация подписи внизу ---
     if (typeof state === "object") {
@@ -873,9 +950,10 @@
     // --- ИНИЦИАЛИЗАЦИЯ ГРАФИКА (связка с API)
     // Файл/блок: /First/chart.html
     //   • На старте и при смене TF/нажатии Refresh — запрашивать PNG и подменять <img>.
-    async function loadPng(forceFresh = false) {
+    async function loadPng(forceFresh = false, showSpin = false) {
       const img = document.getElementById("candle-img");
       if (!img) return;
+      if (showSpin) spinShow();
     
       try {
         // --- реальный контейнер и размеры
@@ -918,7 +996,6 @@
         
         // DPR (без изменений, не множим его на UPSCALE — масштаб уже учтён в cw_req/ch_req)
         const dpr = Math.max(1, Math.min(3, window.devicePixelRatio || 1));
-
     
         // инструмент/TF
         const qs   = new URLSearchParams(location.search);
@@ -973,6 +1050,7 @@
     
         // Подмена PNG + обработчики без оверлея
         img.onerror = function () {
+          spinError();
           var d = document.getElementById("chartDebug");
           if (d) d.textContent = "PNG load error → " + j.url;
           /* на всякий случай — при ошибке тоже ставим старт в начало */
@@ -980,6 +1058,7 @@
           if (root) root.scrollLeft = 0;
         };
         img.onload = function () {
+          spinSuccess();
           /* после успешной подмены PNG — начать с левого края */
           const root = document.getElementById("chartRoot");
           if (root) root.scrollLeft = 0;
@@ -996,10 +1075,23 @@
         img.src = j.url;
     
       } catch (e) {
+        spinError();
         // прод: только логи
         console.error("[chart] loadPng error:", e);
       }
-      window.loadChartPng = loadPng;
+        window.loadChartPng = (opts = {}) => {
+        const reason = opts.reason || null;
+        const force  = !!opts.forceFresh;
+
+        // Индикатор включаем ТОЛЬКО при смене темы, TF и режима зон
+        const showSpin = (
+          reason === 'theme-change' ||
+          reason === 'tf-change'    ||
+          reason === 'mode-change'
+        );
+
+        return loadPng(force, showSpin);
+      };
     }
   
     // --- обработчик смены TF ---
@@ -1012,7 +1104,7 @@
         state.tf = window.currentBar;
         try { renderBars(); } catch {}
       }
-      loadPng(true);
+      window.loadChartPng({ reason: 'tf-change', forceFresh: true });
     });
   
     // --- обработчик Refresh ---

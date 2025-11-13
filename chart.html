@@ -1100,17 +1100,18 @@
         // прод: только логи
         console.error("[chart] loadPng error:", e);
       }
+        // Унифицированная точка входа: управляем и fresh, и спиннером
         window.loadChartPng = (opts = {}) => {
         const reason = opts.reason || null;
         const force  = !!opts.forceFresh;
 
-        // Индикатор включаем ТОЛЬКО при смене темы, TF и режима зон
-        const showSpin = (
+        // Индикатор включаем ТОЛЬКО при смене темы, TF, режима зон, и при ручном Refresh
+        const showSpin =
           reason === 'theme-change' ||
           reason === 'tf-change'    ||
-          reason === 'mode-change'
-        );
-
+          reason === 'mode-change'  ||
+          reason === 'manual-refresh';
+      
         return loadPng(force, showSpin);
       };
     }
@@ -1129,7 +1130,15 @@
     });
   
     // --- обработчик Refresh ---
-    btnRefresh?.addEventListener("click", () => loadPng(true));
+    btnRefresh?.addEventListener("click", () => {
+      // запускаем через унифицированную точку, чтобы включился спиннер
+      if (typeof window.loadChartPng === 'function') {
+        window.loadChartPng({ reason: 'manual-refresh', forceFresh: true });
+      } else {
+        // страховка на ранней инициализации
+        try { loadPng(true, /*showSpin*/ true); } catch {}
+      }
+    });
   
     // --- первый запуск + авто-ресайз ---
     window.addEventListener("DOMContentLoaded", () => {

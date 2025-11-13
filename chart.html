@@ -761,7 +761,7 @@
         // меняем режим и перерисовываем график
         currentMode = String(btn.dataset.mode || 'srfl');
         if (typeof window.loadChartPng === 'function') {
-          window.loadChartPng({ reason: 'mode-change' });
+          window.loadChartPng({ reason: 'mode-change', forceFresh: true });   //  window.loadChartPng({ reason: 'mode-change' });
         }
       });
     }

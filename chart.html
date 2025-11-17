@@ -1,14 +1,15 @@
 <!doctype html>
-<html lang="ru" data-theme="blue">
+<html lang="en" data-theme="blue">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
   <title>Cryptocurrency chart on the OKX exchange</title>
   <meta name="color-scheme" content="dark light" />
   <link rel="preload" as="font" type="font/woff2" crossorigin href="/assets/fonts/momo-trust-display-400.woff2">
-  <link rel="icon" href="/images/bts153.ico" type="image/x-icon" />
-  
-  <style>
+  <link rel="icon" href="/images/bts153.ico" sizes="16x16" type="image/x-icon" />
+  <link rel="icon" href="/images/bts153-32.ico" sizes="32x32" type="image/x-icon" />
+
+    <style>
     @font-face{
       font-family:"Momo Trust Display";
       src:url("/assets/fonts/momo-trust-display-400.woff2") format("woff2");
@@ -743,7 +744,7 @@
     };
 
     // LQDZ: режим зон. Базовый — SRFL (S/R Flip).
-    let currentMode = 'srfl';
+    let currentMode = 'tpcl';
     
     // Навесить клик по табам зон (SRFL|TPCL|STLC)
     const lqdzTabs = document.getElementById('lqdzTabs');

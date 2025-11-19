@@ -52,7 +52,7 @@ body {
 
   /* Наклон под мостик */
   transform-origin: left center;
-  transform: rotate(24deg) skewX(-17deg) !important;
+  transform: rotate(21deg) skewX(-17deg) !important;
 
   overflow: hidden;
 }

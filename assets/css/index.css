@@ -41,9 +41,9 @@ body {
   position: absolute;
 
   /* Координаты, максимально приближенные к оранжевому прямоугольнику */
-  left: 15%;      /* вправо/влево */
+  left: 14%;      /* вправо/влево */
   bottom: 36%;    /* вверх/вниз */
-  width: 16%;     /* длина вдоль моста 21*/
+  width: 17%;     /* длина вдоль моста */
   height: 11%;    /* при необходимости можно подкорректировать */
 
   display: flex;
@@ -52,7 +52,7 @@ body {
 
   /* Наклон под мостик */
   transform-origin: left center;
-  transform: rotate(17deg) skewX(-5deg) !important;
+  transform: rotate(17deg) skewX(11deg) !important;
 
   overflow: hidden;
 }

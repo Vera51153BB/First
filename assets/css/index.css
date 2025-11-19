@@ -59,7 +59,7 @@ body {
   /* Наклон окна под мостик — угол можно корректировать */
   transform-origin: left center;
   transform: skewX(-100deg);
-
+  transform: rotate(74deg);       /* здесь угол наклона */  
   overflow: hidden;
 }
 

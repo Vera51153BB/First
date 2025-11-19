@@ -60,7 +60,7 @@ body {
 
   /* Наклон под мостик — комбинация перспективы и общего завала */
   transform-origin: left center;
-  transform: skewX(-22deg) rotate(29deg);
+  transform: rotate(29deg) skewX(-22deg);
   overflow: hidden;
 }
 

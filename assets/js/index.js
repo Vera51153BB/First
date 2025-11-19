@@ -9,7 +9,7 @@ const TICKER_HOME_CONFIG = {
     { id: "bitcoin", label: "BTC·USDT" },
     { id: "ethereum", label: "ETH·USDT" },
     { id: "solana", label: "SOL·USDT" },
-    { id: "toncoin", label: "TON·USDT" },
+    { id: "toncoin", label: "TON·USDT" },    
     { id: "ripple", label: "XRP·USDT" },
     { id: "dogecoin", label: "DOGE·USDT" },
     { id: "binancecoin", label: "BNB·USDT" },

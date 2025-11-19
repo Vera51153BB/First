@@ -8,7 +8,7 @@
   --home-ticker-down: #ff5f7a;
   --home-ticker-shadow: 0 0 18px rgba(0, 255, 204, 0.7);
   --home-ticker-height: 9%; /* относительная высота окна от контейнера */
-  --home-ticker-speed-sec: 55s; /* скорость прокрутки */
+  --home-ticker-speed-sec: 70s; /* скорость прокрутки */
 }
 
 body {
@@ -52,7 +52,7 @@ body {
 
   /* Наклон под мостик */
   transform-origin: left center;
-  transform: rotate(17deg) skewX(2deg) !important;
+  transform: rotate(17deg) skewX(-5deg) !important;
 
   overflow: hidden;
 }

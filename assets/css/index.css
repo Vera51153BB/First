@@ -38,21 +38,21 @@ body {
 
 /* ==== FINAL OVERRIDE: точная подгонка окна тикера на мостике (_home_) ==== */
 .ticker_home_frame {
-  position: absolute !important;
+  position: absolute;
 
   /* Координаты, максимально приближенные к оранжевому прямоугольнику */
-  left: 15% !important;      /* вправо/влево */
-  bottom: 41% !important;    /* вверх/вниз */
-  width: 21% !important;     /* длина вдоль моста */
-  height: 11% !important;    /* при необходимости можно подкорректировать */
+  left: 15%;      /* вправо/влево */
+  bottom: 41%;    /* вверх/вниз */
+  width: 21%;     /* длина вдоль моста */
+  height: 11%;    /* при необходимости можно подкорректировать */
 
-  display: flex !important;
-  align-items: stretch !important;
-  justify-content: center !important;
+  display: flex;
+  align-items: stretch;
+  justify-content: center;
 
   /* Наклон под мостик */
-  transform-origin: left center !important;
-  transform: skewX(-23deg) rotate(-6deg) !important;
+  transform-origin: left center;
+  transform: rotate(-20deg) skewX(-23deg);
 
   overflow: hidden !important;
 }
@@ -154,5 +154,19 @@ body {
   }
   100% {
     transform: translateX(-50%);
+  }
+}
+
+/* Адаптив: на очень узких экранах чуть подтягиваем позицию и читаемость */
+@media (max-width: 768px) {
+  .ticker_home_frame {
+    left: 12%;
+    bottom: 21%;
+    width: 50%;
+    border-radius: 3px;
+  }
+
+  .ticker_home_row {
+    font-size: clamp(8px, 2vw, 11px);
   }
 }

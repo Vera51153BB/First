@@ -42,9 +42,9 @@ body {
   /* Координаты в процентах от размеров исходного изображения (1344x768).
      Эти цифры можно править, чтобы "пристрелять" позицию:
      left/bottom/width/height. */
-  left: 17%;         /* Сдвигаем влево-вправо */
-  bottom: 110%;       /* Сдвигаем вниз-верх */
-  width: 21%;
+  left: 14%;
+  bottom: 33%;
+  width: 24%;
   height: var(--home-ticker-height);
 
   display: flex;
@@ -58,8 +58,7 @@ body {
 
   /* Наклон окна под мостик — угол можно корректировать */
   transform-origin: left center;
-  transform: skewX(-100deg);
-  transform: rotate(-120deg);       /* здесь угол наклона */  
+  transform: skewX(-17deg) rotate(-3deg);
   overflow: hidden;
 }
 

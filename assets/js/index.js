@@ -4,14 +4,20 @@ const TICKER_HOME_CONFIG = {
   imgWidth: 1344,
   imgHeight: 768,
 
-  // Список монет для отображения (можно менять)
+  // Список монет с CoinGecko для отображения (можно менять)
   symbols: [
     { id: "bitcoin", label: "BTC·USDT" },
     { id: "ethereum", label: "ETH·USDT" },
     { id: "solana", label: "SOL·USDT" },
     { id: "toncoin", label: "TON·USDT" },
     { id: "ripple", label: "XRP·USDT" },
-    { id: "dogecoin", label: "DOGE·USDT" }
+    { id: "dogecoin", label: "DOGE·USDT" },
+    { id: "binancecoin", label: "BNB·USDT" },
+    { id: "cardano", label: "ADA·USDT" },
+    { id: "litecoin", label: "LTC·USDT" },
+    { id: "starcoin", label: "STRC·USDT" },
+    { id: "shiba-inu", label: "SHIB·USDT" },
+    { id: "okb", label: "OKB·USDT" }
   ],
 
   // Параметры обновления

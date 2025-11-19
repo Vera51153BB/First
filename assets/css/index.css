@@ -43,7 +43,7 @@ body {
      Эти цифры можно править, чтобы "пристрелять" позицию:
      left/bottom/width/height. */
   left: 17%;         /* Сдвигаем влево-вправо */
-  bottom: 32%;       /* Сдвигаем вниз-верх */
+  bottom: 52%;       /* Сдвигаем вниз-верх */
   width: 23%;
   height: var(--home-ticker-height);
 
@@ -58,7 +58,7 @@ body {
 
   /* Наклон окна под мостик — угол можно корректировать */
   transform-origin: left center;
-  transform: skewX(-17deg);
+  transform: skewX(32deg);
 
   overflow: hidden;
 }

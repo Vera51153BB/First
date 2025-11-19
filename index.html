@@ -8,10 +8,42 @@
   <title>Finding Entry Points in the Cryptocurrency Market</title>
   <link rel="icon" href="/images/bts153.ico" sizes="16x16" type="image/x-icon" />
   <link rel="icon" href="/images/bts153-32.ico" sizes="32x32" type="image/x-icon" />
+    <!-- Шрифт Zen Dots (для бегущей строки) -->
+  <link
+    rel="stylesheet"
+    href="https://fonts.googleapis.com/css2?family=Zen+Dots&display=swap"
+  />
 </head>
 <body>
-  <!--- <main class="wrap">
-    <h1>OKX</h1> --->
-    <img src="images/botcryptosignal.webp" alt="Presentation of a crypto bot that provides market entry signals" style="max-width: 100%; height: auto; display: block; margin: 0 auto;">
+  <!-- Главная сцена с изображением и наложенным тикером (_home_) -->
+  <div class="scene_home_container">
+    <img
+      src="images/botcryptosignal.webp"
+      alt="Presentation of a crypto bot that provides market entry signals"
+      class="scene_home_bg"
+      width="1344"
+      height="768"
+    />
+
+    <!-- Окно бегущей строки с котировками -->
+    <div class="ticker_home_frame">
+      <div class="ticker_home_mask">
+        <!-- Содержимое заполняется/обновляется через JS -->
+        <div class="ticker_home_row" id="ticker_home_row">
+          <!-- Фолбэк-контент на случай, если JS не подгрузился -->
+          <span class="ticker_home_item">
+            <span class="ticker_home_symbol">BTC·USDT</span>
+            <span class="ticker_home_price">– – –</span>
+            <span class="ticker_home_change ticker_home_change--up">+0.0%</span>
+          </span>
+          <span class="ticker_home_item">
+            <span class="ticker_home_symbol">ETH·USDT</span>
+            <span class="ticker_home_price">– – –</span>
+            <span class="ticker_home_change ticker_home_change--down">-0.0%</span>
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
 </body>
 </html>

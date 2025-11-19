@@ -45,7 +45,7 @@ body {
 
   /* ПРЕДПОЛОЖЕНИЕ: эти значения максимально приближены к оранжевому прямоугольнику */
   left: 15%;          /* чуть правее */
-  bottom: 42%;        /* выше, почти на уровне неона на мосту */
+  bottom: 52%;        /* выше, почти на уровне неона на мосту */
   width: 21%;         /* длина окна по мосту */
   height: var(--home-ticker-height);
 
@@ -60,7 +60,7 @@ body {
 
   /* Наклон под мостик — комбинация перспективы и общего завала */
   transform-origin: left center;
-  transform: skewX(-22deg) rotate(-6deg);
+  transform: skewX(-22deg) rotate(29deg);
   overflow: hidden;
 }
 

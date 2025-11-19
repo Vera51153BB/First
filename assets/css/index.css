@@ -36,33 +36,27 @@ body {
   height: auto;
 }
 
-/* Окно тикера: привязано к координатам внутри картинки */
+/* ==== FINAL OVERRIDE: точная подгонка окна тикера на мостике (_home_) ==== */
 .ticker_home_frame {
-  position: absolute;
-  /* Координаты в процентах от размеров исходного изображения (1344x768).
-     Эти цифры можно править, чтобы "пристрелять" позицию:
-     left/bottom/width/height. */
+  position: absolute !important;
 
-  /* ПРЕДПОЛОЖЕНИЕ: эти значения максимально приближены к оранжевому прямоугольнику */
-  left: 15%;          /* чуть правее */
-  bottom: 52%;        /* выше, почти на уровне неона на мосту */
-  width: 21%;         /* длина окна по мосту */
-  height: var(--home-ticker-height);
+  /* Координаты, максимально приближенные к оранжевому прямоугольнику */
+  left: 15% !important;      /* вправо/влево */
+  bottom: 41% !important;    /* вверх/вниз */
+  width: 21% !important;     /* длина вдоль моста */
+  height: 11% !important;    /* при необходимости можно подкорректировать */
 
-  display: flex;
-  align-items: stretch;
-  justify-content: center;
+  display: flex !important;
+  align-items: stretch !important;
+  justify-content: center !important;
 
-  background: var(--home-ticker-bg);
-  border: 1px solid var(--home-ticker-border);
-  box-shadow: var(--home-ticker-shadow);
-  border-radius: 4px;
+  /* Наклон под мостик */
+  transform-origin: left center !important;
+  transform: skewX(-23deg) rotate(-6deg) !important;
 
-  /* Наклон под мостик — комбинация перспективы и общего завала */
-  transform-origin: left center;
-  transform: rotate(29deg) skewX(-22deg);
-  overflow: hidden;
+  overflow: hidden !important;
 }
+
 
 /* Внутренняя маска под бегущую строку */
 .ticker_home_mask {

@@ -42,7 +42,7 @@ body {
   /* Координаты в процентах от размеров исходного изображения (1344x768).
      Эти цифры можно править, чтобы "пристрелять" позицию:
      left/bottom/width/height. */
-  left: 11%;
+  left: 15%;
   bottom: 22%;
   width: 23%;
   height: var(--home-ticker-height);

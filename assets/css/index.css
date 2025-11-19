@@ -23,7 +23,7 @@ body {
 /* Обёртка сцены: держит картинку и все накладки */
 .scene_home_container {
   position: relative;
-  max-width: 100%;
+  max-width: 100%;  
   margin: 0 auto;
   overflow: hidden;
   background: #000;

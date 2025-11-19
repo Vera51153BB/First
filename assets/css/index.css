@@ -55,8 +55,19 @@ body {
   transform: rotate(17deg) skewX(11deg) !important;
 
   overflow: hidden;
+  z-index: 2;            /* ← тикер над фоном, но под маской */
 }
+/* Прозрачная маска-перила поверх тикера (_home_) */
+.scene_home_overlay_home {
+  position: absolute;
+  inset: 0;             /* top:0; right:0; bottom:0; left:0; */
+  width: 100%;
+  height: auto;
+  object-fit: cover;
 
+  pointer-events: none; /* не блокирует клики по тикеру */
+  z-index: 3;           /* выше тикера и его бликов */
+}
 
 /* Внутренняя маска под бегущую строку */
 .ticker_home_mask {

@@ -162,17 +162,3 @@ body {
     transform: translateX(-50%);
   }
 }
-
-/* Адаптив: на очень узких экранах чуть подтягиваем позицию и читаемость */
-@media (max-width: 768px) {
-  .ticker_home_frame {
-    left: 12%;
-    bottom: 21%;
-    width: 50%;
-    border-radius: 3px;
-  }
-
-  .ticker_home_row {
-    font-size: clamp(8px, 2vw, 11px);
-  }
-}

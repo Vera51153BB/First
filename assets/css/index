@@ -1,0 +1,187 @@
+<style>
+    :root {
+      --home-bg-color: #02040a;
+      --home-ticker-bg: rgba(2, 10, 24, 0.9);
+      --home-ticker-border: rgba(0, 255, 204, 0.9);
+      --home-ticker-glow: rgba(0, 255, 204, 0.85);
+      --home-ticker-text: #e8f6ff;
+      --home-ticker-up: #6bff94;
+      --home-ticker-down: #ff5f7a;
+      --home-ticker-shadow: 0 0 18px rgba(0, 255, 204, 0.7);
+      --home-ticker-height: 9%; /* относительная высота окна от контейнера */
+      --home-ticker-speed-sec: 25s; /* скорость прокрутки */
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      background: var(--home-bg-color);
+      color: #fff;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+        sans-serif;
+    }
+
+    .ticker_home_frame {
+      left: 11%;   /* сдвиг по X */
+      bottom: 22%; /* сдвиг по Y (от низа) */
+      width: 23%;  /* ширина окна */
+      height: var(--home-ticker-height); /* высота окна */
+      transform: skewX(-17deg); /* наклон */
+    }
+
+    /* Обёртка сцены: держит картинку и все накладки */
+    .scene_home_container {
+      position: relative;
+      max-width: 100%;
+      margin: 0 auto;
+      overflow: hidden;
+      background: #000;
+    }
+
+    /* Сам фон: картинка 1344x768, масштабируется, но пропорции сохраняются */
+    .scene_home_bg {
+      display: block;
+      width: 100%;
+      height: auto;
+    }
+
+    /* Окно тикера: привязано к координатам внутри картинки */
+    .ticker_home_frame {
+      position: absolute;
+      /* Координаты в процентах от размеров исходного изображения (1344x768).
+         Эти цифры можно править, чтобы "пристрелять" позицию:
+         left/bottom/width/height. */
+      left: 11%;
+      bottom: 22%;
+      width: 23%;
+      height: var(--home-ticker-height);
+
+      display: flex;
+      align-items: stretch;
+      justify-content: center;
+
+      background: var(--home-ticker-bg);
+      border: 1px solid var(--home-ticker-border);
+      box-shadow: var(--home-ticker-shadow);
+      border-radius: 4px;
+
+      /* Наклон окна под мостик — угол можно корректировать */
+      transform-origin: left center;
+      transform: skewX(-17deg);
+
+      overflow: hidden;
+    }
+
+    /* Внутренняя маска под бегущую строку */
+    .ticker_home_mask {
+      position: relative;
+      flex: 1 1 auto;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      height: 100%;
+    }
+
+    /* Ряд элементов, который едет слева направо */
+    .ticker_home_row {
+      display: inline-flex;
+      align-items: center;
+      white-space: nowrap;
+      will-change: transform;
+      animation: ticker_home_scroll var(--home-ticker-speed-sec) linear infinite;
+      font-family: "Zen Dots", system-ui, -apple-system, BlinkMacSystemFont,
+        "Segoe UI", sans-serif;
+      font-size: clamp(8px, 1.1vw, 13px);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--home-ticker-text);
+      text-shadow: 0 0 8px var(--home-ticker-glow);
+      padding-inline: 8%;
+    }
+
+    /* Один тикер (одна монета) */
+    .ticker_home_item {
+      display: inline-flex;
+      align-items: baseline;
+      margin-right: 2.8rem;
+      opacity: 0.92;
+    }
+
+    .ticker_home_symbol {
+      margin-right: 0.4rem;
+    }
+
+    .ticker_home_price {
+      margin-right: 0.35rem;
+      opacity: 0.96;
+    }
+
+    .ticker_home_change {
+      font-size: 0.82em;
+    }
+
+    .ticker_home_change--up {
+      color: var(--home-ticker-up);
+    }
+
+    .ticker_home_change--down {
+      color: var(--home-ticker-down);
+    }
+
+    /* Лёгкий "блик" по стеклу */
+    .ticker_home_frame::before {
+      content: "";
+      position: absolute;
+      inset: -60%;
+      background: linear-gradient(
+        110deg,
+        rgba(255, 255, 255, 0.22),
+        transparent 35%,
+        transparent 65%,
+        rgba(0, 255, 255, 0.18)
+      );
+      mix-blend-mode: screen;
+      opacity: 0.22;
+      pointer-events: none;
+    }
+
+    /* Тень снизу, чтобы соединить с мостиком */
+    .ticker_home_frame::after {
+      content: "";
+      position: absolute;
+      left: -10%;
+      right: -10%;
+      bottom: -35%;
+      height: 60%;
+      background: radial-gradient(
+        ellipse at top,
+        rgba(0, 0, 0, 0.55),
+        transparent 70%
+      );
+      opacity: 0.9;
+      pointer-events: none;
+    }
+
+    @keyframes ticker_home_scroll {
+      0% {
+        transform: translateX(0%);
+      }
+      100% {
+        transform: translateX(-50%);
+      }
+    }
+
+    /* Адаптив: на очень узких экранах чуть подтягиваем позицию и читаемость */
+    @media (max-width: 768px) {
+      .ticker_home_frame {
+        left: 12%;
+        bottom: 21%;
+        width: 50%;
+        border-radius: 3px;
+      }
+
+      .ticker_home_row {
+        font-size: clamp(8px, 2vw, 11px);
+      }
+    }
+  </style>

@@ -42,9 +42,11 @@ body {
   /* Координаты в процентах от размеров исходного изображения (1344x768).
      Эти цифры можно править, чтобы "пристрелять" позицию:
      left/bottom/width/height. */
-  left: 14%;
-  bottom: 33%;
-  width: 24%;
+
+  /* ПРЕДПОЛОЖЕНИЕ: эти значения максимально приближены к оранжевому прямоугольнику */
+  left: 15%;          /* чуть правее */
+  bottom: 42%;        /* выше, почти на уровне неона на мосту */
+  width: 21%;         /* длина окна по мосту */
   height: var(--home-ticker-height);
 
   display: flex;
@@ -56,9 +58,9 @@ body {
   box-shadow: var(--home-ticker-shadow);
   border-radius: 4px;
 
-  /* Наклон окна под мостик — угол можно корректировать */
+  /* Наклон под мостик — комбинация перспективы и общего завала */
   transform-origin: left center;
-  transform: skewX(-17deg) rotate(-3deg);
+  transform: skewX(-22deg) rotate(-6deg);
   overflow: hidden;
 }
 

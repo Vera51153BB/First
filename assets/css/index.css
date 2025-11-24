@@ -52,7 +52,7 @@ body {
 
   /* Наклон под мостик */
   transform-origin: left center;
-  transform: rotate(17deg) skewX(11deg) !important;
+  transform: rotate(19deg) skewX(11deg) !important;
 
   overflow: hidden;
   z-index: 2;            /* ← тикер над фоном, но под маской */

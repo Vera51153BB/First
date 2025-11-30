@@ -55,13 +55,16 @@ body {
 
 /* ==== HERO: BOTCRYPTOSIGNAL поверх сцены (_home_) ==== */
 .hero_home {
-  position: absolute;
-  inset: 0;                 /* растянуть на всю сцену */
+  position: absolute !important;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;               /* растянуть на всю сцену по высоте */
   display: flex;
-  align-items: center;
-  justify-content: center;
-  pointer-events: none;     /* кликается только внутренний блок */
-  z-index: 4;               /* выше перил и тикера */
+  align-items: center;     /* вертикальный центр внутри картинки */
+  justify-content: center; /* горизонтальный центр */
+  pointer-events: none;    /* кликается только внутренний блок */
+  z-index: 4;              /* выше перил и тикера */
 }
 
 .hero_home_inner {

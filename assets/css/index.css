@@ -43,6 +43,8 @@
   --hero-anim-delay-title: 0.9s;   /* была 0.4s — пауза перед заголовком */
   --hero-anim-delay-tagline: 1.3s; /* +0.4s после заголовка */
   --hero-anim-delay-cta: 1.8s;     /* ещё +0.5s до кнопки */
+    /* Горизонтальный сдвиг языкового переключателя (можно подстроить) */
+  --hero-lang-offset-x: 1.4rem;
 }
 
 body {
@@ -91,19 +93,19 @@ body {
   margin: -4vh auto 0;      /* чуть выше геометрического центра */
 }
 
-/* Заголовок BOT / CRYPTO / SIGNAL */
+/* Заголовок BOT / CRYPTOSIGNAL */
 .hero_home_title {
   margin: 0;
   font-family: "Goldman", system-ui, -apple-system, BlinkMacSystemFont,
     "Segoe UI", sans-serif;
-  font-weight: 700; /* Bold */
+  font-weight: 700;
   font-size: clamp(2.6rem, 6vw, 4.5rem);
-  letter-spacing: 0.01em;   /* было 0.18em — межбуквенный интервал */
+  letter-spacing: 0.01em; /* было 0.18em – уменьшили вдвое */
   text-transform: uppercase;
   color: var(--hero-title-color);
   text-shadow: var(--hero-title-shadow);
   opacity: 0;
-  transform: translateY(-18px);
+  transform: translateY(-17px);
   animation: hero_fade_down var(--hero-anim-duration) ease-out forwards;
   animation-delay: var(--hero-anim-delay-title);
 }
@@ -113,13 +115,13 @@ body {
   margin: 0 0.18em;
 }
 
-/* Девиз */
+/* Девиз (4 строки) */
 .hero_home_tagline {
-  margin: 1.4rem auto 0;
+  margin: 1.2rem auto 0;
   max-width: 40rem;
   font-family: "Goldman", system-ui, -apple-system, BlinkMacSystemFont,
     "Segoe UI", sans-serif;
-  font-weight: 400; /* Regular */
+  font-weight: 400;
   font-size: clamp(1rem, 2.1vw, 1.35rem);
   line-height: 1.4;
   color: var(--hero-tagline-color);
@@ -130,12 +132,70 @@ body {
   animation-delay: var(--hero-anim-delay-tagline);
 }
 
+.hero_home_tagline-line {
+  display: inline-block;
+}
+
+/* Переключатель языков: круглые «флаги» */
+.hero_lang_switcher {
+  margin: 0.9rem auto 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  transform: translateX(var(--hero-lang-offset-x));
+  opacity: 0;
+  transform-origin: center;
+  animation: hero_fade_down var(--hero-anim-duration) ease-out forwards;
+  /* появление чуть позже девиза */
+  animation-delay: calc(var(--hero-anim-delay-tagline) + 0.15s);
+}
+
+.hero_lang_btn {
+  width: 2.1rem;
+  height: 2.1rem;
+  border-radius: 999px;
+  border: 1px solid rgba(200, 230, 255, 0.7);
+  background: rgba(5, 16, 23, 0.88);
+  color: #eaf5ff;
+  font-family: "Goldman", system-ui, -apple-system, BlinkMacSystemFont,
+    "Segoe UI", sans-serif;
+  font-size: 0.7rem;
+  line-height: 1;
+  text-align: center;
+  text-transform: uppercase;
+  cursor: pointer;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition:
+    transform 0.16s ease-out,
+    box-shadow 0.16s ease-out,
+    background-color 0.16s ease-out,
+    border-color 0.16s ease-out,
+    color 0.16s ease-out;
+}
+
+.hero_lang_btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 0 14px rgba(0, 255, 204, 0.5);
+  border-color: rgba(0, 255, 204, 0.9);
+}
+
+.hero_lang_btn--active {
+  background: #2af47b;
+  color: #051017;
+  border-color: #2af47b;
+  box-shadow: 0 0 18px rgba(0, 0, 0, 0.75);
+}
+
 /* Кнопка "Подключить бота" */
 .hero_home_cta {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  margin-top: 2rem;
+  margin-top: 1.8rem;
   padding: 0.9rem 2.8rem;
   border-radius: 999px;
   background: #2af47b;
@@ -167,6 +227,17 @@ body {
 .hero_home_cta:active {
   transform: translateY(1px) scale(0.98);
   box-shadow: 0 8px 22px rgba(0, 0, 0, 0.55);
+}
+
+/* Под мобильные — убираем сдвиг вправо, чтобы круги центрировались */
+@media (max-width: 768px) {
+  :root {
+    --hero-lang-offset-x: 0;
+  }
+
+  .hero_lang_switcher {
+    margin-top: 0.8rem;
+  }
 }
 
 /* Общий ключевой кадр для появления сверху вниз */

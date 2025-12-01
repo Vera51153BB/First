@@ -38,10 +38,11 @@
   --hero-tagline-opacity: 0.96;
 
   /* Тайминги анимации */
-  --hero-anim-duration: 0.6s;
-  --hero-anim-delay-title: 0.4s;
-  --hero-anim-delay-tagline: 0.8s;
-  --hero-anim-delay-cta: 1.15s;
+  /* Чуть дольше сама анимация + ступенька между элементами */
+  --hero-anim-duration: 0.7s;
+  --hero-anim-delay-title: 0.9s;   /* была 0.4s — пауза перед заголовком */
+  --hero-anim-delay-tagline: 1.3s; /* +0.4s после заголовка */
+  --hero-anim-delay-cta: 1.8s;     /* ещё +0.5s до кнопки */
 }
 
 body {

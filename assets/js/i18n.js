@@ -29,7 +29,16 @@ const DICTS = {
       saved_footer: "Settings are saved on this device.",
       summary_all_on: "All notifications: ON",
       summary_all_off: "All notifications: OFF",
-    }
+    },
+    landing: {
+      hero: {
+        line1: "Short or Long?",
+        line2: "Don't miss the reversal",
+        line3: "Save time searching for coins to trade",
+        line4: "Be the first to spot the trend reversal",
+        cta:   "Connect the bot",
+      },
+    },
   },
 
   /* ============== HINDI ============== */
@@ -60,7 +69,16 @@ const DICTS = {
       saved_footer: "सेटिंग्स इस डिवाइस पर सहेजी गई हैं।",
       summary_all_on: "सभी सूचनाएँ: चालू",
       summary_all_off: "सभी सूचनाएँ: बंद",
-    }
+    },
+    landing: {
+      hero: {
+        line1: "शॉर्ट या लॉन्ग?",
+        line2: "रिवर्सल का क्षण न चूकें",
+        line3: "कमाई वाली कॉइन खोजने में समय बचाएँ",
+        line4: "ट्रेंड के रिवर्सल के बारे में सबसे पहले जानें",
+        cta:   "बॉट को कनेक्ट करें",
+      },
+    },
   },
 
   /* ============== RUSSIAN ============== */
@@ -91,7 +109,16 @@ const DICTS = {
       saved_footer: "Настройки сохранены на этом устройстве.",
       summary_all_on: "Все уведомления: ВКЛЮЧЕНЫ",
       summary_all_off: "Все уведомления: ВЫКЛЮЧЕНЫ",
-    }
+    },
+    landing: {
+      hero: {
+        line1: "Шорт или Лонг?",
+        line2: "Не упусти момент разворота",
+        line3: "Экономь время поиска монеты для заработка",
+        line4: "Узнай о развороте тренда первым",
+        cta:   "Подключить бота",
+      },
+    },
   },
 
   /* ============== ESPAÑOL ============== */
@@ -122,7 +149,16 @@ const DICTS = {
       saved_footer: "Los ajustes se guardan en este dispositivo.",
       summary_all_on: "Todas las notificaciones: ACTIVADAS",
       summary_all_off: "Todas las notificaciones: DESACTIVADAS",
-    }
+    },
+    landing: {
+      hero: {
+        line1: "¿Corto o largo?",
+        line2: "No pierdas el momento del giro",
+        line3: "Ahorra tiempo buscando la moneda para ganar",
+        line4: "Sé el primero en enterarte del giro de tendencia",
+        cta:   "Conectar el bot",
+      },
+    },
   },
 
   /* ============== FRANÇAIS ============== */
@@ -153,7 +189,16 @@ const DICTS = {
       saved_footer: "Les paramètres sont enregistrés sur cet appareil.",
       summary_all_on: "Toutes les notifications : ACTIVÉES",
       summary_all_off: "Toutes les notifications : DÉSACTIVÉES",
-    }
+    },
+    landing: {
+      hero: {
+        line1: "Short ou Long ?",
+        line2: "Ne rate pas le moment du retournement",
+        line3: "Gagne du temps dans la recherche de la monnaie à trader",
+        line4: "Sois le premier à repérer le retournement de tendance",
+        cta:   "Connecter le bot",
+      },
+    },
   },
 
   /* ============== DEUTSCH ============== */
@@ -184,7 +229,16 @@ const DICTS = {
       saved_footer: "Einstellungen werden auf diesem Gerät gespeichert.",
       summary_all_on: "Alle Benachrichtigungen: AKTIVIERT",
       summary_all_off: "Alle Benachrichtigungen: DEAKTIVIERT",
-    }
+    },
+    landing: {
+      hero: {
+        line1: "Short oder Long?",
+        line2: "Verpass den Wendepunkt nicht",
+        line3: "Spare Zeit bei der Suche nach profitablen Coins",
+        line4: "Erfahre als Erster vom Trendwechsel",
+        cta:   "Bot verbinden",
+      },
+    },
   },
 
   /* ============== ITALIANO ============== */
@@ -215,7 +269,16 @@ const DICTS = {
       saved_footer: "Le impostazioni sono salvate su questo dispositivo.",
       summary_all_on: "Tutte le notifiche: ATTIVE",
       summary_all_off: "Tutte le notifiche: DISATTIVATE",
-    }
+    },
+    landing: {
+      hero: {
+        line1: "Short o Long?",
+        line2: "Non perdere il momento dell'inversione",
+        line3: "Risparmia tempo nella ricerca della coin giusta",
+        line4: "Scopri per primo l'inversione di trend",
+        cta:   "Collega il bot",
+      },
+    },
   },
 };
 

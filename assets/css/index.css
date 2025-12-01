@@ -39,10 +39,10 @@
 
   /* Тайминги анимации */
   /* Чуть дольше сама анимация + ступенька между элементами */
-  --hero-anim-duration: 0.7s;
-  --hero-anim-delay-title: 0.9s;   /* была 0.4s — пауза перед заголовком */
-  --hero-anim-delay-tagline: 1.3s; /* +0.4s после заголовка */
-  --hero-anim-delay-cta: 1.8s;     /* ещё +0.5s до кнопки */
+  --hero-anim-duration: 0.9s;
+  --hero-anim-delay-title: 1.2s;   /* была 0.4s — пауза перед заголовком */
+  --hero-anim-delay-tagline: 1.7s; /* +0.4s после заголовка */
+  --hero-anim-delay-cta: 2.1s;     /* ещё +0.5s до кнопки */
     /* Горизонтальный сдвиг языкового переключателя (можно подстроить) */
   --hero-lang-offset-x: 1.4rem;
 }

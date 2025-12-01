@@ -1,6 +1,6 @@
 @font-face {
-  font-family: "Momo Trust Display";
-  src: url("/assets/fonts/momo-trust-display-400.woff2") format("woff2");
+  font-family: "Goldman";
+  src: url("/assets/fonts/Goldman-Regular.ttf") format("truetype");
   font-weight: 400;
   font-style: normal;
   font-display: swap;
@@ -85,7 +85,7 @@ body {
 /* Заголовок BOT / CRYPTO / SIGNAL */
 .hero_home_title {
   margin: 0;
-  font-family: "Momo Trust Display", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-family: "Goldman", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   font-size: clamp(2.6rem, 6vw, 4.5rem);
   letter-spacing: 0.18em;
   text-transform: uppercase;
@@ -106,7 +106,7 @@ body {
 .hero_home_tagline {
   margin: 1.4rem auto 0;
   max-width: 40rem;
-  font-family: "Momo Trust Display", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-family: "Goldman", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   font-size: clamp(1rem, 2.1vw, 1.35rem);
   line-height: 1.4;
   color: var(--hero-tagline-color);
@@ -127,7 +127,7 @@ body {
   border-radius: 999px;
   background: #2af47b;
   color: #051017;
-  font-family: "Momo Trust Display", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-family: "Goldman", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   font-size: 1rem;
   font-weight: 600;
   text-decoration: none;

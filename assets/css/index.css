@@ -15,9 +15,9 @@
 }
 
 @font-face {
-  font-family: "Momo Trust Display";
-  src: url("/assets/fonts/momo-trust-display-400.woff2") format("woff2");
-  font-weight: 400;
+  font-family: "Ubuntu Sans Mono";
+  src: url("/assets/fonts/UbuntuSansMono-Medium.ttf") format("truetype");
+  font-weight: 500;
   font-style: normal;
   font-display: swap;
 }
@@ -128,9 +128,9 @@ body {
 .hero_home_tagline {
   margin: 1.2rem auto 0;
   max-width: 40rem;
-  font-family: "Momo Trust Display", system-ui, -apple-system, BlinkMacSystemFont,
+  font-family: "Ubuntu Sans Mono", system-ui, -apple-system, BlinkMacSystemFont,
     "Segoe UI", sans-serif;
-  font-weight: 400;
+  font-weight: 500;
   font-size: clamp(1rem, 2.1vw, 1.35rem);
   line-height: 1.4;
   color: var(--hero-tagline-color);
@@ -209,7 +209,7 @@ body {
   border-radius: 999px;
   background: #2af47b;
   color: #051017;
-  font-family: "Momo Trust Display", system-ui, -apple-system, BlinkMacSystemFont,
+  font-family: "Ubuntu Sans Mono", system-ui, -apple-system, BlinkMacSystemFont,
     "Segoe UI", sans-serif;
   font-size: 1rem;
   font-weight: 600;

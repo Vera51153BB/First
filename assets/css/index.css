@@ -431,10 +431,11 @@ body {
   gap: 0.45rem;
 }
 
-/* Интро-ряд: центр над заголовком */
+/* Интро-ряд: центр ПОД заголовком */
 .hero_lang_row--intro {
   justify-content: center;
-  margin-bottom: 1.1rem;
+  margin-top: 1.1rem;  /* отступ вниз от BOTCRYPTOSIGNAL */
+  margin-bottom: 0;
 }
 
 /* Компактный ряд: слева над заголовком */
@@ -601,3 +602,23 @@ body {
     max-width: 260px;
   }
 }
+
+/* =========================================
+   HERO: стадии A (интро) и B (после выбора языка)
+   ========================================= */
+
+/* Стадия A: девиз и кнопка полностью скрыты */
+.hero_home.hero_home--stageA .hero_home_tagline,
+.hero_home.hero_home--stageA .hero_home_cta {
+  display: none;
+}
+
+/* Стадия B: показываем девиз и кнопку */
+.hero_home.hero_home--stageB .hero_home_tagline {
+  display: block;
+}
+
+.hero_home.hero_home--stageB .hero_home_cta {
+  display: inline-flex;
+}
+

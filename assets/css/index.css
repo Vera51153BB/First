@@ -154,7 +154,7 @@ body {
   margin: 0 0.18em;
 }
 
-/* Девиз (4 строки) */
+/* Девиз (6 строк) — базовое состояние, анимация только на стадии B */
 .hero_home_tagline {
   margin: 1.2rem auto 0;
   max-width: 40rem;
@@ -167,8 +167,6 @@ body {
   text-shadow: var(--hero-tagline-shadow);
   opacity: 0;
   transform: translateY(-18px);
-  animation: hero_fade_down var(--hero-anim-duration) ease-out forwards;
-  animation-delay: var(--hero-anim-delay-tagline);
 }
 
 .hero_home_tagline-line {
@@ -248,12 +246,11 @@ body {
   box-shadow: 0 12px 30px rgba(0, 0, 0, 0.55);
   opacity: 0;
   transform: translateY(-18px);
-  animation: hero_fade_down var(--hero-anim-duration) ease-out forwards;
-  animation-delay: var(--hero-anim-delay-cta);
   transition:
     transform 0.18s ease-out,
     box-shadow 0.18s ease-out,
-    background-color 0.18s ease-out;
+    background-color 0.18s ease-out,
+    opacity 0.18s ease-out;
 }
 
 .hero_home_cta:hover,
@@ -478,6 +475,25 @@ body {
   transition:
     opacity 0.35s ease-out,
     transform 0.35s ease-out;
+}
+
+/* Стадия A: девиз и кнопка полностью скрыты */
+.hero_home--stageA .hero_home_tagline,
+.hero_home--stageA .hero_home_cta {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Стадия B: включаем девиз и кнопку с анимацией "появление сверху" */
+.hero_home--stageB .hero_home_tagline {
+  animation: hero_fade_down var(--hero-anim-duration) ease-out forwards;
+  animation-delay: var(--hero-anim-delay-tagline);
+}
+
+.hero_home--stageB .hero_home_cta {
+  animation: hero_fade_down var(--hero-anim-duration) ease-out forwards;
+  animation-delay: var(--hero-anim-delay-cta);
+  pointer-events: auto;
 }
 
 /* Кнопки-языки: базовый стиль (кружок) */

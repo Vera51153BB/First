@@ -126,6 +126,7 @@ body {
 }
 
 .hero_home_inner {
+  position: relative;
   pointer-events: auto;
   text-align: center;
   max-width: min(84%, 900px);
@@ -147,6 +148,15 @@ body {
   transform: translateY(-17px);
   animation: hero_fade_down var(--hero-anim-duration) ease-out forwards;
   animation-delay: var(--hero-anim-delay-title);
+    /* НОВОЕ: фиксируем заголовок под языками, слева */
+  position: absolute;
+  /* чуть ниже компактного ряда языков:
+     берём ту же формулу top, что у .hero_lang_row--compact, + отступ вниз */
+  top: calc(clamp(0.6rem, 3vw, 1.4rem) + 2.8rem);
+  /* по X – так же, как компактный языковой блок */
+  left: calc(clamp(0.8rem, 4vw, 2.4rem) + var(--hero-lang-offset-x));
+  width: min(100%, 26rem);
+  text-align: left;
 }
 
 .hero_home_title-word {

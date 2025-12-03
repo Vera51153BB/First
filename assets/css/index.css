@@ -45,6 +45,9 @@
   --hero-tagline-shadow: 0 0 12px rgba(0, 0, 0, 0.85);
   --hero-tagline-opacity: 0.96;
 
+  /* Длительность кроссфейда день → ночь для фона геро-сцены */
+  --scene-crossfade-duration: 0.7s;
+  
   /* Тайминги анимации */
   /* Чуть дольше сама анимация + ступенька между элементами */
   --hero-anim-duration: 0.7s;      /* время анимации */
@@ -79,6 +82,33 @@ body {
   display: block;
   width: 100%;
   height: auto;
+}
+
+/* Дневной и ночной фон: дневной в потоке, ночной поверх с кроссфейдом */
+.scene_home_bg--day {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.scene_home_bg--night {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: auto;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--scene-crossfade-duration) ease-out;
+}
+
+/* Когда переключаемся на "ночной" режим */
+.scene_home_container--night .scene_home_bg--night {
+  opacity: 1;
+}
+
+.scene_home_container--night .scene_home_bg--day {
+  opacity: 0;
+  transition: opacity var(--scene-crossfade-duration) ease-out;
 }
 
 /* ==== HERO: BOTCRYPTOSIGNAL поверх сцены (_home_) ==== */
@@ -391,6 +421,128 @@ body {
   100% {
     transform: translateX(-50%);
   }
+}
+
+/* =========================================
+   HERO: языковые кнопки + стадии A/B
+   ========================================= */
+
+/* Общий ряд языков (контейнер) */
+.hero_lang_row {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+/* Интро-ряд: центр над заголовком */
+.hero_lang_row--intro {
+  justify-content: center;
+  margin-bottom: 1.1rem;
+}
+
+/* Компактный ряд: слева над заголовком */
+.hero_lang_row--compact {
+  position: absolute;
+  top: clamp(0.6rem, 3vw, 1.4rem);
+  left: calc(clamp(0.8rem, 4vw, 2.4rem) + var(--hero-lang-offset-x));
+  transform-origin: left center;
+  transform: scale(0.72);
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Стадия A (до выбора языка): виден только интро-ряд */
+.hero_home--stageA .hero_lang_row--intro {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.hero_home--stageA .hero_lang_row--compact {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Стадия B (после выбора языка): компактный ряд активен, интро пропадает */
+.hero_home--stageB .hero_lang_row--intro {
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(-10px);
+  transition:
+    opacity 0.25s ease-out,
+    transform 0.25s ease-out;
+}
+
+.hero_home--stageB .hero_lang_row--compact {
+  opacity: 1;
+  pointer-events: auto;
+  transition:
+    opacity 0.35s ease-out,
+    transform 0.35s ease-out;
+}
+
+/* Кнопки-языки: базовый стиль (кружок) */
+.hero_lang_switcher {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.hero_lang_btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.1rem;
+  height: 2.1rem;
+  border-radius: 999px;
+  border: 1px solid rgba(0, 255, 204, 0.65);
+  background: rgba(3, 12, 26, 0.86);
+  color: #e8f6ff;
+  font-family: "Ubuntu Sans Mono", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", monospace;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  cursor: pointer;
+  padding: 0;
+  box-shadow: 0 0 6px rgba(0, 255, 204, 0.4);
+  transition:
+    transform 0.16s ease-out,
+    box-shadow 0.16s ease-out,
+    background-color 0.16s ease-out,
+    border-color 0.16s ease-out;
+}
+
+.hero_lang_btn-label {
+  transform: translateY(-0.5px);
+}
+
+.hero_lang_btn:hover {
+  background: rgba(15, 60, 110, 0.95);
+  box-shadow: 0 0 10px rgba(0, 255, 204, 0.7);
+}
+
+.hero_lang_btn--active {
+  background: #1ce073;
+  border-color: #1ce073;
+  color: #021018;
+  box-shadow: 0 0 12px rgba(28, 224, 115, 0.9);
+}
+
+/* Пульс для волны */
+.hero_lang_btn--pulse {
+  transform: scale(1.18);
+  box-shadow: 0 0 14px rgba(255, 255, 255, 0.9);
+}
+
+/* Вопросительный знак после волны */
+.hero_lang_hint {
+  margin-left: 0.5rem;
+  font-size: 1.1rem;
+  color: #e8f6ff;
+  opacity: 1;
+  transition: opacity 0.25s ease-out;
+}
+
+.hero_lang_hint--hidden {
+  opacity: 0;
 }
 
 /* Адаптив: на очень узких экранах чуть подтягиваем позицию и читаемость */

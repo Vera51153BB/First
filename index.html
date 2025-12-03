@@ -19,34 +19,60 @@
   <div class="scene_home_container">
     <img
       src="images/botcryptosignal.webp"
-      alt="Presentation of a crypto bot that provides market entry signals"
-      class="scene_home_bg"
+      alt="Presentation of a crypto bot that provides market entry signals (day scene)"
+      class="scene_home_bg scene_home_bg--day"
+      width="1344"
+      height="768"
+    />
+    <img
+      src="images/botcryptosignal_time.webp"
+      alt="Presentation of a crypto bot that provides market entry signals (night scene)"
+      class="scene_home_bg scene_home_bg--night"
       width="1344"
       height="768"
     />
 
-    <!-- Герой: заголовок, девиз и кнопка поверх сцены (_home_) -->
-    <section class="hero_home" aria-labelledby="hero_home_title">
+    <!-- Герой: заголовок, языки, девиз и кнопка поверх сцены (_home_) -->
+    <section class="hero_home hero_home--stageA" aria-labelledby="hero_home_title">
       <div class="hero_home_inner">
+
+        <!-- Ряд языков для первого экрана (интро) -->
+        <div class="hero_lang_row hero_lang_row--intro">
+          <div
+            class="hero_lang_switcher"
+            data-variant="intro"
+            aria-label="Choose language for the hero section"
+          >
+            <!-- Кружки языков создаются через JS -->
+          </div>
+          <!-- Текстовый вопросительный знак, появляющийся после волны -->
+          <span class="hero_lang_hint hero_lang_hint--hidden">?</span>
+        </div>
+
+        <!-- Компактный ряд языков, который показывается после выбора языка -->
+        <div class="hero_lang_row hero_lang_row--compact" aria-hidden="true">
+          <div
+            class="hero_lang_switcher"
+            data-variant="compact"
+          >
+            <!-- Те же языковые кружки, но компактнее и слева над заголовком -->
+          </div>
+        </div>
+
         <h1 class="hero_home_title" id="hero_home_title">
-          <span class="hero_home_title-word">BOTCRYPTOSIGNAL</span>
+          <span class="hero_home_title-word">BOT</span>
+          <span class="hero_home_title-word">CRYPTOSIGNAL</span>
         </h1>
+
+        <!-- Текст девиза (6 строк) заполняется через JS по выбранному языку -->
         <p class="hero_home_tagline">
-          Шорт или Лонг?<br />
-          Не упусти момент разворота<br />
-          Экономь время на поиске монет для торговли<br />>
-          Узнай о развороте тренда первым
+          <!-- заполняется через home-hero.js -->
         </p>
-        
-        <!-- Переключатель языков героя -->
-        <div class="hero_lang_switcher" aria-label="Language selector">
-          <!-- Круглые кнопки-языки создаются через JS (home-hero.js) -->
-        </div>
-        <div>
-          <a class="hero_home_cta" href="#">
-            Подключить бота
-          </a>
-        </div>
+
+        <!-- Кнопка "Подключить бота" (текст меняем по языку в JS) -->
+        <a class="hero_home_cta" href="#">
+          Подключить бота
+        </a>
       </div>
     </section>
 

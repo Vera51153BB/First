@@ -507,8 +507,10 @@ body {
 }
 
 /* Стадия B: включаем девиз и кнопку с анимацией "появление сверху" */
+/* Стадия B: выбран язык — показываем девиз и кнопку */
 .hero_home--stageB .hero_home_tagline {
-  animation: hero_fade_down var(--hero-anim-duration) ease-out forwards;
+  /* Анимируем только прозрачность, позицию берём из transform: translateY(...) выше */
+  animation: hero_tagline_fade_opacity var(--hero-anim-duration) ease-out forwards;
   animation-delay: var(--hero-anim-delay-tagline);
 }
 
@@ -587,6 +589,16 @@ body {
   opacity: 0;
 }
 
+@keyframes hero_tagline_fade_opacity {
+  from {
+    opacity: 0;
+    /* transform не трогаем, он уже содержит translateY(var(--hero-tagline-offset-y)) */
+  }
+  to {
+    opacity: 1;
+  }
+}
+
 /* Адаптив: на очень узких экранах чуть подтягиваем позицию и читаемость */
 @media (max-width: 768px) {
   .ticker_home_frame {
@@ -627,6 +639,7 @@ body {
     max-width: 260px;
   }
 }
+
 
 /* =========================================
    HERO: стадии A (интро) и B (после выбора языка)

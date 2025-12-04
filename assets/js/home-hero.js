@@ -32,9 +32,9 @@
 
   // Параметры волны
   const LANG_WAVE_CYCLES = 2;          // сколько полных проходов
-  const LANG_WAVE_STEP_MS = 220;       // шаг между соседними кнопками
+  const LANG_WAVE_STEP_MS = 320;       // шаг между соседними кнопками
   const LANG_WAVE_PULSE_MS = 180;      // длительность "пульса"
-  const LANG_WAVE_INTER_CYCLE_DELAY_MS = 520; // пауза между циклами
+  const LANG_WAVE_INTER_CYCLE_DELAY_MS = 420; // пауза между циклами
 
   // -----------------------------
   //  УТИЛИТЫ
@@ -173,7 +173,7 @@
     }
 
     // небольшая задержка перед стартом волны
-    setTimeout(step, 400);
+    setTimeout(step, 2400);
   }
 
   // -----------------------------

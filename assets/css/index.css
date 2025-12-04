@@ -167,7 +167,7 @@ body {
 
 /* Девиз (6 строк) — базовое состояние, анимация только на стадии B */
 .hero_home_tagline {
-  margin: 1.2rem auto 0;
+  margin: 0.6rem auto 0;
   max-width: 40rem;
   font-family: "Ubuntu Sans Mono", system-ui, -apple-system, BlinkMacSystemFont,
     "Segoe UI", sans-serif;
@@ -181,7 +181,8 @@ body {
 }
 
 .hero_home_tagline-line {
-  display: inline-block;
+  display: block;
+  white-space: nowrap;
 }
 
 /* Переключатель языков: круглые «флаги» */

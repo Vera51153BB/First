@@ -142,31 +142,42 @@
     if (!buttons.length) return;
 
     const hint = introRow.querySelector(".hero_lang_hint");
-    const totalSteps = buttons.length * LANG_WAVE_CYCLES;
-
+      // Делим языки на две группы "через один":
+    //   цикл 0  → индексы 0,2,4,... (EN, RU, ES, ...)
+    //   цикл 1  → индексы 1,3,5,... (HI, PT, UA, ...)
+    const halfCount = Math.ceil(buttons.length / 2);          // половина списка
+    const totalSteps = halfCount * LANG_WAVE_CYCLES;          // 2 волны × половина
     let stepIndex = 0;
-
-    function pulse(btn) {
-      btn.classList.add("hero_lang_btn--pulse");
-      setTimeout(function () {
-        btn.classList.remove("hero_lang_btn--pulse");
-      }, LANG_WAVE_PULSE_MS);
-    }
-
+  
     function step() {
       if (stepIndex >= totalSteps) {
         // волна завершена — показываем "?"
         if (hint) hint.classList.remove("hero_lang_hint--hidden");
         return;
       }
-
-      const btn = buttons[stepIndex % buttons.length];
-      pulse(btn);
+  
+      // Номер волны (0-я, 1-я, ...)
+      const cycleIndex = Math.floor(stepIndex / halfCount);
+      // Порядок внутри волны (0..halfCount-1)
+      const localIndex = stepIndex % halfCount;
+  
+      // Для чётного цикла берём 0,2,4,...; для нечётного — 1,3,5,...
+      let btnIndex = localIndex * 2 + (cycleIndex % 2);
+  
+      // Защита на случай нечётного количества языков
+      if (btnIndex >= buttons.length) {
+        btnIndex = buttons.length - 1;
+      }
+  
+      const btn = buttons[btnIndex];
+      if (btn) {
+        pulse(btn);
+      }
       stepIndex += 1;
-
+  
       let delay = LANG_WAVE_STEP_MS;
-      if (stepIndex % buttons.length === 0) {
-        // пауза между циклами
+      // Пауза между первой и второй волной
+      if (stepIndex % halfCount === 0) {
         delay += LANG_WAVE_INTER_CYCLE_DELAY_MS;
       }
       setTimeout(step, delay);

@@ -109,11 +109,15 @@
     if (sceneContainer) {
       sceneContainer.classList.add(SCENE_NIGHT_CLASS);
     }
-
-    // компактный ряд языков больше не aria-hidden
+  
+    // На ночной сцене языковые ряды скрыты полностью
+    const introRow = $(".hero_lang_row--intro");
+    if (introRow) {
+      introRow.setAttribute("aria-hidden", "true");
+    }
     const compactRow = $(".hero_lang_row--compact");
     if (compactRow) {
-      compactRow.setAttribute("aria-hidden", "false");
+      compactRow.setAttribute("aria-hidden", "true");
     }
 
     // лёгкий "вдох" заголовка

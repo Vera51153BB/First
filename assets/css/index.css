@@ -131,7 +131,7 @@ body {
 }
 .scene_home_container--night {
   /* В ночном режиме подложка и луч включаются */
-  --hero-tagline-bg-alpha: 0.78;         /* степень затемнения (#050029) */
+  --hero-tagline-bg-alpha: 0.36;         /* степень затемнения (#050029) */
   --hero-tagline-bg-delay: 3.6s;
   --hero-tagline-beam-delay: 4.0s;
   --hero-tagline-beam-duration: 2.4s;
@@ -201,7 +201,7 @@ body {
 
   /* подложка (сам фон) — цвет #050029 с регулируемой прозрачностью */
   background: rgba(5, 0, 41, var(--hero-tagline-bg-alpha));
-  border-radius: 3px;
+  border-radius: 8px;
 
   opacity: 0;
   transform: translateY(var(--hero-tagline-offset-y));

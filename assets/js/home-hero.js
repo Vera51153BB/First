@@ -34,7 +34,7 @@
   const LANG_WAVE_CYCLES = 2;          // сколько полных проходов
   const LANG_WAVE_STEP_MS = 520;       // шаг между соседними кнопками
   const LANG_WAVE_PULSE_MS = 120;      // длительность "пульса"
-  const LANG_WAVE_INTER_CYCLE_DELAY_MS = 900; // пауза между циклами
+  const LANG_WAVE_INTER_CYCLE_DELAY_MS = 2000; // пауза между циклами
 
   // -----------------------------
   //  УТИЛИТЫ

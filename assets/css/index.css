@@ -70,6 +70,12 @@
 
     /* Вертикальный сдвиг девиза относительно заголовка (ночной экран) */
   --hero-tagline-offset-y: -48px; /* было -18px, -32 подтянет ближе к заголовку */
+
+    /* Подложка под девиз и луч по периметру (ноут/десктоп) */
+  --hero-tagline-bg-alpha: 0;          /* по умолчанию прозрачная */
+  --hero-tagline-bg-delay: 3.6s;       /* когда включать подложку */
+  --hero-tagline-beam-delay: 4.0s;     /* старт луча после подложки */
+  --hero-tagline-beam-duration: 2.4s;  /* длительность пробега луча */
 }
 
 body {
@@ -123,6 +129,13 @@ body {
   opacity: 0;
   transition: opacity var(--scene-crossfade-duration) ease-out;
 }
+.scene_home_container--night {
+  /* В ночном режиме подложка и луч включаются */
+  --hero-tagline-bg-alpha: 0.78;         /* степень затемнения (#050029) */
+  --hero-tagline-bg-delay: 3.6s;
+  --hero-tagline-beam-delay: 4.0s;
+  --hero-tagline-beam-duration: 2.4s;
+}
 
 /* ==== HERO: BOTCRYPTOSIGNAL поверх сцены (_home_) ==== */
 .hero_home {
@@ -170,8 +183,14 @@ body {
 
 /* Девиз (6 строк) — базовое состояние, анимация только на стадии B */
 .hero_home_tagline {
+  position: relative;
+  display: inline-block;
   margin: 0.1rem auto 0;
   max-width: 40rem;
+
+  /* отступ от текста 4px и чуть шире по X, чтобы было воздухом */
+  padding: 4px 12px;
+
   font-family: "Ubuntu Sans Mono", system-ui, -apple-system, BlinkMacSystemFont,
     "Segoe UI", sans-serif;
   font-weight: 500;
@@ -179,6 +198,11 @@ body {
   line-height: 1.4;
   color: var(--hero-tagline-color);
   text-shadow: var(--hero-tagline-shadow);
+
+  /* подложка (сам фон) — цвет #050029 с регулируемой прозрачностью */
+  background: rgba(5, 0, 41, var(--hero-tagline-bg-alpha));
+  border-radius: 3px;
+
   opacity: 0;
   transform: translateY(var(--hero-tagline-offset-y));
 }
@@ -191,6 +215,98 @@ body {
 /* Убираем <br> внутри девиза, чтобы не было лишних пустых строк */
 .hero_home_tagline br {
   display: none;
+}
+
+/* Подложка и «луч» вокруг девиза — только на десктопе */
+@media (min-width: 769px) {
+
+  /* Внутренний мягкий fade-in подложки */
+  .hero_home_tagline::before {
+    content: "";
+    position: absolute;
+    inset: 0;                /* по размеру подложки */
+    border-radius: inherit;
+    background: rgba(5, 0, 41, var(--hero-tagline-bg-alpha));
+
+    /* сначала невидима, появляется после того, как девиз встал на место */
+    opacity: 0;
+    pointer-events: none;
+
+    animation: hero_tagline_bg_fade 0.45s ease-out forwards;
+    animation-delay: var(--hero-tagline-bg-delay);
+  }
+
+  /* Луч по периметру + лёгкое послесвечение */
+  .hero_home_tagline::after {
+    content: "";
+    position: absolute;
+    inset: -3px;             /* выход за края подложки */
+    border-radius: inherit;
+    pointer-events: none;
+
+    /* несколько слоёв: собственно луч + лёгкий ореол */
+    background:
+      conic-gradient(
+        from 0deg,
+        rgba(0, 255, 160, 0.0) 0deg,
+        rgba(0, 255, 160, 1.0) 20deg,
+        rgba(0, 255, 160, 0.0) 40deg,
+        rgba(255, 80, 80, 1.0) 140deg,
+        rgba(255, 160, 0, 1.0) 200deg,
+        rgba(255, 220, 80, 0.0) 260deg,
+        rgba(255, 220, 80, 0.0) 360deg
+      );
+
+    /* ограничиваем конус по периметру (эффект рамки) */
+    -webkit-mask:
+      linear-gradient(#000 0 0) content-box,
+      linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+            mask-composite: exclude;
+    padding: 2px;
+
+    opacity: 0;
+    box-shadow: 0 0 0 rgba(0, 0, 0, 0);
+
+    animation: hero_tagline_beam var(--hero-tagline-beam-duration) ease-out forwards;
+    animation-delay: var(--hero-tagline-beam-delay);
+  }
+}
+
+/* Плавное появление подложки */
+@keyframes hero_tagline_bg_fade {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+/* Луч идёт по кругу, даёт блик и тухнет */
+@keyframes hero_tagline_beam {
+  0% {
+    opacity: 0;
+    transform: rotate(0deg);
+    box-shadow: 0 0 0 rgba(0, 255, 160, 0.0);
+  }
+  10% {
+    opacity: 1;
+    box-shadow: 0 0 14px rgba(0, 255, 160, 0.8);
+  }
+  40% {
+    transform: rotate(180deg);
+    box-shadow: 0 0 18px rgba(255, 80, 80, 0.9);
+  }
+  70% {
+    transform: rotate(320deg);
+    box-shadow: 0 0 22px rgba(255, 170, 40, 0.95);
+  }
+  100% {
+    opacity: 0;
+    transform: rotate(360deg);
+    box-shadow: 0 0 0 rgba(255, 170, 40, 0.0);
+  }
 }
 
 /* Переключатель языков: круглые «флаги» */

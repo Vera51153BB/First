@@ -66,7 +66,7 @@
   --hero-lang-offset-x: 0;
 
   /* Отдельный сдвиг для знака вопроса по X */
-  --hero-lang-hint-offset-x: -0.9rem;
+  --hero-lang-hint-offset-x: -5.9rem;
 }
 
 body {

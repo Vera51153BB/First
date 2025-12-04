@@ -185,6 +185,11 @@ body {
   white-space: nowrap;
 }
 
+/* Убираем <br> внутри девиза, чтобы не было лишних пустых строк */
+.hero_home_tagline br {
+  display: none;
+}
+
 /* Переключатель языков: круглые «флаги» */
 .hero_lang_switcher {
   margin: 0.9rem auto 0;

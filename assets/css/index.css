@@ -183,13 +183,13 @@ body {
 
 /* Девиз (6 строк) — базовое состояние, анимация только на стадии B */
 .hero_home_tagline {
-  position: relative;
-  display: inline-block;
+  position: relative;         /* создаём локальный слой для подложки */
+  /* display: inline-block; */
   margin: 0.1rem auto 0;
-  max-width: 40rem;
+  max-width: 40rem;           /* ширина, чтобы фон всегда покрывал текст */
 
   /* отступ от текста 4px и чуть шире по X, чтобы было воздухом */
-  padding: 4px 12px;
+  padding: 4px 12px;   /* padding: 0.75rem 1.5rem;          тот самый отступ от текста ~4px+ */
 
   font-family: "Ubuntu Sans Mono", system-ui, -apple-system, BlinkMacSystemFont,
     "Segoe UI", sans-serif;
@@ -205,11 +205,13 @@ body {
 
   opacity: 0;
   transform: translateY(var(--hero-tagline-offset-y));
+  background-color: transparent;   /* сам тег без фона — всё в ::before */
 }
 
 .hero_home_tagline-line {
   display: block;
-  white-space: nowrap;
+  white-space: normal;   /* можно переносить */
+  text-align: center;    /* обе(все) строки по центру */
 }
 
 /* Убираем <br> внутри девиза, чтобы не было лишних пустых строк */
@@ -225,8 +227,9 @@ body {
     content: "";
     position: absolute;
     inset: 0;                /* по размеру подложки */
-    border-radius: inherit;
+    border-radius: 6px;
     background: rgba(5, 0, 41, var(--hero-tagline-bg-alpha));
+    z-index: -1;                     /* ПОД текстом, НО над фоном сцены */
 
     /* сначала невидима, появляется после того, как девиз встал на место */
     opacity: 0;

@@ -72,7 +72,7 @@
   --hero-tagline-offset-y: -48px; /* было -18px, -32 подтянет ближе к заголовку */
 
     /* Подложка под девиз и луч по периметру (ноут/десктоп) */
-  --hero-tagline-bg-alpha: 0;          /* по умолчанию прозрачная */
+  --hero-tagline-bg-alpha: 0.6;          /* 0 по умолчанию прозрачная */
   --hero-tagline-bg-delay: 3.6s;       /* когда включать подложку */
   --hero-tagline-beam-delay: 4.0s;     /* старт луча после подложки */
   --hero-tagline-beam-duration: 2.4s;  /* длительность пробега луча */
@@ -184,12 +184,11 @@ body {
 /* Девиз (6 строк) — базовое состояние, анимация только на стадии B */
 .hero_home_tagline {
   position: relative;         /* создаём локальный слой для подложки */
-  /* display: inline-block; */
   margin: 0.1rem auto 0;
   max-width: 42rem;           /* ширина, чтобы фон всегда покрывал текст */
 
-  /* отступ от текста 4px и чуть шире по X, чтобы было воздухом */
-  padding: 4px 12px;   /* padding: 0.75rem 1.5rem;          тот самый отступ от текста ~4px+ */
+  /* отступ от текста ~4px по всем сторонам */
+  padding: 4px 12px;
 
   font-family: "Ubuntu Sans Mono", system-ui, -apple-system, BlinkMacSystemFont,
     "Segoe UI", sans-serif;
@@ -199,13 +198,11 @@ body {
   color: var(--hero-tagline-color);
   text-shadow: var(--hero-tagline-shadow);
 
-  /* подложка (сам фон) — цвет #050029 с регулируемой прозрачностью */
-  background: rgba(5, 0, 41, var(--hero-tagline-bg-alpha));
-  border-radius: 8px;
+  border-radius: 21px;        /* округление углов подложки */
 
   opacity: 0;
   transform: translateY(var(--hero-tagline-offset-y));
-  background-color: transparent;   /* сам тег без фона — всё в ::before */
+  background-color: transparent;   /* фон целиком рисуем через ::before */
 }
 
 .hero_home_tagline-line {
@@ -228,7 +225,7 @@ body {
     position: absolute;
     inset: 0;                /* по размеру подложки */
     border-radius: 21px;
-    background: rgba(5, 0, 41, 0.6);
+      background: rgba(5, 0, 41, var(--hero-tagline-bg-alpha));
     z-index: -1;                     /* ПОД текстом, НО над фоном сцены */
 
     /* сначала невидима, появляется после того, как девиз встал на место */
@@ -240,27 +237,27 @@ body {
   }
 
   /* Луч по периметру + лёгкое послесвечение */
-  .hero_home_tagline::after {
+   .hero_home_tagline::after {
     content: "";
     position: absolute;
-    inset: -3px;             /* выход за края подложки */
+    inset: -3px;             /* чуть выходит за края подложки */
     border-radius: inherit;
     pointer-events: none;
 
-    /* несколько слоёв: собственно луч + лёгкий ореол */
+    /* один «луч» с плавным переходом цвета + небольшой хвост */
     background:
       conic-gradient(
         from 0deg,
-        rgba(0, 255, 160, 0.0) 0deg,
-        rgba(0, 255, 160, 1.0) 20deg,
-        rgba(0, 255, 160, 0.0) 40deg,
-        rgba(255, 80, 80, 1.0) 140deg,
-        rgba(255, 160, 0, 1.0) 200deg,
-        rgba(255, 220, 80, 0.0) 260deg,
-        rgba(255, 220, 80, 0.0) 360deg
+        rgba(0, 255, 120, 0.0) 0deg,    /* прозрачный фон до луча */
+        rgba(0, 255, 120, 1.0) 10deg,   /* ярко-зелёный старт */
+        rgba(0, 230, 180, 1.0) 30deg,   /* бирюзовый участок */
+        rgba(255, 120, 120, 1.0) 50deg, /* переход в красный */
+        rgba(255, 190, 80, 1.0) 70deg,  /* оранжевый / жёлтый конец */
+        rgba(255, 220, 80, 0.0) 90deg,  /* плавный сход на нет */
+        rgba(255, 220, 80, 0.0) 360deg  /* остальной круг прозрачный */
       );
 
-    /* ограничиваем конус по периметру (эффект рамки) */
+    /* превращаем круг в тонкую рамку по периметру */
     -webkit-mask:
       linear-gradient(#000 0 0) content-box,
       linear-gradient(#000 0 0);
@@ -291,24 +288,24 @@ body {
   0% {
     opacity: 0;
     transform: rotate(0deg);
-    box-shadow: 0 0 0 rgba(0, 255, 160, 0.0);
+    box-shadow: 0 0 0 rgba(0, 255, 120, 0.0);
   }
   10% {
     opacity: 1;
-    box-shadow: 0 0 14px rgba(0, 255, 160, 0.8);
+    box-shadow: 0 0 14px rgba(0, 255, 120, 0.9);   /* зелёный стартовый блик */
   }
-  40% {
+  50% {
     transform: rotate(180deg);
-    box-shadow: 0 0 18px rgba(255, 80, 80, 0.9);
+    box-shadow: 0 0 18px rgba(255, 120, 120, 0.95); /* красный участок */
   }
-  70% {
+  80% {
     transform: rotate(320deg);
-    box-shadow: 0 0 22px rgba(255, 170, 40, 0.95);
+    box-shadow: 0 0 22px rgba(255, 190, 80, 0.95);  /* оранжевый хвост */
   }
   100% {
     opacity: 0;
     transform: rotate(360deg);
-    box-shadow: 0 0 0 rgba(255, 170, 40, 0.0);
+    box-shadow: 0 0 0 rgba(255, 190, 80, 0.0);      /* блик исчезает */
   }
 }
 

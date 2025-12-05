@@ -71,18 +71,11 @@
     /* Вертикальный сдвиг девиза относительно заголовка (ночной экран) */
   --hero-tagline-offset-y: -48px; /* было -18px, -32 подтянет ближе к заголовку */
 
- /* Подложка под девизом */
-  --hero-tagline-bg-color: 5, 0, 41;          /* #050029 в формате RGB */
-  --hero-tagline-bg-alpha: 0.61;              /* прозрачность фона */
-
-  /* Геометрия рамки */
-  --hero-tagline-border-radius: 21px;         /* чтобы совпадало с макетом */
-  --hero-tagline-border-pad: 4px;             /* отступ от текста до рамки */
-  --hero-tagline-border-thickness: 3px;       /* толщина луча */
-
-  /* Анимация луча */
-  --hero-tagline-beam-duration: 2.3s;         /* длина круга */
-  --hero-tagline-beam-delay: 3.8s;            /* старт после текста/кнопки */
+    /* Подложка под девиз и луч по периметру (ноут/десктоп) */
+  --hero-tagline-bg-alpha: 0.6;          /* 0 по умолчанию прозрачная */
+  --hero-tagline-bg-delay: 3.6s;       /* когда включать подложку */
+  --hero-tagline-beam-delay: 4.0s;     /* старт луча после подложки */
+  --hero-tagline-beam-duration: 2.4s;  /* длительность пробега луча */
 }
 
 body {
@@ -188,34 +181,34 @@ body {
   margin: 0 0.18em;
 }
 
-/* Обёртка вокруг девиза + фона + SVG-рамки */
-.hero_home_tagline_wrap {
-  position: relative;
-  display: inline-block;
-  margin: 1.2rem auto 0;
-}
-
-/* Сам текст девиза — остаётся поверх всех слоёв */
+/* Девиз (6 строк) — базовое состояние, анимация только на стадии B */
 .hero_home_tagline {
-  position: relative;
-  z-index: 2;
-  margin: 0;
-  max-width: 42rem;
-  font-family: "Ubuntu Sans Mono", system-ui, -apple-system,
-    BlinkMacSystemFont, "Segoe UI", sans-serif;
+  position: relative;         /* создаём локальный слой для подложки */
+  margin: 0.1rem auto 0;
+  max-width: 42rem;           /* ширина, чтобы фон всегда покрывал текст */
+
+  /* отступ от текста ~4px по всем сторонам */
+  padding: 4px 12px;
+
+  font-family: "Ubuntu Sans Mono", system-ui, -apple-system, BlinkMacSystemFont,
+    "Segoe UI", sans-serif;
   font-weight: 500;
   font-size: clamp(1rem, 2.1vw, 1.35rem);
   line-height: 1.4;
   color: var(--hero-tagline-color);
   text-shadow: var(--hero-tagline-shadow);
+
+  border-radius: 21px;        /* округление углов подложки */
+
   opacity: 0;
   transform: translateY(var(--hero-tagline-offset-y));
+  background-color: transparent;   /* фон целиком рисуем через ::before */
 }
 
-/* Каждая строка девиза — отдельный блок без переносов */
 .hero_home_tagline-line {
   display: block;
-  white-space: nowrap;
+  white-space: normal;   /* можно переносить */
+  text-align: center;    /* обе(все) строки по центру */
 }
 
 /* Убираем <br> внутри девиза, чтобы не было лишних пустых строк */
@@ -223,71 +216,96 @@ body {
   display: none;
 }
 
-/* Тёмная подложка строго под девизом */
-.hero_home_tagline_bg {
-  position: absolute;
-  inset: calc(-1 * var(--hero-tagline-border-pad));
-  border-radius: var(--hero-tagline-border-radius);
-  background: rgba(
-    var(--hero-tagline-bg-color),
-    var(--hero-tagline-bg-alpha)
-  );
-  z-index: 0;
+/* Подложка и «луч» вокруг девиза — только на десктопе */
+@media (min-width: 769px) {
+
+  /* Внутренний мягкий fade-in подложки */
+  .hero_home_tagline::before {
+    content: "";
+    position: absolute;
+    inset: 0;                /* по размеру подложки */
+    border-radius: 21px;
+      background: rgba(5, 0, 41, var(--hero-tagline-bg-alpha));
+    z-index: -1;                     /* ПОД текстом, НО над фоном сцены */
+
+    /* сначала невидима, появляется после того, как девиз встал на место */
+    opacity: 0;
+    pointer-events: none;
+
+    animation: hero_tagline_bg_fade 0.45s ease-out forwards;
+    animation-delay: var(--hero-tagline-bg-delay);
+  }
+
+  /* Луч по периметру + лёгкое послесвечение */
+   .hero_home_tagline::after {
+    content: "";
+    position: absolute;
+    inset: -3px;             /* чуть выходит за края подложки */
+    border-radius: inherit;
+    pointer-events: none;
+
+    /* один «луч» с плавным переходом цвета + небольшой хвост */
+    background:
+      conic-gradient(
+        from 0deg,
+        rgba(0, 255, 120, 0.0) 0deg,    /* прозрачный фон до луча */
+        rgba(0, 255, 120, 1.0) 10deg,   /* ярко-зелёный старт */
+        rgba(0, 230, 180, 1.0) 30deg,   /* бирюзовый участок */
+        rgba(255, 120, 120, 1.0) 50deg, /* переход в красный */
+        rgba(255, 190, 80, 1.0) 70deg,  /* оранжевый / жёлтый конец */
+        rgba(255, 220, 80, 0.0) 90deg,  /* плавный сход на нет */
+        rgba(255, 220, 80, 0.0) 360deg  /* остальной круг прозрачный */
+      );
+
+    /* превращаем круг в тонкую рамку по периметру */
+    -webkit-mask:
+      linear-gradient(#000 0 0) content-box,
+      linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+            mask-composite: exclude;
+    padding: 2px;
+
+    opacity: 0;
+    box-shadow: 0 0 0 rgba(0, 0, 0, 0);
+
+    animation: hero_tagline_beam var(--hero-tagline-beam-duration) ease-out forwards;
+    animation-delay: var(--hero-tagline-beam-delay);
+  }
 }
 
-/* SVG-рамка поверх подложки, но под текстом */
-.hero_home_tagline_border {
-  position: absolute;
-  inset: calc(-1 * var(--hero-tagline-border-pad));
-  width: calc(100% + 2 * var(--hero-tagline-border-pad));
-  height: calc(100% + 2 * var(--hero-tagline-border-pad));
-  z-index: 1;
-  pointer-events: none;
-}
-
-/* Собственно луч — stroke по периметру прямоугольника */
-.hero_home_tagline_border_rect {
-  fill: transparent;
-  stroke-width: var(--hero-tagline-border-thickness);
-  stroke-linejoin: round;
-  stroke-linecap: round;
-  vector-effect: non-scaling-stroke;
-
-  /* Делаем один «пакет» dash для луча и остальное прозрачное */
-  stroke-dasharray: 90 360;
-  stroke-dashoffset: 450;
-
-  /* Небольшое размытие/свечение */
-  filter: drop-shadow(0 0 6px rgba(0, 255, 170, 0.7));
-
-  animation: hero_tagline_beam_run var(--hero-tagline-beam-duration)
-      ease-out forwards;
-  animation-delay: var(--hero-tagline-beam-delay);
-}
-
-/* Анимация хода луча по периметру + смена цветов */
-@keyframes hero_tagline_beam_run {
+/* Плавное появление подложки */
+@keyframes hero_tagline_bg_fade {
   0% {
-    stroke-dashoffset: 450;
-    stroke: #00ff88;  /* зелёный старт */
-    opacity: 1;
-  }
-  30% {
-    stroke-dashoffset: 310;
-    stroke: #00d2ff;  /* бирюзово-синий */
-  }
-  60% {
-    stroke-dashoffset: 170;
-    stroke: #ff3360;  /* красноватый участок */
-  }
-  90% {
-    stroke-dashoffset: 30;
-    stroke: #ffb347;  /* оранжевый */
+    opacity: 0;
   }
   100% {
-    stroke-dashoffset: 0;
-    stroke: #ffd36b;  /* жёлто-оранжевый блик */
-    opacity: 0;       /* гасим луч */
+    opacity: 1;
+  }
+}
+
+/* Луч идёт по кругу, даёт блик и тухнет */
+@keyframes hero_tagline_beam {
+  0% {
+    opacity: 0;
+    transform: rotate(0deg);
+    box-shadow: 0 0 0 rgba(0, 255, 120, 0.0);
+  }
+  10% {
+    opacity: 1;
+    box-shadow: 0 0 14px rgba(0, 255, 120, 0.9);   /* зелёный стартовый блик */
+  }
+  50% {
+    transform: rotate(180deg);
+    box-shadow: 0 0 18px rgba(255, 120, 120, 0.95); /* красный участок */
+  }
+  80% {
+    transform: rotate(320deg);
+    box-shadow: 0 0 22px rgba(255, 190, 80, 0.95);  /* оранжевый хвост */
+  }
+  100% {
+    opacity: 0;
+    transform: rotate(360deg);
+    box-shadow: 0 0 0 rgba(255, 190, 80, 0.0);      /* блик исчезает */
   }
 }
 

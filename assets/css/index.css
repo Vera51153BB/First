@@ -227,8 +227,8 @@ body {
     content: "";
     position: absolute;
     inset: 0;                /* по размеру подложки */
-    border-radius: 6px;
-    background: rgba(5, 0, 41, var(--hero-tagline-bg-alpha));
+    border-radius: 21px;
+    background: rgba(5, 0, 41, 0.6);
     z-index: -1;                     /* ПОД текстом, НО над фоном сцены */
 
     /* сначала невидима, появляется после того, как девиз встал на место */

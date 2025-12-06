@@ -508,11 +508,29 @@ const DICTS = {
 
 
   function pickLang() {
-    const saved = localStorage.getItem('okx_lang');
-    if (saved && DICTS[saved]) return saved;
-    const code = (window.Core?.tg?.initDataUnsafe?.user?.language_code || navigator.language || 'en').slice(0,2).toLowerCase();
-    return DICTS[code] ? code : 'en';
+    // 1) Язык страницы из <html lang="..."> (главный источник правды для /en, /hi, /ru и т.д.)
+    const htmlLang = (document.documentElement.getAttribute("lang") || "")
+      .slice(0, 2)
+      .toLowerCase();
+    if (htmlLang && DICTS[htmlLang]) {
+      return htmlLang;
+    }
+
+    // 2) Сохранённый выбор пользователя (если по какой-то причине lang в <html> не задан)
+    try {
+      const saved = localStorage.getItem("okx_lang");
+      if (saved && DICTS[saved]) {
+        return saved;
+      }
+    } catch (_) {
+      // localStorage может быть недоступен в режиме инкогнито / жестком режиме приватности
+    }
+
+    // 3) Язык браузера как запасной вариант
+    const navCode = (navigator.language || "en").slice(0, 2).toLowerCase();
+    return DICTS[navCode] ? navCode : "en";
   }
+
 
   function get(obj, path) {
     return path.split('.').reduce((o,k)=> (o && o[k] != null ? o[k] : undefined), obj);

@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+    <!-- Основные SEO-теги -->
+  <title>BotCryptoSignal – Find Crypto Entry & Exit Points</title>
+  <meta
+    name="description"
+    content="BotCryptoSignal is a crypto trading assistant that helps you see when to enter a trade, where to place stop-loss and take-profit, which coins to watch today and where impulses and breakouts are forming. Not financial advice."
+  />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="robots" content="index,follow" />
+  <link rel="canonical" href="https://botcryptosignal.com/" />
+    <!-- Альтернативные языковые версии -->
+  <link rel="alternate" hreflang="x-default" href="https://botcryptosignal.com/" />
+  <link rel="alternate" hreflang="en" href="https://botcryptosignal.com/en" />
+  <link rel="alternate" hreflang="ru" href="https://botcryptosignal.com/ru" />
+  <link rel="alternate" hreflang="hi" href="https://botcryptosignal.com/hi" />
+    <!-- Иконки сайта -->
+  <link rel="icon" href="/images/bts153.ico" sizes="16x16" type="image/x-icon" />
+  <link rel="icon" href="/images/bts153-32.ico" sizes="32x32" type="image/x-icon" />
+  <link rel="icon" href="/images/bts153-48.png" sizes="48x48" type="image/x-icon" />
+  <link rel="icon" href="/images/bts153-256.png" sizes="256x256" type="image/x-icon" />
+  <link rel="icon" href="/images/bts153-512.svg" sizes="512x512" type="image/x-icon" />
+    <!-- Open Graph (Facebook / LinkedIn и др.) -->
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="BotCryptoSignal" />
+  <meta property="og:title" content="BotCryptoSignal – Smart Assistant for Crypto Traders" />
+  <meta
+    property="og:description"
+    content="Smart assistant for crypto traders: shows when to enter a trade, which coins to focus on today, where to place stop-loss and take-profit and where impulses or breakouts are forming on the market. Not financial advice."
+  />
+  <meta property="og:url" content="https://botcryptosignal.com/" />
+     <!-- Open Graph preview images -->
+  <meta property="og:image" content="https://botcryptosignal.com/images/botcryptosignal_icon_for_social_media.jpg" />
+  <meta property="og:image:width" content="1344" />
+  <meta property="og:image:height" content="768" />
+  <meta property="og:image:alt"
+      content="BotCryptoSignal – crypto trading assistant that helps you choose which coins to analyse and buy today." />
+    <!-- Дополнительная квадратная иконка для мессенджеров -->
+  <meta property="og:image" content="https://botcryptosignal.com/images/botcryptosignal_icon_for_messenger.jpg" />
+  <meta property="og:image:alt"
+        content="BotCryptoSignal – crypto trading assistant that helps you choose which coins to analyse and trade today." />
+    <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="BotCryptoSignal – Crypto Assistant for Entry & Exit Points" />
+  <meta
+    name="twitter:description"
+    content="Crypto trading assistant that highlights entry and exit points, stop-loss and take-profit zones and coins worth watching today, so you see what is happening on the market right now."
+  />
+  <meta name="twitter:image" content="https://botcryptosignal.com/images/botcryptosignal_icon_for_social_media.jpg" />
+  <meta name="twitter:image:alt" content="BotCryptoSignal – crypto trading assistant that helps you choose which coins to analyse and trade today." />
+
+    <!-- Стили главной сцены и тикера (_home_) -->
+  <link rel="stylesheet" href="./assets/css/index.css" />
+</head>
+<body>
+  <!-- Главная сцена с изображением и наложенным тикером (_home_) -->
+  <div class="scene_home_container">
+    <img
+      src="images/botcryptosignal.webp"
+      alt="BotCryptoSignal – crypto trading assistant that shows signals and helps choose which coin to analyse and buy today (day scene)"
+      class="scene_home_bg scene_home_bg--day"
+      width="1344"
+      height="768"
+    />
+    <img
+      src="images/botcryptosignal_time.webp"
+      alt="BotCryptoSignal – crypto trading assistant that shows signals and helps choose which coin to analyse and buy today (night scene)"
+      class="scene_home_bg scene_home_bg--night"
+      width="1344"
+      height="768"
+    />
+
+    <!-- Герой: заголовок, языки, девиз и кнопка поверх сцены (_home_) -->
+    <section class="hero_home hero_home--stageA" aria-labelledby="hero_home_title">
+      <div class="hero_home_inner">
+
+        <h1 class="hero_home_title" id="hero_home_title">
+          <span class="hero_home_title-word">BOTCRYPTOSIGNAL</span>
+        </h1>
+
+        <!-- Ряд языков для первого экрана (интро) — теперь ПОД заголовком -->
+        <div class="hero_lang_row hero_lang_row--intro">
+          <div
+            class="hero_lang_switcher"
+            data-variant="intro"
+            aria-label="Choose language for the hero section"
+          >
+            <!-- Кружки языков создаются через JS -->
+          </div>
+          <!-- Текстовый вопросительный знак, появляющийся после волны -->
+          <span class="hero_lang_hint hero_lang_hint--hidden">?</span>
+        </div>
+
+        <!-- Компактный ряд языков, который показывается после выбора языка -->
+        <div class="hero_lang_row hero_lang_row--compact" aria-hidden="true">
+          <div
+            class="hero_lang_switcher"
+            data-variant="compact"
+          >
+            <!-- Те же языковые кружки, но компактнее и слева над заголовком -->
+          </div>
+        </div>
+
+        <!-- Текст девиза (6 строк) заполняется через JS по выбранному языку -->
+        <p class="hero_home_tagline">
+          <!-- заполняется через home-hero.js -->
+        </p>
+
+        <!-- Кнопка "Подключить бота" (текст меняем по языку в JS) -->
+        <a
+          class="hero_home_cta" href="https://t.me/bcs_okx_signals_bot"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          Подключить бота
+        </a>
+
+      </div>
+    </section>
+
+    <!-- Окно бегущей строки с котировками -->
+    <div class="ticker_home_frame">
+      <div class="ticker_home_mask">
+        <!-- Содержимое заполняется/обновляется через JS -->
+        <div class="ticker_home_row" id="ticker_home_row">
+          <!-- Фолбэк-контент на случай, если JS не подгрузился -->
+          <span class="ticker_home_item">
+            <span class="ticker_home_symbol">BTC·USDT</span>
+            <span class="ticker_home_price">– – –</span>
+            <span class="ticker_home_change ticker_home_change--up">+0.0%</span>
+          </span>
+          <span class="ticker_home_item">
+            <span class="ticker_home_symbol">ETH·USDT</span>
+            <span class="ticker_home_price">– – –</span>
+            <span class="ticker_home_change ticker_home_change--down">-0.0%</span>
+          </span>
+        </div>
+      </div>
+    </div>
+     <!-- Прозрачная маска-перила поверх тикера (_home_) -->
+    <img
+      src="images/scene_home_overlay.png"
+      alt=""
+      class="scene_home_overlay_home"
+      width="1344"
+      height="768"
+    />
+  </div>
+      <!-- I18N + скрипты главной (_home_) -->
+  <script src="./assets/js/i18n.js"></script>
+  <script src="./assets/js/home-hero.js"></script>
+    <!-- Скрипт главного тикера (_home_) -->
+  <script src="./assets/js/index.js"></script>
+</body>
+</html>

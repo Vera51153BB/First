@@ -41,15 +41,6 @@ const DICTS = {
         cta:   "Connect the bot",
       },
     },
-    meta: {
-      seo_title_home: "BotCryptoSignal – Find Crypto Entry & Exit Points",
-      seo_desc_home: "BotCryptoSignal is a multi-exchange crypto trading assistant that helps you see when to enter a trade, where to place stop-loss and take-profit, which coins to watch today and where impulses and breakouts are forming on the market. Not financial advice.",
-      og_title_home: "BotCryptoSignal – Smart Assistant for Crypto Traders",
-      og_desc_home: "Smart assistant for crypto traders: shows when to enter a trade, which coins to focus on today, where to place stop-loss and take-profit, and where impulses or breakouts are forming on the market. Not financial advice.",
-      tw_title_home: "BotCryptoSignal – Crypto Assistant for Entry & Exit Points",
-      tw_desc_home: "Crypto trading assistant that highlights entry and exit points, stop-loss and take-profit zones and coins worth watching today, so you see what is happening on the market right now.",
-      og_image_alt_home: "BotCryptoSignal – crypto trading assistant that helps you choose which coins to analyse today and when to enter or exit a trade.",
-    }
   },
 
   /* ============== HINDI ============== */
@@ -92,15 +83,6 @@ const DICTS = {
         cta:   "बॉट को कनेक्ट करें",
       },
     },
-    meta: {
-      seo_title_home: "BotCryptoSignal – क्रिप्टो एंट्री और एग्ज़िट पॉइंट्स खोजें",
-      seo_desc_home: "BotCryptoSignal एक मल्टी-एक्सचेंज क्रिप्टो ट्रेडिंग असिस्टेंट है, जो दिखाता है कि ट्रेड में कब प्रवेश करना है, स्टॉप-लॉस और टेक-प्रॉफिट कहाँ लगाना है, आज किन कॉइनों पर नज़र रखनी है और बाज़ार में कहाँ इम्पल्स या ब्रेकआउट बन रहा है। यह वित्तीय सलाह नहीं है।",
-      og_title_home: "BotCryptoSignal – क्रिप्टो ट्रेडर्स के लिए स्मार्ट असिस्टेंट",
-      og_desc_home: "क्रिप्टो ट्रेडर्स के लिए स्मार्ट असिस्टेंट: दिखाता है कि ट्रेड में कब प्रवेश करना है, आज किन कॉइनों पर फोकस करना है, स्टॉप-लॉस और टेक-प्रॉफिट कहाँ रखना है और बाज़ार में कहाँ इम्पल्स या ब्रेकआउट बन रहा है। यह वित्तीय सलाह नहीं है।",
-      tw_title_home: "BotCryptoSignal – एंट्री और एग्ज़िट पॉइंट्स के लिए क्रिप्टो असिस्टेंट",
-      tw_desc_home: "क्रिप्टो ट्रेडिंग असिस्टेंट, जो एंट्री और एग्ज़िट पॉइंट्स, स्टॉप-लॉस और टेक-प्रॉफिट ज़ोन और वे कॉइन हाइलाइट करता है, जिन पर आज ध्यान देना चाहिए, ताकि आप देख सकें कि अभी बाज़ार में क्या हो रहा है।",
-      og_image_alt_home: "BotCryptoSignal – क्रिप्टो ट्रेडिंग असिस्टेंट, जो मदद करता है चुनने में कि आज किन कॉइनों का विश्लेषण करना है और ट्रेड में कब प्रवेश या निकास करना है।",
-    }
   },
 
   /* ============== RUSSIAN ============== */
@@ -143,15 +125,6 @@ const DICTS = {
         cta:   "Подключить бота",
       },
     },
-    meta: {
-      seo_title_home: "BotCryptoSignal — поиск точек входа и выхода по криптовалютам",
-      seo_desc_home: "BotCryptoSignal — мультибиржевой ассистент криптотрейдера, который подсказывает, когда входить в сделку, где ставить стоп-лосс и тейк-профит, какие монеты смотреть сегодня и где на рынке начинаются импульсы или формируется пробой. Не является финансовой рекомендацией.",
-      og_title_home: "BotCryptoSignal — умный ассистент для криптотрейдеров",
-      og_desc_home: "Умный ассистент для криптотрейдеров: помогает понять, когда входить в сделку, какие монеты выбрать сегодня, где ставить стоп-лосс и тейк-профит и где на рынке начинаются импульсы или формируется пробой. Не является финансовым советом.",
-      tw_title_home: "BotCryptoSignal — ассистент по точкам входа и выхода",
-      tw_desc_home: "Криптоассистент, который подсвечивает точки входа и выхода, зоны стоп-лосса и тейк-профита и монеты, на которые стоит смотреть сегодня, чтобы понимать, что происходит на рынке прямо сейчас.",
-      og_image_alt_home: "BotCryptoSignal — ассистент криптотрейдера, который помогает выбрать, какие монеты анализировать сегодня и когда входить или выходить из сделки.",
-    }
   },
 
   /* ============== ESPAÑOL ============== */
@@ -194,15 +167,6 @@ const DICTS = {
         cta:   "Conectar el bot",
       },
     },
-    meta: {
-      seo_title_home: "BotCryptoSignal – Encuentra puntos de entrada y salida en cripto",
-      seo_desc_home: "BotCryptoSignal es un asistente de trading de criptomonedas multi-exchange que te ayuda a ver cuándo entrar en una operación, dónde colocar el stop-loss y el take-profit, qué monedas vigilar hoy y dónde se están formando impulsos y breakouts en el mercado. No es asesoramiento financiero.",
-      og_title_home: "BotCryptoSignal – Asistente inteligente para traders de cripto",
-      og_desc_home: "Asistente inteligente para traders de criptomonedas: te muestra cuándo entrar en una operación, en qué monedas centrarte hoy, dónde colocar el stop-loss y el take-profit y dónde se están formando impulsos o breakouts en el mercado. No es asesoramiento financiero.",
-      tw_title_home: "BotCryptoSignal – Asistente cripto para puntos de entrada y salida",
-      tw_desc_home: "Asistente de trading cripto que resalta puntos de entrada y salida, zonas de stop-loss y take-profit y las monedas que merece la pena vigilar hoy, para que veas qué está pasando ahora en el mercado.",
-      og_image_alt_home: "BotCryptoSignal – asistente de trading cripto que te ayuda a elegir qué monedas analizar hoy y cuándo entrar o salir de una operación.",
-    }
   },
 
   /* ============== FRANÇAIS ============== */
@@ -245,15 +209,6 @@ const DICTS = {
         cta:   "Connecter le bot",
       },
     },
-    meta: {
-      seo_title_home: "BotCryptoSignal – Trouver des points d’entrée et de sortie en crypto",
-      seo_desc_home: "BotCryptoSignal est un assistant de trading crypto multi-plateformes qui vous aide à voir quand entrer en position, où placer le stop-loss et le take-profit, quelles pièces surveiller aujourd’hui et où des impulsions ou des cassures sont en train de se former sur le marché. Ceci n’est pas un conseil financier.",
-      og_title_home: "BotCryptoSignal – Assistant intelligent pour les traders crypto",
-      og_desc_home: "Assistant intelligent pour les traders crypto : montre quand entrer en position, sur quelles pièces se concentrer aujourd’hui, où placer le stop-loss et le take-profit et où des impulsions ou des cassures se forment sur le marché. Ceci n’est pas un conseil financier.",
-      tw_title_home: "BotCryptoSignal – Assistant crypto pour les points d’entrée et de sortie",
-      tw_desc_home: "Assistant de trading crypto qui met en évidence les points d’entrée et de sortie, les zones de stop-loss et de take-profit et les pièces à surveiller aujourd’hui, afin que vous compreniez ce qui se passe sur le marché en ce moment.",
-      og_image_alt_home: "BotCryptoSignal – assistant de trading crypto qui vous aide à choisir quelles pièces analyser aujourd’hui et quand entrer ou sortir d’une position.",
-    }
   },
 
   /* ============== DEUTSCH ============== */
@@ -296,15 +251,6 @@ const DICTS = {
         cta:   "Bot verbinden",
       },
     },
-    meta: {
-      seo_title_home: "BotCryptoSignal – Krypto-Einstiegs- und Ausstiegspunkte finden",
-      seo_desc_home: "BotCryptoSignal ist ein börsenübergreifender Krypto-Trading-Assistent, der dir hilft zu sehen, wann du in einen Trade einsteigen solltest, wo du Stop-Loss und Take-Profit platzierst, welche Coins du heute beobachten solltest und wo sich Impulse und Ausbrüche am Markt bilden. Keine Finanzberatung.",
-      og_title_home: "BotCryptoSignal – Intelligenter Assistent für Krypto-Trader",
-      og_desc_home: "Intelligenter Assistent für Krypto-Trader: zeigt dir, wann du in einen Trade einsteigen solltest, auf welche Coins du dich heute konzentrieren solltest, wo du Stop-Loss und Take-Profit setzt und wo sich Impulse oder Ausbrüche am Markt bilden. Keine Finanzberatung.",
-      tw_title_home: "BotCryptoSignal – Krypto-Assistent für Ein- und Ausstiegspunkte",
-      tw_desc_home: "Krypto-Trading-Assistent, der Ein- und Ausstiegspunkte, Stop-Loss- und Take-Profit-Zonen sowie Coins hervorhebt, die du heute im Blick haben solltest, damit du siehst, was am Markt gerade passiert.",
-      og_image_alt_home: "BotCryptoSignal – Krypto-Trading-Assistent, der dir hilft auszuwählen, welche Coins du heute analysieren solltest und wann du in einen Trade ein- oder aussteigen solltest.",
-    }
   },
 
   /* ============== ITALIANO ============== */
@@ -347,15 +293,6 @@ const DICTS = {
         cta:   "Collega il bot",
       },
     },
-    meta: {
-      seo_title_home: "BotCryptoSignal – Trova punti di entrata e uscita in crypto",
-      seo_desc_home: "BotCryptoSignal è un assistente di trading crypto multi-exchange che ti aiuta a capire quando entrare in un’operazione, dove posizionare stop-loss e take-profit, quali coin guardare oggi e dove si stanno formando impulsi e breakout sul mercato. Non è una consulenza finanziaria.",
-      og_title_home: "BotCryptoSignal – Assistente intelligente per trader crypto",
-      og_desc_home: "Assistente intelligente per trader crypto: mostra quando entrare in un trade, su quali coin concentrarsi oggi, dove mettere stop-loss e take-profit e dove sul mercato si stanno formando impulsi o breakout. Non è una consulenza finanziaria.",
-      tw_title_home: "BotCryptoSignal – Assistente crypto per punti di entrata e uscita",
-      tw_desc_home: "Assistente di trading crypto che evidenzia punti di entrata e uscita, zone di stop-loss e take-profit e le coin da monitorare oggi, così puoi vedere cosa sta succedendo sul mercato in questo momento.",
-      og_image_alt_home: "BotCryptoSignal – assistente di trading crypto che ti aiuta a scegliere quali coin analizzare oggi e quando entrare o uscire da un’operazione.",
-    }
   },
 
   /* ============== PORTUGUÊS ============== */
@@ -398,15 +335,6 @@ const DICTS = {
         cta:   "Conectar o bot",
       },
     },
-    meta: {
-      seo_title_home: "BotCryptoSignal – Encontre pontos de entrada e saída em cripto",
-      seo_desc_home: "BotCryptoSignal é um assistente de trading de criptomoedas multi-exchange que ajuda você a ver quando entrar em uma operação, onde colocar o stop-loss e o take-profit, quais moedas observar hoje e onde estão se formando impulsos e rompimentos no mercado. Não é recomendação financeira.",
-      og_title_home: "BotCryptoSignal – Assistente inteligente para traders de cripto",
-      og_desc_home: "Assistente inteligente para traders de cripto: mostra quando entrar em uma operação, em quais moedas focar hoje, onde colocar o stop-loss e o take-profit e onde impulsos ou rompimentos estão se formando no mercado. Não é recomendação financeira.",
-      tw_title_home: "BotCryptoSignal – Assistente cripto para pontos de entrada e saída",
-      tw_desc_home: "Assistente de trading cripto que destaca pontos de entrada e saída, zonas de stop-loss e take-profit e as moedas que vale a pena observar hoje, para que você veja o que está acontecendo no mercado agora.",
-      og_image_alt_home: "BotCryptoSignal – assistente de trading cripto que ajuda você a escolher quais moedas analisar hoje e quando entrar ou sair de uma operação.",
-    }
   },
 
   /* ============== УКРАЇНСЬКА ============== */
@@ -449,15 +377,6 @@ const DICTS = {
         cta:   "Підключити бота",
       },
     },
-    meta: {
-      seo_title_home: "BotCryptoSignal — пошук точок входу й виходу по криптовалютах",
-      seo_desc_home: "BotCryptoSignal — мультибіржовий асистент криптотрейдера, який підказує, коли заходити в угоду, де ставити стоп-лос і тейк-профіт, які монети дивитися сьогодні і де на ринку починаються імпульси або формується пробій. Не є фінансовою рекомендацією.",
-      og_title_home: "BotCryptoSignal — розумний асистент для криптотрейдерів",
-      og_desc_home: "Розумний асистент для криптотрейдерів: допомагає зрозуміти, коли заходити в угоду, які монети обрати сьогодні, де ставити стоп-лос і тейк-профіт і де на ринку починаються імпульси або формується пробій. Не є фінансовою порадою.",
-      tw_title_home: "BotCryptoSignal — асистент по точках входу й виходу",
-      tw_desc_home: "Криптоасистент, який підсвічує точки входу й виходу, зони стоп-лосу і тейк-профіту та монети, на які варто дивитися сьогодні, щоб розуміти, що відбувається на ринку просто зараз.",
-      og_image_alt_home: "BotCryptoSignal — асистент криптотрейдера, який допомагає обрати, які монети аналізувати сьогодні і коли входити чи виходити з угоди.",
-    }
   },
 
   /* ============== 日本語 ============== */
@@ -500,15 +419,6 @@ const DICTS = {
         cta:   "ボットを接続する",
       },
     },
-    meta: {
-      seo_title_home: "BotCryptoSignal – クリプトのエントリー＆イグジットポイントを見つける",
-      seo_desc_home: "BotCryptoSignal は複数取引所に対応した暗号資産トレーディングアシスタントで、いつエントリーすべきか、どこにストップロスとテイクプロフィットを置くべきか、今日どのコインに注目するか、市場でどこにインパルスやブレイクアウトが生じているかを見える化します。投資助言ではありません。",
-      og_title_home: "BotCryptoSignal – クリプトトレーダーのためのスマートアシスタント",
-      og_desc_home: "クリプトトレーダーのためのスマートアシスタント。エントリータイミング、今日フォーカスすべきコイン、ストップロスとテイクプロフィットの位置、市場でインパルスやブレイクアウトが起きているポイントを示します。投資助言ではありません。",
-      tw_title_home: "BotCryptoSignal – エントリー＆イグジットのためのクリプトアシスタント",
-      tw_desc_home: "エントリー／イグジットポイント、ストップロスとテイクプロフィットのゾーン、そして今日チェックすべきコインをハイライトし、いま暗号資産市場で何が起きているかを見やすくするトレーディングアシスタントです。",
-      og_image_alt_home: "BotCryptoSignal は、今日どのコインを分析し、いつトレードにエントリーまたはイグジットするべきかを判断する手助けをするクリプトトレーディングアシスタントです。",
-    }
   },
 
   /* ============== TÜRKÇE ============== */
@@ -551,15 +461,6 @@ const DICTS = {
         cta:   "Botu bağla",
       },
     },
-    meta: {
-      seo_title_home: "BotCryptoSignal – Kriptoda giriş ve çıkış noktalarını bulun",
-      seo_desc_home: "BotCryptoSignal, çoklu borsa desteğine sahip bir kripto alım-satım asistanıdır; işleme ne zaman gireceğini, stop-loss ve take-profit’i nereye koyacağını, bugün hangi coin’lere bakman gerektiğini ve piyasada nerede impuls veya kırılma oluştuğunu görmene yardımcı olur. Finansal tavsiye değildir.",
-      og_title_home: "BotCryptoSignal – Kripto trader’ları için akıllı asistan",
-      og_desc_home: "Kripto trader’ları için akıllı asistan: işleme ne zaman gireceğini, bugün hangi coin’lere odaklanacağını, stop-loss ve take-profit’i nereye yerleştireceğini ve piyasada nerede impuls veya kırılma oluştuğunu gösterir. Finansal tavsiye değildir.",
-      tw_title_home: "BotCryptoSignal – Giriş ve çıkış noktaları için kripto asistanı",
-      tw_desc_home: "Giriş ve çıkış noktalarını, stop-loss ve take-profit bölgelerini ve bugün takip edilmeye değer coin’leri öne çıkaran kripto alım-satım asistanı; böylece piyasada şu anda neler olduğunu daha net görebilirsin.",
-      og_image_alt_home: "BotCryptoSignal – bugün hangi coin’leri analiz edeceğini ve bir işleme ne zaman girip çıkacağını seçmene yardımcı olan kripto alım-satım asistanı.",
-    }
   },
 
   /* ============== 中文 ============== */
@@ -602,15 +503,6 @@ const DICTS = {
         cta:   "连接机器人",
       },
     },
-    meta: {
-      seo_title_home: "BotCryptoSignal – 寻找加密交易的进场与出场点",
-      seo_desc_home: "BotCryptoSignal 是一个支持多交易所的加密交易助手，帮助你看清何时进场交易、在哪里设置止损和止盈、今天应该关注哪些币种，以及市场上哪里正在形成行情冲动或突破。本信息不构成投资建议。",
-      og_title_home: "BotCryptoSignal – 面向加密交易者的智能助手",
-      og_desc_home: "面向加密交易者的智能助手：提示何时进场，今天应重点关注哪些币种，在哪里放置止损和止盈，以及市场上哪里正在形成行情冲动或突破。本信息不构成投资建议。",
-      tw_title_home: "BotCryptoSignal – 帮你寻找进出场点的加密助手",
-      tw_desc_home: "加密交易助手，高亮进场与出场点、止损和止盈区域，以及今天值得关注的币种，帮助你看清此刻加密市场正在发生什么。",
-      og_image_alt_home: "BotCryptoSignal 是一款加密交易助手，帮助你选择今天要分析的币种，以及何时进入或退出一笔交易。",
-    }
   },
 };
 

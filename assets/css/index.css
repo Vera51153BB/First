@@ -261,7 +261,7 @@ body {
     filter: url(#heroTaglineWormGlow);
 
     /* ТОЛЩЕ (≈1.3× относительно исходных 3.5): */
-    stroke-width: 4.5px;
+    stroke-width: 2.5px;
 
     /* ОДИН червячок:
        pathLength = 100 → периметр = 100 условных единиц.

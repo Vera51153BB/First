@@ -74,8 +74,7 @@
     /* Подложка под девиз и луч по периметру (ноут/десктоп) */
   --hero-tagline-bg-alpha: 0.6;          /* 0 по умолчанию прозрачная */
   --hero-tagline-bg-delay: 3.6s;       /* когда включать подложку */
-  --hero-tagline-beam-delay: 4.0s;     /* старт луча после подложки */
-  --hero-tagline-beam-duration: 2.4s;  /* длительность пробега луча */
+
 }
 
 body {
@@ -130,11 +129,9 @@ body {
   transition: opacity var(--scene-crossfade-duration) ease-out;
 }
 .scene_home_container--night {
-  /* В ночном режиме подложка и луч включаются */
+  /* В ночном режиме подложка включаются */
   --hero-tagline-bg-alpha: 0.36;         /* степень затемнения (#050029) */
   --hero-tagline-bg-delay: 3.6s;
-  --hero-tagline-beam-delay: 4.0s;
-  --hero-tagline-beam-duration: 2.4s;
 }
 
 /* ==== HERO: BOTCRYPTOSIGNAL поверх сцены (_home_) ==== */
@@ -236,41 +233,55 @@ body {
     animation-delay: var(--hero-tagline-bg-delay);
   }
 
-  /* Луч по периметру + лёгкое послесвечение */
-   .hero_home_tagline::after {
-    content: "";
+    /* ===== SVG "червячок" вдоль подложки ===== */
+  .r-border-worm {
     position: absolute;
-    inset: -3px;             /* чуть выходит за края подложки */
-    border-radius: inherit;
+    inset: 0;
     pointer-events: none;
-
-    /* один «луч» с плавным переходом цвета + небольшой хвост */
-    background:
-      conic-gradient(
-        from 0deg,
-        rgba(0, 255, 120, 0.0) 0deg,    /* прозрачный фон до луча */
-        rgba(0, 255, 120, 1.0) 10deg,   /* ярко-зелёный старт */
-        rgba(0, 230, 180, 1.0) 30deg,   /* бирюзовый участок */
-        rgba(255, 120, 120, 1.0) 50deg, /* переход в красный */
-        rgba(255, 190, 80, 1.0) 70deg,  /* оранжевый / жёлтый конец */
-        rgba(255, 220, 80, 0.0) 90deg,  /* плавный сход на нет */
-        rgba(255, 220, 80, 0.0) 360deg  /* остальной круг прозрачный */
-      );
-
-    /* превращаем круг в тонкую рамку по периметру */
-    -webkit-mask:
-      linear-gradient(#000 0 0) content-box,
-      linear-gradient(#000 0 0);
-    -webkit-mask-composite: xor;
-            mask-composite: exclude;
-    padding: 2px;
-
-    opacity: 0;
-    box-shadow: 0 0 0 rgba(0, 0, 0, 0);
-
-    animation: hero_tagline_beam var(--hero-tagline-beam-duration) ease-out forwards;
-    animation-delay: var(--hero-tagline-beam-delay);
+    overflow: visible;
+    z-index: 9;              /* над подложкой, под контентом */
   }
+  
+  .r-border-worm-svg {
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+  
+  /* Сам контур */
+  .r-border-worm-path {
+    fill: none;
+    stroke: url(#rBorderGrad);
+    stroke-width: 3;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    filter: url(#rBorderGlow);
+  
+    /* Настройка длины и паузы между "тельцем" и пустотой */
+    stroke-dasharray: 100 2400;      /* 100px видимая часть, 2400px пауза */
+    stroke-dashoffset: 0;
+    opacity: 0;
+    transition: opacity 0.3s ease-in;
+  }
+  
+  /* Анимация движения */
+  @keyframes r-border-move {
+    0%   { stroke-dashoffset: 0;   opacity: 0; }
+    5%   { opacity: 1; }
+    90%  { stroke-dashoffset: -2500; opacity: 1; }
+    100% { stroke-dashoffset: -2600; opacity: 0; }
+  }
+  
+  /* Запуск анимации (через класс на body) */
+  body.r-border-start .r-border-worm-path {
+    animation: r-border-move var(--r-worm-speed, 5s) ease-out 1 forwards;
+  }
+  
+  /* Только на десктопах */
+  @media (max-width: 1024px) {
+    .r-border-worm { display: none; }
+  }
+
 }
 
 /* Плавное появление подложки */
@@ -280,32 +291,6 @@ body {
   }
   100% {
     opacity: 1;
-  }
-}
-
-/* Луч идёт по кругу, даёт блик и тухнет */
-@keyframes hero_tagline_beam {
-  0% {
-    opacity: 0;
-    transform: rotate(0deg);
-    box-shadow: 0 0 0 rgba(0, 255, 120, 0.0);
-  }
-  10% {
-    opacity: 1;
-    box-shadow: 0 0 14px rgba(0, 255, 120, 0.9);   /* зелёный стартовый блик */
-  }
-  50% {
-    transform: rotate(180deg);
-    box-shadow: 0 0 18px rgba(255, 120, 120, 0.95); /* красный участок */
-  }
-  80% {
-    transform: rotate(320deg);
-    box-shadow: 0 0 22px rgba(255, 190, 80, 0.95);  /* оранжевый хвост */
-  }
-  100% {
-    opacity: 0;
-    transform: rotate(360deg);
-    box-shadow: 0 0 0 rgba(255, 190, 80, 0.0);      /* блик исчезает */
   }
 }
 

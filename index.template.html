@@ -123,6 +123,40 @@
         >
           Подключить бота
         </a>
+        
+        <!-- SVG "червячок" по периметру подложки -->
+        <div class="r-border-worm">
+          <svg class="r-border-worm-svg" viewBox="0 0 1344 768" preserveAspectRatio="none">
+            <defs>
+              <!-- Цветовой градиент -->
+              <linearGradient id="rBorderGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%"   stop-color="#00ff95" />
+                <stop offset="25%"  stop-color="#00c4ff" />
+                <stop offset="50%"  stop-color="#ff005c" />
+                <stop offset="75%"  stop-color="#ff7b00" />
+                <stop offset="100%" stop-color="#ffbf3c" />
+              </linearGradient>
+        
+              <!-- Лёгкое свечение -->
+              <filter id="rBorderGlow" x="-20%" y="-20%" width="140%" height="140%">
+                <feGaussianBlur stdDeviation="3" result="blur" />
+                <feColorMatrix in="blur" type="matrix"
+                  values="1 0 0 0 0
+                          0 1 0 0 0
+                          0 0 1 0 0
+                          0 0 0 0.8 0"/>
+              </filter>
+            </defs>
+        
+            <!-- Контур подложки, совпадает с радиусом закругления -->
+            <rect
+              class="r-border-worm-path"
+              x="12" y="12"
+              width="1320" height="744"
+              rx="21" ry="21"
+            />
+          </svg>
+        </div>
 
       </div>
     </section>

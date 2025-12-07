@@ -180,10 +180,12 @@ body {
 
 /* Девиз (6 строк) — базовое состояние, анимация только на стадии B */
 /* Обёртка для девиза + SVG-червячка (размер = размер подложки) */
+/* Обёртка вокруг девиза + фона + SVG-червячка */
 .hero_home_tagline_wrap {
   position: relative;
   display: inline-block;
-  margin: 0.1rem auto 0;
+  margin: 1.2rem auto 0;
+  padding: 0;
 }
 
 .hero_home_tagline {
@@ -765,17 +767,18 @@ body {
    HERO: стадии A (интро) и B (после выбора языка)
    ========================================= */
 
-/* Стадия A: девиз и кнопка полностью скрыты */
-.hero_home.hero_home--stageA .hero_home_tagline,
+/* Стадия A: девиз, подложка и кнопка полностью скрыты */
+.hero_home.hero_home--stageA .hero_home_tagline_wrap,
 .hero_home.hero_home--stageA .hero_home_cta {
   display: none;
 }
 
-/* Стадия B: показываем девиз и кнопку */
-.hero_home.hero_home--stageB .hero_home_tagline {
-  display: block;
+/* Стадия B: показываем девиз с подложкой и кнопкой */
+.hero_home.hero_home--stageB .hero_home_tagline_wrap {
+  display: inline-block;
 }
 
 .hero_home.hero_home--stageB .hero_home_cta {
   display: inline-flex;
 }
+

@@ -184,13 +184,13 @@ body {
 .hero_home_tagline_wrap {
   position: relative;
   display: inline-block;
-  margin: 1.2rem auto 0;
+  margin: 1.3rem auto 0;
   padding: 0;
 }
 
 .hero_home_tagline {
   position: relative;         /* создаём локальный слой для подложки */
-  margin: 0.1rem auto 0;
+  margin: 0;
   max-width: 42rem;           /* ширина, чтобы фон всегда покрывал текст */
 
   /* отступ от текста ~4px по всем сторонам */
@@ -258,10 +258,8 @@ body {
     stroke: url(#heroTaglineWormGrad);
     stroke-linecap: round;
     stroke-linejoin: round;
-    filter: url(#heroTaglineWormGlow);
-
-    /* ТОЛЩЕ (≈1.3× относительно исходных 3.5): */
-    stroke-width: 1.5px;
+    filter: url(#heroTaglineWormGlow);    
+    stroke-width: 1.5px;                /* ТОЛЩИНА червечка */
 
     /* ОДИН червячок:
        pathLength = 100 → периметр = 100 условных единиц.

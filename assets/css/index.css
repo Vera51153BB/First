@@ -249,20 +249,22 @@ body {
   }
   
   /* Контур червячка */
-  .r-border-worm-path {
-    fill: none;
-    stroke: url(#rBorderGrad);
-    stroke-width: 3.5;
-    stroke-linecap: round;
-    stroke-linejoin: round;
-    filter: url(#rBorderGlow);
-  
-    /* Длина тела и пустота после него */
-    stroke-dasharray: 120 2400;
-    stroke-dashoffset: 0;
-    opacity: 0;
-    transition: opacity 0.5s ease-in;
-  }
+ .r-border-worm-path {
+  fill: none;
+  stroke: url(#rBorderGrad);
+  stroke-width: 4.5; /* толщина червяка */
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  filter: url(#rBorderGlow);
+
+  /* БЫЛО: 120 2400 — делаем тело ~1.5× длиннее
+     120 × 1.5 ≈ 180; суммарную длину оставляем около той же (≈2520) */
+  stroke-dasharray: 180 2340;
+
+  stroke-dashoffset: 0;
+  opacity: 0;
+  transition: opacity 0.5s ease-in;
+}
   
   /* Анимация движения */
   @keyframes r-border-move {

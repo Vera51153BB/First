@@ -130,21 +130,27 @@
             <defs>
               <!-- Цветовой градиент -->
               <linearGradient id="rBorderGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-                <stop offset="0%"   stop-color="#00ff95" />
-                <stop offset="25%"  stop-color="#00c4ff" />
-                <stop offset="50%"  stop-color="#ff005c" />
-                <stop offset="75%"  stop-color="#ff7b00" />
-                <stop offset="100%" stop-color="#ffbf3c" />
+                <!-- Яркий неоновый зелёный старт -->
+                <stop offset="0%"   stop-color="#00fff0" />
+                <!-- Холодный яркий бирюзовый -->
+                <stop offset="25%"  stop-color="#00e5ff" />
+                <!-- Насыщенный неоновый малиново-красный -->
+                <stop offset="55%"  stop-color="#ff0066" />
+                <!-- Тёплый неоновый оранжевый -->
+                <stop offset="80%"  stop-color="#ff9100" />
+                <!-- Жёлто-оранжевый финишный блик -->
+                <stop offset="100%" stop-color="#ffd54a" />
               </linearGradient>
+
         
               <!-- Лёгкое свечение -->
               <filter id="rBorderGlow" x="-20%" y="-20%" width="140%" height="140%">
-                <feGaussianBlur stdDeviation="3" result="blur" />
+                <feGaussianBlur stdDeviation="4" result="blur" />
                 <feColorMatrix in="blur" type="matrix"
                   values="1 0 0 0 0
                           0 1 0 0 0
                           0 0 1 0 0
-                          0 0 0 0.8 0"/>
+                          0 0 0 1.0 0"/>
               </filter>
             </defs>
         

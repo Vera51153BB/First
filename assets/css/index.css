@@ -179,6 +179,13 @@ body {
 }
 
 /* Девиз (6 строк) — базовое состояние, анимация только на стадии B */
+/* Обёртка для девиза + SVG-червячка (размер = размер подложки) */
+.hero_home_tagline_wrap {
+  position: relative;
+  display: inline-block;
+  margin: 0.1rem auto 0;
+}
+
 .hero_home_tagline {
   position: relative;         /* создаём локальный слой для подложки */
   margin: 0.1rem auto 0;
@@ -234,55 +241,64 @@ body {
   }
 
   /* ===== SVG "червячок" вдоль подложки (финальная версия) ===== */
-  .r-border-worm {
+  /* SVG-червячок вокруг синей подложки девиза (только десктоп) */
+  .hero_home_worm-svg {
     position: absolute;
     inset: 0;
-    pointer-events: none;
-    overflow: visible;
-    z-index: 9;
-  }
-  
-  .r-border-worm-svg {
     width: 100%;
     height: 100%;
-    display: block;
+    pointer-events: none;
+    z-index: 1; /* под текстом, над фоном */
   }
-  
-  /* Контур червячка */
- .r-border-worm-path {
-  fill: none;
-  stroke: url(#rBorderGrad);
-  stroke-width: 4.5; /* толщина червяка */
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  filter: url(#rBorderGlow);
 
-  /* БЫЛО: 120 2400 — делаем тело ~1.5× длиннее
-     120 × 1.5 ≈ 180; суммарную длину оставляем около той же (≈2520) */
-  stroke-dasharray: 180 2340;
+  .hero_home_worm-path {
+    fill: none;
+    stroke: url(#heroTaglineWormGrad);
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    filter: url(#heroTaglineWormGlow);
 
-  stroke-dashoffset: 0;
-  opacity: 0;
-  transition: opacity 0.5s ease-in;
-}
-  
-  /* Анимация движения */
-  @keyframes r-border-move {
-    0%   { stroke-dashoffset: 0; opacity: 0; }
-    10%  { opacity: 1; }
-    90%  { stroke-dashoffset: -2500; opacity: 1; }
-    100% { stroke-dashoffset: -2600; opacity: 0; }
+    /* ТОЛЩЕ (≈1.3× относительно исходных 3.5): */
+    stroke-width: 4.5px;
+
+    /* ОДИН червячок:
+       pathLength = 100 → периметр = 100 условных единиц.
+       30 видимых + 70 пустых = 1 сегмент на круге, длиной ~30% периметра.
+       Это ≈1.5× длиннее, чем классический ~20% сегмент. */
+    stroke-dasharray: 30 70;
+    stroke-dashoffset: 100;
+
+    opacity: 0;
   }
-  
-  /* Активное состояние (добавляется класс на body) */
-  body.r-border-start .r-border-worm-path {
-    animation: r-border-move var(--r-worm-speed, 9s) ease-out 1 forwards;
-    opacity: 1;
+
+  /* Запуск анимации по старому флагу body.r-border-start (как и раньше) */
+  body.r-border-start .hero_home_worm-path {
+    animation: hero_tagline_worm-run var(--r-worm-speed, 2.4s) ease-out 1 forwards;
   }
-  
-  /* Не показываем на мобильных */
+
+  @keyframes hero_tagline_worm-run {
+    0% {
+      stroke-dashoffset: 100;
+      opacity: 0;
+    }
+    10% {
+      opacity: 1;
+    }
+    80% {
+      stroke-dashoffset: 0;    /* червь обошёл весь периметр подложки */
+      opacity: 1;
+    }
+    100% {
+      stroke-dashoffset: -10;  /* немного «перелетели» и погасли */
+      opacity: 0;
+    }
+  }
+
+  /* На планшетах/мобилках червя можно отключить, как и раньше */
   @media (max-width: 1024px) {
-    .r-border-worm { display: none; }
+    .hero_home_worm-svg {
+      display: none;
+    }
   }
 
 }

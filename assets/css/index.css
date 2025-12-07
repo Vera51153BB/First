@@ -233,13 +233,13 @@ body {
     animation-delay: var(--hero-tagline-bg-delay);
   }
 
-    /* ===== SVG "червячок" вдоль подложки ===== */
+  /* ===== SVG "червячок" вдоль подложки (финальная версия) ===== */
   .r-border-worm {
     position: absolute;
     inset: 0;
     pointer-events: none;
     overflow: visible;
-    z-index: 9;              /* над подложкой, под контентом */
+    z-index: 9;
   }
   
   .r-border-worm-svg {
@@ -248,36 +248,37 @@ body {
     display: block;
   }
   
-  /* Сам контур */
+  /* Контур червячка */
   .r-border-worm-path {
     fill: none;
     stroke: url(#rBorderGrad);
-    stroke-width: 3;
+    stroke-width: 3.5;
     stroke-linecap: round;
     stroke-linejoin: round;
     filter: url(#rBorderGlow);
   
-    /* Настройка длины и паузы между "тельцем" и пустотой */
-    stroke-dasharray: 100 2400;      /* 100px видимая часть, 2400px пауза */
+    /* Длина тела и пустота после него */
+    stroke-dasharray: 120 2400;
     stroke-dashoffset: 0;
     opacity: 0;
-    transition: opacity 0.3s ease-in;
+    transition: opacity 0.5s ease-in;
   }
   
   /* Анимация движения */
   @keyframes r-border-move {
-    0%   { stroke-dashoffset: 0;   opacity: 0; }
-    5%   { opacity: 1; }
+    0%   { stroke-dashoffset: 0; opacity: 0; }
+    10%  { opacity: 1; }
     90%  { stroke-dashoffset: -2500; opacity: 1; }
     100% { stroke-dashoffset: -2600; opacity: 0; }
   }
   
-  /* Запуск анимации (через класс на body) */
+  /* Активное состояние (добавляется класс на body) */
   body.r-border-start .r-border-worm-path {
-    animation: r-border-move var(--r-worm-speed, 5s) ease-out 1 forwards;
+    animation: r-border-move var(--r-worm-speed, 9s) ease-out 1 forwards;
+    opacity: 1;
   }
   
-  /* Только на десктопах */
+  /* Не показываем на мобильных */
   @media (max-width: 1024px) {
     .r-border-worm { display: none; }
   }

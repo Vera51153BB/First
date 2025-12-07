@@ -395,7 +395,7 @@ body {
   text-transform: none;
   box-shadow: 0 12px 30px rgba(0, 0, 0, 0.55);
   opacity: 0;
-  transform: translateY(-18px);
+  transform: translateY(var(--hero-tagline-offset-y));
   transition:
     transform 0.18s ease-out,
     box-shadow 0.18s ease-out,

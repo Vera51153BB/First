@@ -266,4 +266,32 @@
   } else {
     initHeroI18N();
   }
+  // -----------------------------
+  // --- Анимация "червячка" после появления ночной сцены ---
+  // -----------------------------
+  function startBorderWormDelayed() {
+    const scene = document.querySelector(".scene_home_container");
+    if (!scene) return;
+    // ждём, пока включится ночной режим
+    const observer = new MutationObserver((mutations) => {
+      if (scene.classList.contains("scene_home_container--night")) {
+        setTimeout(() => {
+          document.body.classList.add("r-border-start");
+        }, 4200); // задержка появления после подложки (4.2 сек)
+        observer.disconnect();
+      }
+    });
+    observer.observe(scene, { attributes: true, attributeFilter: ["class"] });
+  }
+
+  // Запуск при загрузке
+  if (document.readyState === "complete" || document.readyState === "interactive") {
+    startBorderWormDelayed();
+  } else {
+    window.addEventListener("DOMContentLoaded", startBorderWormDelayed);
+  }
+
+  // Можно регулировать скорость вращения без правки CSS
+  document.documentElement.style.setProperty("--r-worm-speed", "9s");
+  
 })();

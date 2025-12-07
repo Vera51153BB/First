@@ -269,35 +269,29 @@
   // -----------------------------
   // --- Анимация "червячка" после появления ночной сцены ---
   // -----------------------------
- function startHeroPanelWorm() {
-  // Только десктоп: на мобильных не гоняем анимацию
-  if (window.matchMedia && window.matchMedia("(max-width: 1024px)").matches) {
-    return;
+  function startBorderWormDelayed() {
+    const scene = document.querySelector(".scene_home_container");
+    if (!scene) return;
+    // ждём, пока включится ночной режим
+    const observer = new MutationObserver((mutations) => {
+      if (scene.classList.contains("scene_home_container--night")) {
+        setTimeout(() => {
+          document.body.classList.add("r-border-start");
+        }, 4200); // задержка появления после подложки (4.2 сек)
+        observer.disconnect();
+      }
+    });
+    observer.observe(scene, { attributes: true, attributeFilter: ["class"] });
   }
 
-  const panel = document.querySelector(".hero_panel");
-  if (!panel) return;
-
-  // Класс на body включает CSS-анимацию (см. index.css)
-  document.body.classList.add("hero-panel-border-start");
-}
-
-// Ждём полной загрузки страницы + используем задержку из CSS-переменной
-window.addEventListener("load", function () {
-  let delaySec = 4.2;
-  try {
-    const cssDelay = getComputedStyle(document.documentElement)
-      .getPropertyValue("--hero-worm-delay")
-      .trim();
-    const parsed = parseFloat(cssDelay);
-    if (!Number.isNaN(parsed)) {
-      delaySec = parsed;
-    }
-  } catch (e) {
-    // если что-то пошло не так — используем дефолт 4.2s
+  // Запуск при загрузке
+  if (document.readyState === "complete" || document.readyState === "interactive") {
+    startBorderWormDelayed();
+  } else {
+    window.addEventListener("DOMContentLoaded", startBorderWormDelayed);
   }
 
-  window.setTimeout(startHeroPanelWorm, delaySec * 1000);
-});
+  // Можно регулировать скорость вращения без правки CSS
+  document.documentElement.style.setProperty("--r-worm-speed", "9s");
   
 })();

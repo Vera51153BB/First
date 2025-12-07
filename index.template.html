@@ -109,10 +109,49 @@
           </div>
         </div>
 
-        <!-- Текст девиза (6 строк) заполняется через JS по выбранному языку -->
-        <p class="hero_home_tagline">
-          <!-- заполняется через home-hero.js -->
-        </p>
+        <!-- Девиз + локальный SVG-червячок вокруг синей подложки -->
+        <div class="hero_home_tagline_wrap">
+          <p class="hero_home_tagline">
+            <!-- заполняется через home-hero.js -->
+          </p>
+
+          <!-- SVG-червячок, который всегда подстраивается под размер подложки -->
+          <svg
+            class="hero_home_worm-svg"
+            viewBox="0 0 100 100"
+            preserveAspectRatio="none"
+            aria-hidden="true"
+          >
+            <defs>
+              <!-- Неоновый градиент: зелёный → бирюзовый → малиновый → оранжевый -->
+              <linearGradient id="heroTaglineWormGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%"   stop-color="#00fff0" />
+                <stop offset="35%"  stop-color="#00e5ff" />
+                <stop offset="65%"  stop-color="#ff0066" />
+                <stop offset="100%" stop-color="#ffcc33" />
+              </linearGradient>
+
+              <!-- Свечение вокруг червя -->
+              <filter id="heroTaglineWormGlow" x="-40%" y="-40%" width="180%" height="180%">
+                <feGaussianBlur in="SourceGraphic" stdDeviation="3.5" result="blur" />
+                <feColorMatrix in="blur" type="matrix"
+                  values="1 0 0 0 0
+                          0 1 0 0 0
+                          0 0 1 0 0
+                          0 0 0 1 0" />
+              </filter>
+            </defs>
+
+            <!-- ВАЖНО: pathLength="100" → весь периметр = 100 условных единиц -->
+            <rect
+              class="hero_home_worm-path"
+              x="2" y="2"
+              width="96" height="96"
+              rx="21" ry="21"
+              pathLength="100"
+            />
+          </svg>
+        </div>
 
         <!-- Кнопка "Подключить бота" (текст меняем по языку в JS) -->
         <a
@@ -123,46 +162,6 @@
         >
           Подключить бота
         </a>
-        
-        <!-- SVG "червячок" по периметру подложки -->
-        <div class="r-border-worm">
-          <svg class="r-border-worm-svg" viewBox="0 0 1344 768" preserveAspectRatio="none">
-            <defs>
-              <!-- Цветовой градиент -->
-              <linearGradient id="rBorderGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-                <!-- Яркий неоновый зелёный старт -->
-                <stop offset="0%"   stop-color="#00fff0" />
-                <!-- Холодный яркий бирюзовый -->
-                <stop offset="25%"  stop-color="#00e5ff" />
-                <!-- Насыщенный неоновый малиново-красный -->
-                <stop offset="55%"  stop-color="#ff0066" />
-                <!-- Тёплый неоновый оранжевый -->
-                <stop offset="80%"  stop-color="#ff9100" />
-                <!-- Жёлто-оранжевый финишный блик -->
-                <stop offset="100%" stop-color="#ffd54a" />
-              </linearGradient>
-
-        
-              <!-- Лёгкое свечение -->
-              <filter id="rBorderGlow" x="-20%" y="-20%" width="140%" height="140%">
-                <feGaussianBlur stdDeviation="4" result="blur" />
-                <feColorMatrix in="blur" type="matrix"
-                  values="1 0 0 0 0
-                          0 1 0 0 0
-                          0 0 1 0 0
-                          0 0 0 1.0 0"/>
-              </filter>
-            </defs>
-        
-            <!-- Контур подложки, совпадает с радиусом закругления -->
-            <rect
-              class="r-border-worm-path"
-              x="12" y="12"
-              width="1320" height="744"
-              rx="21" ry="21"
-            />
-          </svg>
-        </div>
 
       </div>
     </section>

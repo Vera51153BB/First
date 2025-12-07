@@ -123,22 +123,21 @@
             aria-hidden="true"
           >
             <defs>
-              <!-- Неоновый градиент: зелёный → бирюзовый → малиновый → оранжевый -->
+              <!-- Неоновый градиент: зелёный → красный → оранжевый -->
               <linearGradient id="heroTaglineWormGrad" x1="0%" y1="0%" x2="100%" y2="0%">
                 <stop offset="0%"   stop-color="#39FF14" />
-                <stop offset="45%"  stop-color="#00e5ff" />
                 <stop offset="60%"  stop-color="#FF073A" />
                 <stop offset="100%" stop-color="#ffcc33" />
               </linearGradient>
 
               <!-- Свечение вокруг червя -->
               <filter id="heroTaglineWormGlow" x="-40%" y="-40%" width="180%" height="180%">
-                <feGaussianBlur in="SourceGraphic" stdDeviation="3.5" result="blur" />
+                <feGaussianBlur in="SourceGraphic" stdDeviation="1.75" result="blur" />
                 <feColorMatrix in="blur" type="matrix"
                   values="1 0 0 0 0
                           0 1 0 0 0
                           0 0 1 0 0
-                          0 0 0 1 0" />
+                          0 0 0 0.8 0" />
               </filter>
             </defs>
 

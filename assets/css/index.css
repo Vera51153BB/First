@@ -178,6 +178,37 @@ body {
   margin: 0 0.18em;
 }
 
+/* Обёртка ровно по ширине заголовка и по центру страницы */
+.hero_home_head{
+  display: inline-block;       /* ширина = содержимому (h1) */
+  margin: 0 auto;              /* если родитель не центрирует текстом */
+  vertical-align: top;
+}
+
+/* Полоса под заголовком — на всю ширину обёртки (то есть ровно как h1) */
+.hero_home_divider{
+  height: 4px;
+  width: 100%;
+  background: currentColor;    /* цвет наследует от заголовка */
+  opacity: 0;
+  transform: translateY(-12px);
+  animation: hero_fade_down var(--hero-anim-duration) ease-out forwards;
+  animation-delay: calc(var(--hero-anim-delay-title) + 0.25s);
+}
+
+/* Новый <h2> — прижат вправо внутри той же ширины */
+.hero_home_tagline--h2{
+  text-align: right;
+  padding-right: 10px;         /* небольшой отступ от правого края */
+  font-family: "Goldman", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  opacity: 0;
+  transform: translateY(-12px);
+  animation: hero_fade_down var(--hero-anim-duration) ease-out forwards;
+  animation-delay: calc(var(--hero-anim-delay-title) + 0.40s);
+}
+
 /* Девиз (6 строк) — базовое состояние, анимация только на стадии B */
 /* Обёртка для девиза + SVG-червячка (размер = размер подложки) */
 /* Обёртка вокруг девиза + фона + SVG-червячка */

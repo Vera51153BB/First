@@ -57,6 +57,14 @@
 
     const taglineEl = $(".hero_home_tagline");
     const ctaEl = $(".hero_home_cta");
+      // Новый короткий лозунг для <h2> под заголовком
+    const h2El = document.getElementById("hero_home_tagline_h2");
+    if (h2El) {
+      const s = I18N.t("landing.slogan");
+      if (s && s.indexOf("landing.slogan") !== 0) {
+        h2El.textContent = s;
+      }
+    }
 
     if (taglineEl) {
       const keys = ["line1", "line2", "line3", "line4", "line5", "line6"];

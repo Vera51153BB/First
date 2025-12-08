@@ -154,7 +154,6 @@ body {
   margin: 0;
 }
 
-/* Заголовок BOT / CRYPTOSIGNAL */
 /* Заголовок BOTCRYPTOSIGNAL */
 .hero_home_title {
   margin: 0;
@@ -198,7 +197,7 @@ body {
 
 /* Лозунг под BOTCRYPTOSIGNAL — всегда виден */
 .hero_home_slogan {
-  display: block;
+ /* display: block; */
   margin-top: 0.4rem;
   text-align: right;
   padding-right: 10px;

@@ -40,6 +40,7 @@ const DICTS = {
         line6: "What is happening in the crypto market right now?",
         cta:   "Connect the bot",
       },
+      slogan: "signals of trend-reversing coins"
     },
   },
 
@@ -82,6 +83,7 @@ const DICTS = {
         line6: "अभी क्रिप्टो मार्केट में क्या हो रहा है?",
         cta:   "बॉट को कनेक्ट करें",
       },
+      slogan: "ट्रेंड बदलने वाली कॉइनों के संकेत"
     },
   },
 
@@ -124,174 +126,7 @@ const DICTS = {
         line6: "Что происходит на крипторынке прямо сейчас?",
         cta:   "Подключить бота",
       },
-    },
-  },
-
-  /* ============== ESPAÑOL ============== */
-  es: {
-    common: {
-      help: "Ayuda",
-      settings: "Ajustes",
-      on: "Activado",
-      off: "Desactivado",
-      partially: "Parcialmente activado",
-      on_short: "ON",
-      off_short: "OFF",
-    },
-    alerts: {
-      title: "AJUSTES DE NOTIFICACIONES",
-      header_label: "Todas las notificaciones:",
-      all_on_btn: "Activar",
-      all_off_btn: "Desactivar",
-      items: {
-        balance: "Ganadores / Perdedores",
-        alert2:  "RSI: Zonas y Extremos",
-        alert3:  "Alerta 3",
-        alert4:  "Alerta 4",
-      },
-      save: "Guardar ajustes",
-      footnote: "Los interruptores se guardan en este dispositivo y se aplican al instante",
-      saved_prefix: "Nuevos ajustes de notificación:",
-      saved_footer: "Los ajustes se guardan en este dispositivo.",
-      summary_all_on: "Todas las notificaciones: ACTIVADAS",
-      summary_all_off: "Todas las notificaciones: DESACTIVADAS",
-    },
-    landing: {
-      hero: {
-        line1: "¿Cuándo entrar en una operación?",
-        line2: "¿Dónde están ahora los mejores puntos de entrada en long/short para la moneda X?",
-        line3: "¿Dónde colocar el stop-loss y el take-profit?",
-        line4: "¿Qué monedas merece la pena mirar hoy?",
-        line5: "¿Dónde ha empezado el impulso o se está formando un breakout?",
-        line6: "¿Qué está pasando en el mercado cripto ahora mismo?",
-        cta:   "Conectar el bot",
-      },
-    },
-  },
-
-  /* ============== FRANÇAIS ============== */
-  fr: {
-    common: {
-      help: "Aide",
-      settings: "Paramètres",
-      on: "Activé",
-      off: "Désactivé",
-      partially: "Partiellement activé",
-      on_short: "ON",
-      off_short: "OFF",
-    },
-    alerts: {
-      title: "PARAMÈTRES DES NOTIFICATIONS",
-      header_label: "Toutes les notifications :",
-      all_on_btn: "Activer",
-      all_off_btn: "Désactiver",
-      items: {
-        balance: "Gagnants / Perdants",
-        alert2:  "RSI: Zones & Extrêmes",
-        alert3:  "Alerte 3",
-        alert4:  "Alerte 4",
-      },
-      save: "Enregistrer les paramètres",
-      footnote: "Les interrupteurs sont enregistrés sur cet appareil et appliqués instantanément",
-      saved_prefix: "Nouveaux paramètres de notification :",
-      saved_footer: "Les paramètres sont enregistrés sur cet appareil.",
-      summary_all_on: "Toutes les notifications : ACTIVÉES",
-      summary_all_off: "Toutes les notifications : DÉSACTIVÉES",
-    },
-    landing: {
-      hero: {
-        line1: "Quand entrer en position ?",
-        line2: "Où se trouvent en ce moment les meilleurs points d'entrée long/short sur la pièce X ?",
-        line3: "Où placer le stop-loss et le take-profit ?",
-        line4: "Quelles pièces faut-il regarder aujourd'hui ?",
-        line5: "Où l'impulsion a-t-elle commencé ou une cassure est-elle en train de se former ?",
-        line6: "Que se passe-t-il en ce moment sur le marché crypto ?",
-        cta:   "Connecter le bot",
-      },
-    },
-  },
-
-  /* ============== DEUTSCH ============== */
-  de: {
-    common: {
-      help: "Hilfe",
-      settings: "Einstellungen",
-      on: "Ein",
-      off: "Aus",
-      partially: "Teilweise an",
-      on_short: "ON",
-      off_short: "OFF",
-    },
-    alerts: {
-      title: "BENACHRICHTIGUNGEN",
-      header_label: "Alle Benachrichtigungen:",
-      all_on_btn: "Aktivieren",
-      all_off_btn: "Deaktivieren",
-      items: {
-        balance: "Gewinner / Verlierer",
-        alert2:  "RSI: Zonen & Extremwerte",
-        alert3:  "Alarm 3",
-        alert4:  "Alarm 4",
-      },
-      save: "Einstellungen speichern",
-      footnote: "Die Schalter werden auf diesem Gerät gespeichert und sofort angewendet",
-      saved_prefix: "Neue Benachrichtigungseinstellungen:",
-      saved_footer: "Einstellungen werden auf diesem Gerät gespeichert.",
-      summary_all_on: "Alle Benachrichtigungen: AKTIVIERT",
-      summary_all_off: "Alle Benachrichtigungen: DEAKTIVIERT",
-    },
-    landing: {
-      hero: {
-        line1: "Wann sollte man in einen Trade einsteigen?",
-        line2: "Wo sind derzeit die besten Long/Short-Einstiegspunkte für Coin X?",
-        line3: "Wo setzt man Stop-Loss und Take-Profit?",
-        line4: "Welche Coins sollte man sich heute ansehen?",
-        line5: "Wo hat der Impuls begonnen oder bildet sich ein Ausbruch?",
-        line6: "Was passiert gerade am Kryptomarkt?",
-        cta:   "Bot verbinden",
-      },
-    },
-  },
-
-  /* ============== ITALIANO ============== */
-  it: {
-    common: {
-      help: "Aiuto",
-      settings: "Impostazioni",
-      on: "Attivo",
-      off: "Disattivo",
-      partially: "Parzialmente attivo",
-      on_short: "ON",
-      off_short: "OFF",
-    },
-    alerts: {
-      title: "IMPOSTAZIONI NOTIFICHE",
-      header_label: "Tutte le notifiche:",
-      all_on_btn: "Abilita",
-      all_off_btn: "Disabilita",
-      items: {
-        balance: "Vincenti / Perdenti",
-        alert2:  "RSI: Zone ed Estremi",
-        alert3:  "Avviso 3",
-        alert4:  "Avviso 4",
-      },
-      save: "Salva impostazioni",
-      footnote: "Gli interruttori vengono salvati su questo dispositivo e applicati istantaneamente",
-      saved_prefix: "Nuove impostazioni delle notifiche:",
-      saved_footer: "Le impostazioni sono salvate su questo dispositivo.",
-      summary_all_on: "Tutte le notifiche: ATTIVE",
-      summary_all_off: "Tutte le notifiche: DISATTIVATE",
-    },
-    landing: {
-      hero: {
-        line1: "Quando entrare in una operazione?",
-        line2: "Dove sono ora i migliori punti di ingresso long/short sulla coin X?",
-        line3: "Dove mettere stop-loss e take-profit?",
-        line4: "Quali coin guardare oggi?",
-        line5: "Dove è iniziato l'impulso o si sta formando un breakout?",
-        line6: "Cosa sta succedendo adesso sul mercato cripto?",
-        cta:   "Collega il bot",
-      },
+      slogan: "сигналы монет меняющих тренд"
     },
   },
 
@@ -334,6 +169,50 @@ const DICTS = {
         line6: "O que está acontecendo no mercado de cripto agora?",
         cta:   "Conectar o bot",
       },
+      slogan: "sinais de moedas que mudam de tendência"
+    },
+  },
+  
+  /* ============== ESPAÑOL ============== */
+  es: {
+    common: {
+      help: "Ayuda",
+      settings: "Ajustes",
+      on: "Activado",
+      off: "Desactivado",
+      partially: "Parcialmente activado",
+      on_short: "ON",
+      off_short: "OFF",
+    },
+    alerts: {
+      title: "AJUSTES DE NOTIFICACIONES",
+      header_label: "Todas las notificaciones:",
+      all_on_btn: "Activar",
+      all_off_btn: "Desactivar",
+      items: {
+        balance: "Ganadores / Perdedores",
+        alert2:  "RSI: Zonas y Extremos",
+        alert3:  "Alerta 3",
+        alert4:  "Alerta 4",
+      },
+      save: "Guardar ajustes",
+      footnote: "Los interruptores se guardan en este dispositivo y se aplican al instante",
+      saved_prefix: "Nuevos ajustes de notificación:",
+      saved_footer: "Los ajustes se guardan en este dispositivo.",
+      summary_all_on: "Todas las notificaciones: ACTIVADAS",
+      summary_all_off: "Todas las notificaciones: DESACTIVADAS",
+    },
+    landing: {
+      hero: {
+        line1: "¿Cuándo entrar en una operación?",
+        line2: "¿Dónde están ahora los mejores puntos de entrada en long/short para la moneda X?",
+        line3: "¿Dónde colocar el stop-loss y el take-profit?",
+        line4: "¿Qué monedas merece la pena mirar hoy?",
+        line5: "¿Dónde ha empezado el impulso o se está formando un breakout?",
+        line6: "¿Qué está pasando en el mercado cripto ahora mismo?",
+        cta:   "Conectar el bot",
+      },
+      slogan: "señales de monedas que cambian de tendencia"
     },
   },
 
@@ -376,6 +255,136 @@ const DICTS = {
         line6: "Що відбувається на крипторинку просто зараз?",
         cta:   "Підключити бота",
       },
+      slogan: "сигнали монет, що змінюють тренд"
+    },
+  },
+
+  /* ============== DEUTSCH ============== */
+  de: {
+    common: {
+      help: "Hilfe",
+      settings: "Einstellungen",
+      on: "Ein",
+      off: "Aus",
+      partially: "Teilweise an",
+      on_short: "ON",
+      off_short: "OFF",
+    },
+    alerts: {
+      title: "BENACHRICHTIGUNGEN",
+      header_label: "Alle Benachrichtigungen:",
+      all_on_btn: "Aktivieren",
+      all_off_btn: "Deaktivieren",
+      items: {
+        balance: "Gewinner / Verlierer",
+        alert2:  "RSI: Zonen & Extremwerte",
+        alert3:  "Alarm 3",
+        alert4:  "Alarm 4",
+      },
+      save: "Einstellungen speichern",
+      footnote: "Die Schalter werden auf diesem Gerät gespeichert und sofort angewendet",
+      saved_prefix: "Neue Benachrichtigungseinstellungen:",
+      saved_footer: "Einstellungen werden auf diesem Gerät gespeichert.",
+      summary_all_on: "Alle Benachrichtigungen: AKTIVIERT",
+      summary_all_off: "Alle Benachrichtigungen: DEAKTIVIERT",
+    },
+    landing: {
+      hero: {
+        line1: "Wann sollte man in einen Trade einsteigen?",
+        line2: "Wo sind derzeit die besten Long/Short-Einstiegspunkte für Coin X?",
+        line3: "Wo setzt man Stop-Loss und Take-Profit?",
+        line4: "Welche Coins sollte man sich heute ansehen?",
+        line5: "Wo hat der Impuls begonnen oder bildet sich ein Ausbruch?",
+        line6: "Was passiert gerade am Kryptomarkt?",
+        cta:   "Bot verbinden",
+      },
+      slogan: "Signale zu Coins, die den Trend wenden"
+    },
+  },
+  
+  /* ============== FRANÇAIS ============== */
+  fr: {
+    common: {
+      help: "Aide",
+      settings: "Paramètres",
+      on: "Activé",
+      off: "Désactivé",
+      partially: "Partiellement activé",
+      on_short: "ON",
+      off_short: "OFF",
+    },
+    alerts: {
+      title: "PARAMÈTRES DES NOTIFICATIONS",
+      header_label: "Toutes les notifications :",
+      all_on_btn: "Activer",
+      all_off_btn: "Désactiver",
+      items: {
+        balance: "Gagnants / Perdants",
+        alert2:  "RSI: Zones & Extrêmes",
+        alert3:  "Alerte 3",
+        alert4:  "Alerte 4",
+      },
+      save: "Enregistrer les paramètres",
+      footnote: "Les interrupteurs sont enregistrés sur cet appareil et appliqués instantanément",
+      saved_prefix: "Nouveaux paramètres de notification :",
+      saved_footer: "Les paramètres sont enregistrés sur cet appareil.",
+      summary_all_on: "Toutes les notifications : ACTIVÉES",
+      summary_all_off: "Toutes les notifications : DÉSACTIVÉES",
+    },
+    landing: {
+      hero: {
+        line1: "Quand entrer en position ?",
+        line2: "Où se trouvent en ce moment les meilleurs points d'entrée long/short sur la pièce X ?",
+        line3: "Où placer le stop-loss et le take-profit ?",
+        line4: "Quelles pièces faut-il regarder aujourd'hui ?",
+        line5: "Où l'impulsion a-t-elle commencé ou une cassure est-elle en train de se former ?",
+        line6: "Que se passe-t-il en ce moment sur le marché crypto ?",
+        cta:   "Connecter le bot",
+      },
+      slogan: "signaux des cryptos qui inversent la tendance"
+    },
+  },
+
+  /* ============== ITALIANO ============== */
+  it: {
+    common: {
+      help: "Aiuto",
+      settings: "Impostazioni",
+      on: "Attivo",
+      off: "Disattivo",
+      partially: "Parzialmente attivo",
+      on_short: "ON",
+      off_short: "OFF",
+    },
+    alerts: {
+      title: "IMPOSTAZIONI NOTIFICHE",
+      header_label: "Tutte le notifiche:",
+      all_on_btn: "Abilita",
+      all_off_btn: "Disabilita",
+      items: {
+        balance: "Vincenti / Perdenti",
+        alert2:  "RSI: Zone ed Estremi",
+        alert3:  "Avviso 3",
+        alert4:  "Avviso 4",
+      },
+      save: "Salva impostazioni",
+      footnote: "Gli interruttori vengono salvati su questo dispositivo e applicati istantaneamente",
+      saved_prefix: "Nuove impostazioni delle notifiche:",
+      saved_footer: "Le impostazioni sono salvate su questo dispositivo.",
+      summary_all_on: "Tutte le notifiche: ATTIVE",
+      summary_all_off: "Tutte le notifiche: DISATTIVATE",
+    },
+    landing: {
+      hero: {
+        line1: "Quando entrare in una operazione?",
+        line2: "Dove sono ora i migliori punti di ingresso long/short sulla coin X?",
+        line3: "Dove mettere stop-loss e take-profit?",
+        line4: "Quali coin guardare oggi?",
+        line5: "Dove è iniziato l'impulso o si sta formando un breakout?",
+        line6: "Cosa sta succedendo adesso sul mercato cripto?",
+        cta:   "Collega il bot",
+      },
+      slogan: "segnali delle crypto che invertono il trend"
     },
   },
 
@@ -418,6 +427,7 @@ const DICTS = {
         line6: "いま仮想通貨市場で何が起きているのか？",
         cta:   "ボットを接続する",
       },
+      slogan: "トレンド転換するコインのシグナル"
     },
   },
 
@@ -460,6 +470,7 @@ const DICTS = {
         line6: "Şu anda kripto piyasasında neler oluyor?",
         cta:   "Botu bağla",
       },
+      slogan: "trendi tersine çeviren coinler için sinyaller"
     },
   },
 
@@ -502,10 +513,10 @@ const DICTS = {
         line6: "此刻加密市场正在发生什么？",
         cta:   "连接机器人",
       },
+      slogan: "趋势反转币种的信号"
     },
   },
 };
-
 
   function pickLang() {
     // 1) Язык страницы из <html lang="..."> (главный источник правды для /en, /hi, /ru и т.д.)

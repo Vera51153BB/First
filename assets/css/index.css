@@ -196,17 +196,22 @@ body {
   animation-delay: calc(var(--hero-anim-delay-title) + 0.25s);
 }
 
-/* Новый <h2> — прижат вправо внутри той же ширины */
-.hero_home_tagline--h2{
+/* Лозунг под BOTCRYPTOSIGNAL — всегда виден */
+.hero_home_slogan {
+  display: block;
+  margin-top: 0.4rem;
   text-align: right;
-  padding-right: 10px;         /* небольшой отступ от правого края */
+  padding-right: 10px;
   font-family: "Goldman", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   font-weight: 700;
-  letter-spacing: 0.01em;
+  font-size: clamp(1rem, 2.2vw, 1.6rem);
+  letter-spacing: 0.02em;
+  color: var(--hero-title-color);
+  text-shadow: var(--hero-title-shadow);
   opacity: 0;
   transform: translateY(-12px);
   animation: hero_fade_down var(--hero-anim-duration) ease-out forwards;
-  animation-delay: calc(var(--hero-anim-delay-title) + 0.40s);
+  animation-delay: calc(var(--hero-anim-delay-title) + 0.35s);
 }
 
 /* Девиз (6 строк) — базовое состояние, анимация только на стадии B */

@@ -73,7 +73,7 @@
   --hero-cta-gap: 12px;           /* отступ кнопки от подложки (px/%/rem) */
 
     /* Подложка под девиз и луч по периметру (ноут/десктоп) */
-  --hero-tagline-bg-alpha: 0.8;          /* 0 по умолчанию прозрачная */
+  --hero-tagline-bg-alpha: 0.8;          /* степень затемнения (#050029) 0 по умолчанию прозрачная */
   --hero-tagline-bg-delay: 3.6s;       /* когда включать подложку */
 
 }
@@ -128,11 +128,6 @@ body {
 .scene_home_container--night .scene_home_bg--day {
   opacity: 0;
   transition: opacity var(--scene-crossfade-duration) ease-out;
-}
-.scene_home_container--night {
-  /* В ночном режиме подложка включаются */
-  --hero-tagline-bg-alpha: 0.8;         /* степень затемнения (#050029) */
-  --hero-tagline-bg-delay: 3.6s;
 }
 
 /* ==== HERO: BOTCRYPTOSIGNAL поверх сцены (_home_) ==== */
@@ -275,7 +270,7 @@ body {
     position: absolute;
     inset: 0;                /* по размеру подложки */
     border-radius: 21px;
-      background: rgba(5, 0, 41, var(--hero-tagline-bg-alpha));
+    background: rgba(5, 0, 41, var(--hero-tagline-bg-alpha));
     z-index: -1;                     /* ПОД текстом, НО над фоном сцены */
 
     /* сначала невидима, появляется после того, как девиз встал на место */

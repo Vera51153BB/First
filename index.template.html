@@ -114,47 +114,62 @@
         </div>
 
         <!-- Девиз + локальный SVG-червячок вокруг синей подложки -->
-        <div class="hero_home_tagline_wrap">
-          <p class="hero_home_tagline">
-            <!-- заполняется через home-hero.js -->
-          </p>
+        <div class="hero_home_tagline_group">
+          <div class="hero_home_tagline_wrap">
+            <p class="hero_home_tagline">
+              <!-- заполняется через home-hero.js -->
+            </p>
 
-          <!-- SVG-червячок, который всегда подстраивается под размер подложки -->
-          <svg
-            class="hero_home_worm-svg"
-            viewBox="0 0 100 100"
-            preserveAspectRatio="none"
-            aria-hidden="true"
-          >
-            <defs>
-              <!-- Неоновый градиент: зелёный → красный → оранжевый -->
-              <linearGradient id="heroTaglineWormGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-                <stop offset="0%"   stop-color="#39FF14" />
-                <stop offset="60%"  stop-color="#FF073A" />
-                <stop offset="100%" stop-color="#ffcc33" />
-              </linearGradient>
+            <!-- SVG-червячок, который всегда подстраивается под размер подложки -->
+            <svg
+              class="hero_home_worm-svg"
+              viewBox="0 0 100 100"
+              preserveAspectRatio="none"
+              aria-hidden="true"
+            >
+              <defs>
+                <!-- Неоновый градиент: зелёный → красный → оранжевый -->
+                <linearGradient id="heroTaglineWormGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%"   stop-color="#39FF14" />
+                  <stop offset="60%"  stop-color="#FF073A" />
+                  <stop offset="100%" stop-color="#ffcc33" />
+                </linearGradient>
 
-              <!-- Свечение вокруг червя -->
-              <filter id="heroTaglineWormGlow" x="-40%" y="-40%" width="180%" height="180%">
-                <feGaussianBlur in="SourceGraphic" stdDeviation="0.5" result="blur" />
-                <feColorMatrix in="blur" type="matrix"
-                  values="1 0 0 0 0
-                          0 1 0 0 0
-                          0 0 1 0 0
-                          0 0 0 1 0" />
-              </filter>
-            </defs>
+                <!-- Свечение вокруг червя -->
+                <filter id="heroTaglineWormGlow" x="-40%" y="-40%" width="180%" height="180%">
+                  <feGaussianBlur in="SourceGraphic" stdDeviation="0.5" result="blur" />
+                  <feColorMatrix in="blur" type="matrix"
+                    values="1 0 0 0 0
+                            0 1 0 0 0
+                            0 0 1 0 0
+                            0 0 0 1 0" />
+                </filter>
+              </defs>
 
-            <!-- ВАЖНО: pathLength="100" → весь периметр = 100 условных единиц -->
-            <rect
-              class="hero_home_worm-path"
-              x="0" y="0"
-              width="100" height="100"
-              rx="21" ry="21"
-              pathLength="100"
-            />
-          </svg>
+              <!-- ВАЖНО: pathLength="100" → весь периметр = 100 условных единиц -->
+              <rect
+                class="hero_home_worm-path"
+                x="0" y="0"
+                width="100" height="100"
+                rx="21" ry="21"
+                pathLength="100"
+              />
+            </svg>
+          </div>
+
+          <!-- Кнопка "Подключить бота" (текст меняем по языку в JS) -->
+          <div id="hero_home_cta_push">
+            <a
+              class="hero_home_cta"
+              href="https://t.me/bcs_okx_signals_bot"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Подключить бота
+            </a>
+          </div>
         </div>
+
 
         <!-- Кнопка "Подключить бота" (текст меняем по языку в JS) -->
         <div id="hero_home_cta_push">

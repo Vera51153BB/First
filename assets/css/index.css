@@ -30,538 +30,103 @@
   font-display: swap;
 }
 
+/* ---------- Базовые переменные ---------- */
+
 :root {
-  --home-bg-color: #02040a;
-  --home-ticker-bg: rgba(2, 10, 24, 0.9);  /* цвет + прозрачность панели */
-  --home-ticker-border: rgba(0, 255, 204, 0.9);
+  --home-bg-color: #050029;
+
+  --hero-text-color: #ffffff;
+  --hero-max-width: 960px;
+
+  --hero-anim-duration: 0.6s;
+  --hero-delay-title: 0.4s;
+  --hero-delay-underline: 0.7s;
+  --hero-delay-slogan: 1.0s;
+  --hero-delay-tagline: 1.4s;
+  --hero-delay-cta: 1.8s;
+
+  --hero-title-letter-spacing: 0.08em;
+
+  --home-ticker-bg: rgba(3, 8, 40, 0.96);
+  --home-ticker-border: rgba(0, 255, 204, 0.75);
   --home-ticker-glow: rgba(0, 255, 204, 0.85);
   --home-ticker-text: #e8f6ff;
   --home-ticker-up: #6bff94;
   --home-ticker-down: #ff5f7a;
-  --home-ticker-shadow: 0 0 18px rgba(0, 255, 204, 0.7);
-  --home-ticker-height: 9%; /* относительная высота окна от контейнера */
-  --home-ticker-speed-sec: 70s; /* скорость прокрутки */
+  --home-ticker-speed-sec: 60s;
+}
 
-    /* === Настройки героя BOTCRYPTOSIGNAL (_home_) === */
-  /* Яркость и вид заголовка */
-  --hero-title-color: #fdfdfd;
-  --hero-title-shadow: 0 0 18px rgba(0, 0, 0, 0.9);
-  --hero-title-opacity: 1;
-
-  /* Яркость и вид девиза */
-  --hero-tagline-color: rgba(230, 242, 255, 0.94);
-  --hero-tagline-shadow: 0 0 12px rgba(0, 0, 0, 0.85);
-  --hero-tagline-opacity: 0.96;
-
-  /* Длительность кроссфейда день → ночь для фона геро-сцены */
-  --scene-crossfade-duration: 1.8s; /* изначально 0.7s */
-  
-  /* Тайминги анимации */
-  /* Чуть дольше сама анимация + ступенька между элементами */
-  --hero-anim-duration: 0.7s;      /* время анимации */
-  --hero-anim-delay-title: 1.2s;    /* пауза перед заголовком */
-  --hero-anim-delay-tagline: 1.9s;  /* появление девиза */
-  --hero-anim-delay-lang: 3.4s;     /* появление кружков языков */
-  --hero-anim-delay-cta: 2.7s;      /* появление кнопки "Подключить бота" */
-  
-    /* Горизонтальный сдвиг языкового переключателя (можно подстроить) */
-  --hero-lang-offset-x: 0;      /* 1.4rem; 0 = строго по центру  */
-
-    /* Вертикальный отступ Y1 для заголовка (в % от высоты сцены) */
-  --hero-title-offset-y: 7%;
-
-    /* Сдвиг языковой линейки по X (вправо/влево) */
-  --hero-lang-offset-x: 0;
-
-    /* Отдельный сдвиг для знака вопроса по X */
-  --hero-lang-hint-offset-x: 0.1rem;
-
-    /* Вертикальный сдвиг девиза относительно заголовка (ночной экран) */
-  --hero-tagline-offset-y: -90px; /* было -18px, -32 подтянет ближе к заголовку */
-  --hero-cta-gap: 12px;           /* отступ кнопки от подложки (px/%/rem) */
-
-    /* Подложка под девиз и луч по периметру (ноут/десктоп) */
-  --hero-tagline-bg-alpha: 0.8;          /* степень затемнения (#050029) 0 по умолчанию прозрачная */
-  --hero-tagline-bg-delay: 3.6s;       /* когда включать подложку */
-
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
 }
 
 body {
   margin: 0;
   padding: 0;
   background: var(--home-bg-color);
-  color: #fff;
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
-    sans-serif;
-}
-
-/* Обёртка сцены: держит картинку и все накладки */
-.scene_home_container {
-  position: relative;
-  max-width: 100%;  
-  margin: 0 auto;
-  overflow: hidden;
-  background: #000;
-}
-
-/* Сам фон: картинка 1344x768, масштабируется, но пропорции сохраняются */
-.scene_home_bg {
-  display: block;
-  width: 100%;
-  height: auto;
-}
-
-/* Дневной и ночной фон: дневной в потоке, ночной поверх с кроссфейдом */
-.scene_home_bg--day {
-  display: block;
-  width: 100%;
-  height: auto;
-}
-
-.scene_home_bg--night {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: auto;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity var(--scene-crossfade-duration) ease-out;
-}
-
-/* Когда переключаемся на "ночной" режим */
-.scene_home_container--night .scene_home_bg--night {
-  opacity: 1;
-}
-
-.scene_home_container--night .scene_home_bg--day {
-  opacity: 0;
-  transition: opacity var(--scene-crossfade-duration) ease-out;
-}
-
-/* ==== HERO: BOTCRYPTOSIGNAL поверх сцены (_home_) ==== */
-.hero_home {
-  position: absolute !important;
-  inset: 0;               /* top:0; right:0; bottom:0; left:0; */
-  display: block;
-  pointer-events: none;
-  z-index: 4;             /* выше перил и тикера */
-}
-
-.hero_home_inner {
-  position: absolute;
-  left: 50%;
-  top: var(--hero-title-offset-y);  /* Y1 – регулируемый отступ сверху в % */
-  transform: translateX(-50%);
-  pointer-events: auto;
-  text-align: center;
-  max-width: min(84%, 900px);
-  margin: 0;
-}
-
-/* Заголовок BOTCRYPTOSIGNAL */
-.hero_home_title {
-  margin: 0;
+  color: var(--hero-text-color);
   font-family: "RobotoCondensed", system-ui, -apple-system, BlinkMacSystemFont,
     "Segoe UI", sans-serif;
-  font-weight: 900;
-  font-size: clamp(2.6rem, 6vw, 4.5rem);
-  letter-spacing: 0.01em; /* 0.01em; расстояние между буквами */
-  text-transform: uppercase;
-  color: var(--hero-title-color);
-  text-shadow: var(--hero-title-shadow);
-  opacity: 0;
-  transform: translateY(-17px);
-  animation: hero_fade_down var(--hero-anim-duration) ease-out forwards;
-  animation-delay: var(--hero-anim-delay-title);
-  text-align: center;
 }
 
-.hero_home_title-word {
-  display: inline-block;
-  margin: 0 0.18em;
+/* Контейнер страницы: бегущая строка сверху + герой по центру */
+
+.page_home {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
 }
 
-/* Обёртка ровно по ширине заголовка и по центру страницы */
-.hero_home_head{
-  display: inline-block;       /* ширина = содержимому (h1) */
-  margin: 0 auto;              /* если родитель не центрирует текстом */
-  vertical-align: top;
+/* ---------- Бегущая строка с индексами ---------- */
+
+.home_header {
+  flex: 0 0 auto;
 }
 
-/* Полоса под заголовком — на всю ширину обёртки (то есть ровно как h1) */
-.hero_home_divider{
-  height: 4px;
-  width: 100%;
-  background: currentColor;    /* цвет наследует от заголовка */
-  opacity: 0;
-  transform: translateY(-12px);
-  animation: hero_fade_down var(--hero-anim-duration) ease-out forwards;
-  animation-delay: calc(var(--hero-anim-delay-title) + 0.25s);
-}
-
-/* Лозунг под BOTCRYPTOSIGNAL — всегда виден */
-.hero_home_slogan {
- /* display: block; */
-  margin-top: 0.4rem;
-  text-align: right;
-  padding-right: 10px;
-  font-family: "RobotoCondensed", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  font-weight: 700;
-  font-size: clamp(1rem, 2.2vw, 1.6rem);
-  letter-spacing: 0.02em;
-  color: var(--hero-title-color);
-  text-shadow: var(--hero-title-shadow);
-  opacity: 0;
-  transform: translateY(-12px);
-  animation: hero_fade_down var(--hero-anim-duration) ease-out forwards;
-  animation-delay: calc(var(--hero-anim-delay-title) + 0.35s);
-}
-
-/* Девиз (6 строк) — базовое состояние, анимация только на стадии B */
-/* Обёртка для девиза + SVG-червячка (размер = размер подложки) */
-/* Обёртка вокруг девиза + фона + SVG-червячка */
-.hero_home_tagline_group {
-  position: relative;
-  display: inline-block;
-  margin: 1.3rem auto 0;
-  padding: 0;
-  transform: translateY(var(--hero-tagline-offset-y));
-}
-
-/* Внутренняя обёртка только для текста + SVG */
-.hero_home_tagline_wrap {
-  position: relative;
-  display: block;
-  margin: 0 auto;
-  padding: 0;
-}
-
-.hero_home_tagline {
-  position: relative;         /* создаём локальный слой для подложки */
-  margin: 0;
-  max-width: 42rem;           /* ширина, чтобы фон всегда покрывал текст */
-
-  /* отступ от текста ~4px по всем сторонам */
-  padding: 4px 12px;
-
-  font-family: "RobotoCondensed", system-ui, -apple-system, BlinkMacSystemFont,
-    "Segoe UI", sans-serif;
-  font-weight: 200;
-  font-size: clamp(1rem, 2.1vw, 1.35rem);
-  line-height: 1.4;
-  color: var(--hero-tagline-color);
-  text-shadow: var(--hero-tagline-shadow);
-
-  border-radius: 21px;        /* округление углов подложки */
-
-  opacity: 0;
-  background-color: transparent;   /* фон целиком рисуем через ::before */
-}
-
-.hero_home_tagline-line {
-  display: block;
-  white-space: normal;   /* можно переносить */
-  text-align: center;    /* обе(все) строки по центру */
-}
-
-/* Убираем <br> внутри девиза, чтобы не было лишних пустых строк */
-.hero_home_tagline br {
-  display: none;
-}
-
-/* Подложка и «луч» вокруг девиза — только на десктопе */
-@media (min-width: 769px) {
-
-  /* Внутренний мягкий fade-in подложки */
-  .hero_home_tagline::before {
-    content: "";
-    position: absolute;
-    inset: 0;                /* по размеру подложки */
-    border-radius: 21px;
-    background: rgba(5, 0, 41, var(--hero-tagline-bg-alpha));
-    z-index: -1;                     /* ПОД текстом, НО над фоном сцены */
-
-    /* сначала невидима, появляется после того, как девиз встал на место */
-    opacity: 0;
-    pointer-events: none;
-
-    animation: hero_tagline_bg_fade 0.45s ease-out forwards;
-    animation-delay: var(--hero-tagline-bg-delay);
-  }
-
-  /* ===== SVG "червячок" вдоль подложки (финальная версия) ===== */
-  /* SVG-червячок вокруг синей подложки девиза (только десктоп) */
-  .hero_home_worm-svg {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    pointer-events: none;
-    z-index: 1; /* под текстом, над фоном */
-  }
-
-  .hero_home_worm-path {
-    fill: none;
-    stroke: url(#heroTaglineWormGrad);
-    stroke-linecap: round;
-    stroke-linejoin: round;
-    filter: url(#heroTaglineWormGlow);    
-    stroke-width: 1.5px;                /* ТОЛЩИНА червечка */
-
-    /* ОДИН червячок:
-       pathLength = 100 → периметр = 100 условных единиц.
-       30 видимых + 70 пустых = 1 сегмент на круге, длиной ~30% периметра.
-       Это ≈1.5× длиннее, чем классический ~20% сегмент. */
-    stroke-dasharray: 30 70;
-    stroke-dashoffset: 100;
-
-    opacity: 0;
-  }
-
-  /* Запуск анимации по старому флагу body.r-border-start (как и раньше) */
-  body.r-border-start .hero_home_worm-path {
-    animation: hero_tagline_worm-run var(--r-worm-speed, 2.4s) ease-out 1 forwards;
-  }
-
-  @keyframes hero_tagline_worm-run {
-    0% {
-      stroke-dashoffset: 100;
-      opacity: 0;
-    }
-    10% {
-      opacity: 1;
-    }
-    80% {
-      stroke-dashoffset: 0;    /* червь обошёл весь периметр подложки */
-      opacity: 1;
-    }
-    100% {
-      stroke-dashoffset: -10;  /* немного «перелетели» и погасли */
-      opacity: 0;
-    }
-  }
-
-  /* На планшетах/мобилках червя можно отключить, как и раньше */
-  @media (max-width: 1024px) {
-    .hero_home_worm-svg {
-      display: none;
-    }
-  }
-
-}
-
-/* Плавное появление подложки */
-@keyframes hero_tagline_bg_fade {
-  0% {
-    opacity: 0;
-  }
-  100% {
-    opacity: 1;
-  }
-}
-
-/* Переключатель языков: круглые «флаги» */
-.hero_lang_switcher {
-  margin: 0.9rem auto 0;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.4rem;
-  transform: translateX(var(--hero-lang-offset-x));
-  opacity: 0;
-  transform-origin: center;
-  animation: hero_fade_down var(--hero-anim-duration) ease-out forwards;
-  /* отдельная переменная для задержки */
-  animation-delay: var(--hero-anim-delay-lang);
-}
-
-.hero_lang_btn {
-  width: 2.1rem;
-  height: 2.1rem;
-  border-radius: 8px;
-  border: 1px solid rgba(200, 230, 255, 0.7);
-  background: rgba(5, 16, 23, 0.88);
-  color: #eaf5ff;
-  font-family: "RobotoCondensed", system-ui, -apple-system, BlinkMacSystemFont,
-    "Segoe UI", sans-serif;
-  font-size: 0.7rem;
-  line-height: 1;
-  text-align: center;
-  text-transform: uppercase;
-  cursor: pointer;
-  padding: 0;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  transition:
-    transform 0.16s ease-out,
-    box-shadow 0.16s ease-out,
-    background-color 0.16s ease-out,
-    border-color 0.16s ease-out,
-    color 0.16s ease-out;
-}
-
-.hero_lang_btn:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 0 14px rgba(0, 255, 204, 0.5);
-  border-color: rgba(0, 255, 204, 0.9);
-}
-
-.hero_lang_btn--active {
-  background: #2af47b;
-  color: #051017;
-  border-color: #2af47b;
-  box-shadow: 0 0 18px rgba(0, 0, 0, 0.75);
-}
-
-/* На дневном экране (стадия A) перересовываем активный язык, визуально его нет */
-.hero_home.hero_home--stageA .hero_lang_btn--active {
-  background: rgba(3, 12, 26, 0.86);
-  border-color: rgba(0, 255, 204, 0.65);
-  color: #e8f6ff;
-  box-shadow: 0 0 6px rgba(0, 255, 204, 0.4);
-}
-
-/* Кнопка "Подключить бота" */
-.hero_home_cta {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  margin-top: var(--hero-cta-gap);  /* кнопка «привязана» к подложке */
-  padding: 0.9rem 2.8rem;
-  border-radius: 999px;
-  background: #2af47b;
-  color: #051017;
-  font-family: "Ubuntu Sans Mono", system-ui, -apple-system, BlinkMacSystemFont,
-    "Segoe UI", sans-serif;
-  font-size: 1rem;
-  font-weight: 600;
-  text-decoration: none;
-  text-transform: none;
-  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.55);
-  opacity: 0;
-  transform: translateY(0);
-  transition:
-    transform 0.18s ease-out,
-    box-shadow 0.18s ease-out,
-    background-color 0.18s ease-out,
-    opacity 0.18s ease-out;
-}
-
-.hero_home_cta:hover,
-.hero_home_cta:focus-visible {
-  transform: translateY(-2px);
-  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.65);
-  background: #37ff86;
-}
-
-.hero_home_cta:active {
-  transform: translateY(1px) scale(0.98);
-  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.55);
-}
-
-/* Под мобильные — убираем сдвиг вправо, чтобы круги центрировались */
-@media (max-width: 768px) {
-  :root {
-    --hero-lang-offset-x: 0;
-  }
-
-  .hero_lang_switcher {
-    margin-top: 0.8rem;
-  }
-}
-
-/* Общий ключевой кадр для появления сверху вниз */
-@keyframes hero_fade_down {
-  from {
-    opacity: 0;
-    transform: translateY(-18px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-/* ==== FINAL OVERRIDE: точная подгонка окна тикера на мостике (_home_) ==== */
 .ticker_home_frame {
-  position: absolute;
-
-  /* Координаты, максимально приближенные к оранжевому прямоугольнику */
-  left: 3%;      /* вправо/влево */
-  bottom: 89.5%;    /* вверх/вниз */
-  width: 97%;     /* длина вдоль моста */
-  height: 0%;    /* при необходимости можно подкорректировать */
-
-  display: flex;
-  align-items: stretch;
-  justify-content: center;
-
-  /* Наклон под мостик */
-  transform-origin: left center;
-  transform: rotate(19deg) skewX(11deg) !important;
-
-  overflow: hidden;
-  z-index: 2;            /* ← тикер над фоном, но под маской */
-}
-/* Прозрачная маска-перила поверх тикера (_home_) */
-.scene_home_overlay_home {
-  position: absolute;
-  inset: 0;             /* top:0; right:0; bottom:0; left:0; */
   width: 100%;
-  height: auto;
-  object-fit: cover;
-
-  pointer-events: none; /* не блокирует клики по тикеру */
-  z-index: 3;           /* выше тикера и его бликов */
+  background: var(--home-ticker-bg);
+  border-bottom: 1px solid var(--home-ticker-border);
+  box-shadow: 0 0 16px var(--home-ticker-glow);
 }
 
-/* Внутренняя маска под бегущую строку */
 .ticker_home_mask {
-  position: relative;
-  flex: 1 1 auto;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0.4rem 0.9rem;
   overflow: hidden;
-  display: flex;
-  align-items: center;
-  height: 100%;
 }
 
-/* Ряд элементов, который едет слева направо */
 .ticker_home_row {
   display: inline-flex;
-  align-items: center;
+  align-items: baseline;
   white-space: nowrap;
-  will-change: transform;
   animation: ticker_home_scroll var(--home-ticker-speed-sec) linear infinite;
-  font-family: "RobotoCondensed", system-ui, -apple-system, BlinkMacSystemFont,
-    "Segoe UI", sans-serif;
-  font-size: clamp(8px, 1.1vw, 15px);
-  letter-spacing: 0.06em;
+  font-size: clamp(0.7rem, 0.95vw, 0.9rem);
+  letter-spacing: 0.09em;
   text-transform: uppercase;
   color: var(--home-ticker-text);
-  text-shadow: 0 0 8px var(--home-ticker-glow);
-  padding-inline: 8%;
 }
 
-/* Один тикер (одна монета) */
 .ticker_home_item {
   display: inline-flex;
   align-items: baseline;
-  margin-right: 2.8rem;
-  opacity: 0.92;
+  margin-right: 3rem;
 }
 
 .ticker_home_symbol {
-  margin-right: 0.4rem;
+  margin-right: 0.45rem;
 }
 
 .ticker_home_price {
-  margin-right: 0.35rem;
+  margin-right: 0.4rem;
   opacity: 0.96;
 }
 
 .ticker_home_change {
-  font-size: 0.82em;
+  font-size: 0.8em;
 }
 
 .ticker_home_change--up {
@@ -570,40 +135,6 @@ body {
 
 .ticker_home_change--down {
   color: var(--home-ticker-down);
-}
-
-/* Лёгкий "блик" по стеклу */
-.ticker_home_frame::before {
-  content: "";
-  position: absolute;
-  inset: -60%;
-  background: linear-gradient(
-    110deg,
-    rgba(255, 255, 255, 0.22),
-    transparent 35%,
-    transparent 65%,
-    rgba(0, 255, 255, 0.18)
-  );
-  mix-blend-mode: screen;
-  opacity: 0.22;
-  pointer-events: none;
-}
-
-/* Тень снизу, чтобы соединить с мостиком */
-.ticker_home_frame::after {
-  content: "";
-  position: absolute;
-  left: -10%;
-  right: -10%;
-  bottom: -35%;
-  height: 60%;
-  background: radial-gradient(
-    ellipse at top,
-    rgba(0, 0, 0, 0.55),
-    transparent 70%
-  );
-  opacity: 0.9;
-  pointer-events: none;
 }
 
 @keyframes ticker_home_scroll {
@@ -615,210 +146,190 @@ body {
   }
 }
 
-/* =========================================
-   HERO: языковые кнопки + стадии A/B
-   ========================================= */
+/* ---------- Блок героя BOTCRYPTOSIGNAL ---------- */
 
-/* Общий ряд языков (контейнер) */
-.hero_lang_row {
+.home_main {
+  flex: 1 1 auto;
   display: flex;
   align-items: center;
-  gap: 0.45rem;
-}
-
-/* Интро-ряд: центр ПОД заголовком */
-.hero_lang_row--intro {
   justify-content: center;
-  margin-top: 1.1rem;  /* отступ вниз от BOTCRYPTOSIGNAL */
-  margin-bottom: 0;
+  padding: 2.5rem 1.5rem 3rem;
 }
 
-/* Компактный ряд: слева над заголовком */
-.hero_lang_row--compact {
-  position: absolute;
-  top: clamp(0.6rem, 3vw, 1.4rem);
-  left: calc(clamp(0.8rem, 4vw, 2.4rem) + var(--hero-lang-offset-x));
-  transform-origin: left center;
-  transform: scale(0.72);
-  opacity: 0;
-  pointer-events: none;
+.hero_main {
+  width: 100%;
 }
 
-/* Стадия A (до выбора языка): виден только интро-ряд */
-.hero_home--stageA .hero_lang_row--intro {
-  opacity: 1;
-  pointer-events: auto;
+.hero_main_inner {
+  max-width: var(--hero-max-width);
+  margin: 0 auto;
+  text-align: center;
 }
 
-.hero_home--stageA .hero_lang_row--compact {
-  opacity: 0;
-  pointer-events: none;
+/* Обёртка, ширина = ширине H1 + полосы */
+
+.hero_title_block {
+  display: inline-block;
+  text-align: center;
 }
 
-/* Стадия B (ночь): языковые ряды полностью скрыты */
-.hero_home--stageB .hero_lang_row--intro,
-.hero_home--stageB .hero_lang_row--compact {
-  opacity: 0;
-  pointer-events: none;
-  transform: translateY(-10px);
-  transition:
-    opacity 0.25s ease-out,
-    transform 0.25s ease-out;
-}
+/* ВАЖНО: стиль задаём по селектору контейнера, H1 остаётся без классов */
 
-/* Стадия A: девиз и кнопка полностью скрыты */
-.hero_home--stageA .hero_home_tagline,
-.hero_home--stageA .hero_home_cta {
-  opacity: 0;
-  pointer-events: none;
-}
-
-/* Стадия B: включаем девиз и кнопку с анимацией "появление сверху" */
-/* Стадия B: выбран язык — показываем девиз и кнопку */
-.hero_home--stageB .hero_home_tagline {
-  /* Анимируем только прозрачность, позицию берём из transform: translateY(...) выше */
-  animation: hero_tagline_fade_opacity var(--hero-anim-duration) ease-out forwards;
-  animation-delay: var(--hero-anim-delay-tagline);
-}
-
-.hero_home--stageB .hero_home_cta {
-  animation: hero_fade_down var(--hero-anim-duration) ease-out forwards;
-  animation-delay: var(--hero-anim-delay-cta);
-  pointer-events: auto;
-}
-
-/* Кнопки-языки: базовый стиль (кружок) */
-.hero_lang_switcher {
-  display: flex;
-  align-items: center;
-  gap: 0.3rem;
-}
-
-.hero_lang_btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 2.1rem;
-  height: 2.1rem;
-  border-radius: 999px;
-  border: 1px solid rgba(0, 255, 204, 0.65);
-  background: rgba(3, 12, 26, 0.86);
-  color: #e8f6ff;
-  font-family: "Ubuntu Sans Mono", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", monospace;
-  font-size: 0.7rem;
+.hero_title_block h1 {
+  margin: 0;
+  font-family: "RobotoCondensed", system-ui, -apple-system, BlinkMacSystemFont,
+    "Segoe UI", sans-serif;
+  font-weight: 900; /* Black */
+  font-size: clamp(2.8rem, 6.5vw, 4.8rem);
+  letter-spacing: var(--hero-title-letter-spacing);
   text-transform: uppercase;
-  cursor: pointer;
-  padding: 0;
-  box-shadow: 0 0 6px rgba(0, 255, 204, 0.4);
+  color: var(--hero-text-color);
+  text-shadow: 0 0 18px rgba(0, 0, 0, 0.8);
+  opacity: 0;
+  transform: translateY(-18px);
+  animation: hero_fade_down var(--hero-anim-duration) ease-out forwards;
+  animation-delay: var(--hero-delay-title);
+}
+
+/* Белая полоса под H1, той же ширины */
+
+.hero_title_underline {
+  height: 3px;
+  width: 100%;
+  background: #ffffff;
+  margin-top: 0.55rem;
+  opacity: 0;
+  transform: translateY(-14px);
+  animation: hero_fade_down var(--hero-anim-duration) ease-out forwards;
+  animation-delay: var(--hero-delay-underline);
+}
+
+/* Слоган под полосой: SemiBold */
+
+.hero_slogan {
+  margin: 0.8rem 0 0;
+  font-weight: 700; /* SemiBold */
+  font-size: clamp(1.1rem, 2.5vw, 1.7rem);
+  letter-spacing: 0.04em;
+  color: var(--hero-text-color);
+  text-shadow: 0 0 12px rgba(0, 0, 0, 0.7);
+  opacity: 0;
+  transform: translateY(-18px);
+  animation: hero_fade_down var(--hero-anim-duration) ease-out forwards;
+  animation-delay: var(--hero-delay-slogan);
+}
+
+/* Девиз + кнопка в едином столбике */
+
+.hero_tagline_block {
+  display: inline-block;
+  margin-top: 1.3rem;
+  text-align: left; /* чтобы строки девиза выровнять по левому краю */
+}
+
+/* Девиз (несколько строк): Medium 500 */
+
+.hero_tagline {
+  margin: 0;
+  font-weight: 500; /* Medium */
+  font-size: clamp(0.98rem, 2.1vw, 1.3rem);
+  line-height: 1.45;
+  color: var(--hero-text-color);
+  text-shadow: 0 0 10px rgba(0, 0, 0, 0.7);
+  opacity: 0;
+  transform: translateY(-18px);
+  animation: hero_fade_down var(--hero-anim-duration) ease-out forwards;
+  animation-delay: var(--hero-delay-tagline);
+}
+
+/* Каждую строку девиза рисуем отдельным блоком */
+
+.hero_tagline_line {
+  display: block;
+}
+
+/* Кнопка по ширине блока девиза */
+
+.hero_cta {
+  display: block;
+  width: 100%;
+  margin-top: 1.1rem;
+  padding: 0.9rem 1.5rem;
+  border-radius: 8px;
+  background: #08a200;
+  color: #ffffff;
+  text-align: center;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 1rem;
+  letter-spacing: 0.04em;
+  text-transform: none;
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.6);
+  opacity: 0;
+  transform: translateY(-18px);
+  animation: hero_fade_down var(--hero-anim-duration) ease-out forwards;
+  animation-delay: var(--hero-delay-cta);
   transition:
     transform 0.16s ease-out,
     box-shadow 0.16s ease-out,
-    background-color 0.16s ease-out,
-    border-color 0.16s ease-out;
+    background-color 0.16s ease-out;
 }
 
-.hero_lang_btn-label {
-  transform: translateY(-0.5px);
+.hero_cta:hover,
+.hero_cta:focus-visible {
+  background: #0bbf00;
+  transform: translateY(-2px);
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.7);
 }
 
-.hero_lang_btn:hover {
-  background: rgba(15, 60, 110, 0.95);
-  box-shadow: 0 0 10px rgba(0, 255, 204, 0.7);
+.hero_cta:active {
+  transform: translateY(1px) scale(0.98);
+  box-shadow: 0 7px 18px rgba(0, 0, 0, 0.6);
 }
 
-.hero_lang_btn--active {
-  background: #1ce073;
-  border-color: #1ce073;
-  color: #021018;
-  box-shadow: 0 0 12px rgba(28, 224, 115, 0.9);
-}
+/* Общая анимация «выезд сверху-вниз» */
 
-/* Пульс для волны */
-.hero_lang_btn--pulse {
-  transform: scale(1.18);
-  box-shadow: 0 0 14px rgba(255, 255, 255, 0.9);
-}
-
-/* Вопросительный знак после волны */
-.hero_lang_hint {
-  margin-left: 0.1rem;
-  font-family: "RobotoCondensed", system-ui, -apple-system, BlinkMacSystemFont,
-    "Segoe UI", sans-serif;              /* тот же шрифт, что и у заголовка */
-  font-size: clamp(2.6rem, 6vw, 4.5rem); /* тот же размер, что у BOTCRYPTOSIGNAL */
-  line-height: 1;
-  color: #ffffff;
-  opacity: 1;
-  transform: translateX(var(--hero-lang-hint-offset-x));
-  transition: opacity 0.25s ease-out, transform 0.25s ease-out;
-}
-
-.hero_lang_hint--hidden {
-  opacity: 0;
-}
-
-@keyframes hero_tagline_fade_opacity {
+@keyframes hero_fade_down {
   from {
     opacity: 0;
-    /* transform не трогаем, он уже содержит translateY(var(--hero-tagline-offset-y)) */
+    transform: translateY(-18px);
   }
   to {
     opacity: 1;
+    transform: translateY(0);
   }
 }
 
-/* Адаптив: на очень узких экранах чуть подтягиваем позицию и читаемость */
+/* ---------- Адаптив ---------- */
+
 @media (max-width: 768px) {
-  .ticker_home_frame {
-    left: 12%;
-    bottom: 21%;
-    width: 50%;
-    border-radius: 3px;
+  .ticker_home_mask {
+    padding: 0.35rem 0.6rem;
   }
 
-  .ticker_home_row {
-    font-size: clamp(8px, 2vw, 11px);
+  .ticker_home_item {
+    margin-right: 1.8rem;
   }
 
-  /* Герой на мобильных: BOT / CRYPTO / SIGNAL столбиком */
-  .hero_home_inner {
-    max-width: 88%;
-    margin-top: -2vh;
+  .home_main {
+    padding: 2rem 1rem 2.6rem;
   }
 
-  .hero_home_title {
-    font-size: clamp(2.2rem, 10vw, 3rem);
-    letter-spacing: 0.16em;
+  .hero_title_block h1 {
+    font-size: clamp(2.4rem, 8.5vw, 3.2rem);
+    letter-spacing: 0.12em;
   }
 
-  .hero_home_title-word {
-    display: block;           /* каждая на своей строке: BOT / CRYPTO / SIGNAL */
-    margin: 0.05em 0;
+  .hero_slogan {
+    text-align: center;
   }
 
-  .hero_home_tagline {
-    margin-top: 1.1rem;
-    font-size: clamp(0.95rem, 3.4vw, 1.15rem);
+  .hero_tagline_block {
+    text-align: left;
+    max-width: 100%;
   }
 
-  .hero_home_cta {
-    margin-top: 1.4rem;
-    width: 100%;
-    max-width: 260px;
+  .hero_cta {
+    margin-top: 1.3rem;
   }
 }
-
-
-/* =========================================
-   HERO: стадии A (интро) и B (после выбора языка)
-   ========================================= */
-
-/* Стадия A: подложка с девизом и кнопка полностью скрыты */
-.hero_home.hero_home--stageA .hero_home_tagline_group {
-  display: none;
-}
-
-/* Стадия B: показываем подложку с девизом и кнопку как единый блок */
-.hero_home.hero_home--stageB .hero_home_tagline_group {
-  display: inline-block;
-}
-

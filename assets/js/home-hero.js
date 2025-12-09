@@ -48,6 +48,16 @@
     return Array.from(document.querySelectorAll(sel));
   }
 
+  function isMobileViewport() {
+    // Простая проверка ширины вьюпорта; при желании позже можно заменить.
+    return (
+      typeof window !== "undefined" &&
+      window.matchMedia &&
+      window.matchMedia("(max-width: 768px)").matches
+    );
+  }
+
+  
   // -----------------------------
   //  ТЕКСТЫ ГЕРОЯ ЧЕРЕЗ I18N
   // -----------------------------
@@ -258,6 +268,101 @@
     applyHeroTexts();
     updateLangButtons(I18N.lang);
 
+    // --- Мобильное модальное окно выбора языка ---
+    // Предположение: в index.template.html уже есть:
+    //   • кнопка / ссылка с id="r_lang-toggle"
+    //   • модалка с id="r_lang-modal"
+    //   • внутри неё overlay с классом "r_lang-overlay"
+    //   • кнопка закрытия с id="r_lang-close"
+    var langToggle = document.getElementById("r_lang-toggle");
+    var langModal = document.getElementById("r_lang-modal");
+    var langCloseBtn =
+      langModal && langModal.querySelector("#r_lang-close");
+    var langOverlay =
+      langModal && langModal.querySelector(".r_lang-overlay");
+
+    function openLangModal() {
+      if (!langModal) return;
+      langModal.classList.add("r_lang-modal--open");
+      langModal.setAttribute("aria-hidden", "false");
+      document.body.classList.add("r_lang-modal-open");
+    }
+
+    function closeLangModal(withDefaultIfUnset) {
+      if (!langModal) return;
+      langModal.classList.remove("r_lang-modal--open");
+      langModal.setAttribute("aria-hidden", "true");
+      document.body.classList.remove("r_lang-modal-open");
+
+      if (withDefaultIfUnset) {
+        // ФАКТ: i18n.js уже использует localStorage ключ "okx_lang"
+        var hasSavedLang = false;
+        try {
+          hasSavedLang = !!window.localStorage.getItem("okx_lang");
+        } catch (e) {
+          hasSavedLang = false; // в приватном режиме localStorage может быть недоступен
+        }
+
+        // Если языка ещё нет в "логах" — ставим EN по умолчанию
+        if (
+          !hasSavedLang &&
+          window.I18N &&
+          typeof I18N.setLang === "function"
+        ) {
+          I18N.setLang("en");
+        }
+      }
+    }
+
+    // Открытие модалки по клику на "Language"
+    if (langToggle && langModal) {
+      langToggle.addEventListener("click", function () {
+        openLangModal();
+      });
+    }
+
+    // Закрытие крестиком
+    if (langCloseBtn) {
+      langCloseBtn.addEventListener("click", function () {
+        closeLangModal(true); // true => если язык не выбран, примем EN
+      });
+    }
+
+    // Закрытие кликом по затемнению
+    if (langOverlay) {
+      langOverlay.addEventListener("click", function (ev) {
+        if (ev.target === langOverlay) {
+          closeLangModal(true);
+        }
+      });
+    }
+
+    // Закрытие по Esc
+    window.addEventListener("keydown", function (ev) {
+      if (
+        ev.key === "Escape" &&
+        langModal &&
+        langModal.classList.contains("r_lang-modal--open")
+      ) {
+        closeLangModal(true);
+      }
+    });
+
+    // --- Авто-показ модалки на первом визите в мобильной вёрстке ---
+    (function () {
+      var hasSavedLang = false;
+      try {
+        hasSavedLang = !!window.localStorage.getItem("okx_lang");
+      } catch (e) {
+        hasSavedLang = false;
+      }
+
+      // Предположение: "первый визит" = нет okx_lang в localStorage
+      if (!hasSavedLang && isMobileViewport() && langModal) {
+        openLangModal();
+      }
+    })();
+
     // Реакция на смену языка из любого места (включая другие части сайта)
     window.addEventListener("i18n:change", function (ev) {
       const lang = ev.detail && ev.detail.lang;
@@ -265,9 +370,10 @@
       if (lang) updateLangButtons(lang);
     });
 
-    // Запускаем одноразовую волну по интро-ряду
+    // Запускаем одноразовую волну по интро-ряду (актуально для десктопа)
     runLangWaveOnce();
   }
+
 
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", initHeroI18N);

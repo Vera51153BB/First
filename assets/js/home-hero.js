@@ -77,6 +77,14 @@
       }
     }
 
+    const h2Mob = document.getElementById("hero_home_tagline_h2_mob");
+    if (h2Mob) {
+      const s = I18N.t("landing.slogan");
+      if (s && s.indexOf("landing.slogan") !== 0) {
+        h2Mob.textContent = s;
+      }
+    }
+    
     if (taglineEls.length) {
       const keys = ["line1", "line2", "line3", "line4", "line5", "line6"];
       const lines = keys

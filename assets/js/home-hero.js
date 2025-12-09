@@ -65,9 +65,10 @@
   function applyHeroTexts() {
     if (!window.I18N) return;
 
-    const taglineEl = $(".hero_home_tagline");
-    const ctaEl = $(".hero_home_cta");
-      // Новый короткий лозунг для <h2> под заголовком
+    const taglineEls = $all(".hero_home_tagline");
+    const ctaEls = $all(".hero_home_cta");
+
+    // Новый короткий лозунг для <h2> под заголовком
     const h2El = document.getElementById("hero_home_tagline_h2");
     if (h2El) {
       const s = I18N.t("landing.slogan");
@@ -76,7 +77,7 @@
       }
     }
 
-    if (taglineEl) {
+    if (taglineEls.length) {
       const keys = ["line1", "line2", "line3", "line4", "line5", "line6"];
       const lines = keys
         .map(function (k) {
@@ -88,29 +89,27 @@
         })
         .filter(Boolean);
 
-      taglineEl.innerHTML = lines
+      const html = lines
         .map(function (line) {
           return '<span class="hero_home_tagline-line">' + line + "</span>";
         })
         .join("<br />");
+
+      taglineEls.forEach(function (el) {
+        el.innerHTML = html;
+      });
     }
 
-    if (ctaEl) {
+    if (ctaEls.length) {
       const cta = I18N.t("landing.hero.cta");
       if (cta && cta.indexOf("landing.hero.") !== 0) {
-        ctaEl.textContent = cta;
+        ctaEls.forEach(function (el) {
+          el.textContent = cta;
+        });
       }
     }
   }
 
-  function updateLangButtons(active) {
-    $all(".hero_lang_btn").forEach(function (btn) {
-      btn.classList.toggle(
-        "hero_lang_btn--active",
-        btn.dataset.lang === active
-      );
-    });
-  }
 
   // -----------------------------
   //  ПЕРЕКЛЮЧЕНИЕ СТАДИИ A → B

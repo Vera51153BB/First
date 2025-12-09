@@ -48,16 +48,6 @@
     return Array.from(document.querySelectorAll(sel));
   }
 
-  function isMobileViewport() {
-    // Простая проверка ширины вьюпорта; при желании позже можно заменить.
-    return (
-      typeof window !== "undefined" &&
-      window.matchMedia &&
-      window.matchMedia("(max-width: 768px)").matches
-    );
-  }
-
-  
   // -----------------------------
   //  ТЕКСТЫ ГЕРОЯ ЧЕРЕЗ I18N
   // -----------------------------
@@ -65,10 +55,9 @@
   function applyHeroTexts() {
     if (!window.I18N) return;
 
-    const taglineEls = $all(".hero_home_tagline");
-    const ctaEls = $all(".hero_home_cta");
-
-    // Новый короткий лозунг для <h2> под заголовком
+    const taglineEl = $(".hero_home_tagline");
+    const ctaEl = $(".hero_home_cta");
+      // Новый короткий лозунг для <h2> под заголовком
     const h2El = document.getElementById("hero_home_tagline_h2");
     if (h2El) {
       const s = I18N.t("landing.slogan");
@@ -77,15 +66,7 @@
       }
     }
 
-    const h2Mob = document.getElementById("hero_home_tagline_h2_mob");
-    if (h2Mob) {
-      const s = I18N.t("landing.slogan");
-      if (s && s.indexOf("landing.slogan") !== 0) {
-        h2Mob.textContent = s;
-      }
-    }
-    
-    if (taglineEls.length) {
+    if (taglineEl) {
       const keys = ["line1", "line2", "line3", "line4", "line5", "line6"];
       const lines = keys
         .map(function (k) {
@@ -97,27 +78,29 @@
         })
         .filter(Boolean);
 
-      const html = lines
+      taglineEl.innerHTML = lines
         .map(function (line) {
           return '<span class="hero_home_tagline-line">' + line + "</span>";
         })
         .join("<br />");
-
-      taglineEls.forEach(function (el) {
-        el.innerHTML = html;
-      });
     }
 
-    if (ctaEls.length) {
+    if (ctaEl) {
       const cta = I18N.t("landing.hero.cta");
       if (cta && cta.indexOf("landing.hero.") !== 0) {
-        ctaEls.forEach(function (el) {
-          el.textContent = cta;
-        });
+        ctaEl.textContent = cta;
       }
     }
   }
 
+  function updateLangButtons(active) {
+    $all(".hero_lang_btn").forEach(function (btn) {
+      btn.classList.toggle(
+        "hero_lang_btn--active",
+        btn.dataset.lang === active
+      );
+    });
+  }
 
   // -----------------------------
   //  ПЕРЕКЛЮЧЕНИЕ СТАДИИ A → B
@@ -275,101 +258,6 @@
     applyHeroTexts();
     updateLangButtons(I18N.lang);
 
-    // --- Мобильное модальное окно выбора языка ---
-    // Предположение: в index.template.html уже есть:
-    //   • кнопка / ссылка с id="r_lang-toggle"
-    //   • модалка с id="r_lang-modal"
-    //   • внутри неё overlay с классом "r_lang-overlay"
-    //   • кнопка закрытия с id="r_lang-close"
-    var langToggle = document.getElementById("r_lang-toggle");
-    var langModal = document.getElementById("r_lang-modal");
-    var langCloseBtn =
-      langModal && langModal.querySelector("#r_lang-close");
-    var langOverlay =
-      langModal && langModal.querySelector(".r_lang-overlay");
-
-    function openLangModal() {
-      if (!langModal) return;
-      langModal.classList.add("r_lang-modal--open");
-      langModal.setAttribute("aria-hidden", "false");
-      document.body.classList.add("r_lang-modal-open");
-    }
-
-    function closeLangModal(withDefaultIfUnset) {
-      if (!langModal) return;
-      langModal.classList.remove("r_lang-modal--open");
-      langModal.setAttribute("aria-hidden", "true");
-      document.body.classList.remove("r_lang-modal-open");
-
-      if (withDefaultIfUnset) {
-        // ФАКТ: i18n.js уже использует localStorage ключ "okx_lang"
-        var hasSavedLang = false;
-        try {
-          hasSavedLang = !!window.localStorage.getItem("okx_lang");
-        } catch (e) {
-          hasSavedLang = false; // в приватном режиме localStorage может быть недоступен
-        }
-
-        // Если языка ещё нет в "логах" — ставим EN по умолчанию
-        if (
-          !hasSavedLang &&
-          window.I18N &&
-          typeof I18N.setLang === "function"
-        ) {
-          I18N.setLang("en");
-        }
-      }
-    }
-
-    // Открытие модалки по клику на "Language"
-    if (langToggle && langModal) {
-      langToggle.addEventListener("click", function () {
-        openLangModal();
-      });
-    }
-
-    // Закрытие крестиком
-    if (langCloseBtn) {
-      langCloseBtn.addEventListener("click", function () {
-        closeLangModal(true); // true => если язык не выбран, примем EN
-      });
-    }
-
-    // Закрытие кликом по затемнению
-    if (langOverlay) {
-      langOverlay.addEventListener("click", function (ev) {
-        if (ev.target === langOverlay) {
-          closeLangModal(true);
-        }
-      });
-    }
-
-    // Закрытие по Esc
-    window.addEventListener("keydown", function (ev) {
-      if (
-        ev.key === "Escape" &&
-        langModal &&
-        langModal.classList.contains("r_lang-modal--open")
-      ) {
-        closeLangModal(true);
-      }
-    });
-
-    // --- Авто-показ модалки на первом визите в мобильной вёрстке ---
-    (function () {
-      var hasSavedLang = false;
-      try {
-        hasSavedLang = !!window.localStorage.getItem("okx_lang");
-      } catch (e) {
-        hasSavedLang = false;
-      }
-
-      // Предположение: "первый визит" = нет okx_lang в localStorage
-      if (!hasSavedLang && isMobileViewport() && langModal) {
-        openLangModal();
-      }
-    })();
-
     // Реакция на смену языка из любого места (включая другие части сайта)
     window.addEventListener("i18n:change", function (ev) {
       const lang = ev.detail && ev.detail.lang;
@@ -377,10 +265,9 @@
       if (lang) updateLangButtons(lang);
     });
 
-    // Запускаем одноразовую волну по интро-ряду (актуально для десктопа)
+    // Запускаем одноразовую волну по интро-ряду
     runLangWaveOnce();
   }
-
 
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", initHeroI18N);

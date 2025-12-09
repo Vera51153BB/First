@@ -61,123 +61,56 @@
   <link rel="stylesheet" href="/assets/css/index.css" />
 </head>
 <body>
-  <!-- Главная сцена с изображением и наложенным тикером (_home_) -->
-  <div class="scene_home_container">
-
-    <!-- Герой: заголовок, языки, девиз и кнопка поверх сцены (_home_) -->
-    <section class="hero_home hero_home--stageA" aria-labelledby="hero_home_title">
-      <div class="hero_home_inner">
-
-        <div class="hero_home_head">
-          <h1 class="hero_home_title" id="hero_home_title">
-            <span class="hero_home_title-word">BOTCRYPTOSIGNAL</span>
-          </h1>
-          <div class="hero_home_divider" aria-hidden="true"></div>
-          <h2 class="hero_home_slogan" id="hero_home_tagline_h2" aria-label="Project slogan"></h2>
-        </div>
-
-        <!-- Ряд языков для первого экрана (интро) — теперь ПОД заголовком -->
-        <div class="hero_lang_row hero_lang_row--intro">
-          <div
-            class="hero_lang_switcher"
-            data-variant="intro"
-            aria-label="Choose language for the hero section"
-          >
-            <!-- Кружки языков создаются через JS -->
-          </div>
-          <!-- Текстовый вопросительный знак, появляющийся после волны -->
-          <span class="hero_lang_hint hero_lang_hint--hidden">?</span>
-        </div>
-
-        <!-- Компактный ряд языков, который показывается после выбора языка -->
-        <div class="hero_lang_row hero_lang_row--compact" aria-hidden="true">
-          <div
-            class="hero_lang_switcher"
-            data-variant="compact"
-          >
-            <!-- Те же языковые кружки, но компактнее и слева над заголовком -->
+    <div class="page_home" data-page="home">
+    <!-- Верхняя бегущая строка с индексами -->
+    <header class="home_header">
+      <div class="ticker_home_frame">
+        <div class="ticker_home_mask">
+          <div class="ticker_home_row" id="ticker_home_row">
+            <!-- Фолбэк, если JS не подгрузился -->
+            <span class="ticker_home_item">
+              <span class="ticker_home_symbol">BTC·USDT</span>
+              <span class="ticker_home_price">– – –</span>
+              <span class="ticker_home_change ticker_home_change--up">+0.0%</span>
+            </span>
+            <span class="ticker_home_item">
+              <span class="ticker_home_symbol">ETH·USDT</span>
+              <span class="ticker_home_price">– – –</span>
+              <span class="ticker_home_change ticker_home_change--down">-0.0%</span>
+            </span>
           </div>
         </div>
+      </div>
+    </header>
 
-        <!-- Девиз + локальный SVG-червячок вокруг синей подложки -->
-        <div class="hero_home_tagline_group">
-          <div class="hero_home_tagline_wrap">
-            <p class="hero_home_tagline">
-              <!-- заполняется через home-hero.js -->
-            </p>
-
-            <!-- SVG-червячок, который всегда подстраивается под размер подложки -->
-            <svg
-              class="hero_home_worm-svg"
-              viewBox="0 0 100 100"
-              preserveAspectRatio="none"
-              aria-hidden="true"
-            >
-              <defs>
-                <!-- Неоновый градиент: зелёный → красный → оранжевый -->
-                <linearGradient id="heroTaglineWormGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-                  <stop offset="0%"   stop-color="#39FF14" />
-                  <stop offset="60%"  stop-color="#FF073A" />
-                  <stop offset="100%" stop-color="#ffcc33" />
-                </linearGradient>
-
-                <!-- Свечение вокруг червя -->
-                <filter id="heroTaglineWormGlow" x="-40%" y="-40%" width="180%" height="180%">
-                  <feGaussianBlur in="SourceGraphic" stdDeviation="0.5" result="blur" />
-                  <feColorMatrix in="blur" type="matrix"
-                    values="1 0 0 0 0
-                            0 1 0 0 0
-                            0 0 1 0 0
-                            0 0 0 1 0" />
-                </filter>
-              </defs>
-
-              <!-- ВАЖНО: pathLength="100" → весь периметр = 100 условных единиц -->
-              <rect
-                class="hero_home_worm-path"
-                x="0" y="0"
-                width="100" height="100"
-                rx="21" ry="21"
-                pathLength="100"
-              />
-            </svg>
+    <main class="home_main" aria-labelledby="hero_title">
+      <section class="hero_main">
+        <div class="hero_main_inner">
+          <!-- ВАЖНО: чистый H1 без классов и вложенных span -->
+          <div class="hero_title_block">
+            <h1 id="hero_title">BOTCRYPTOSIGNAL</h1>
+            <div class="hero_title_underline" aria-hidden="true"></div>
           </div>
 
-          <!-- Кнопка "Подключить бота" (текст меняем по языку в JS) -->
-          <div id="hero_home_cta_push">
+          <!-- Мультиязычный слоган (landing.slogan из i18n.js) -->
+          <h2 class="hero_slogan" id="hero_slogan"></h2>
+
+          <!-- Мультиязычный девиз (landing.hero.line1..line6) + кнопка -->
+          <div class="hero_tagline_block">
+            <p class="hero_tagline" id="hero_tagline"></p>
             <a
-              class="hero_home_cta"
+              class="hero_cta"
+              id="hero_cta"
               href="https://t.me/bcs_okx_signals_bot"
               target="_blank"
               rel="noopener noreferrer"
             >
-              Подключить бота
+              Connect the bot
             </a>
           </div>
         </div>
-      </div>
-    </section>
-
-    <!-- Окно бегущей строки с котировками -->
-    <div class="ticker_home_frame">
-      <div class="ticker_home_mask">
-        <!-- Содержимое заполняется/обновляется через JS -->
-        <div class="ticker_home_row" id="ticker_home_row">
-          <!-- Фолбэк-контент на случай, если JS не подгрузился -->
-          <span class="ticker_home_item">
-            <span class="ticker_home_symbol">BTC·USDT</span>
-            <span class="ticker_home_price">– – –</span>
-            <span class="ticker_home_change ticker_home_change--up">+0.0%</span>
-          </span>
-          <span class="ticker_home_item">
-            <span class="ticker_home_symbol">ETH·USDT</span>
-            <span class="ticker_home_price">– – –</span>
-            <span class="ticker_home_change ticker_home_change--down">-0.0%</span>
-          </span>
-        </div>
-      </div>
-    </div>
-
+      </section>
+    </main>
   </div>
 
       <!-- I18N + скрипты главной (_home_) -->

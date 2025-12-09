@@ -902,6 +902,9 @@ body.r_lang-modal-open {
   .scene_home_bg--day,
   .scene_home_bg--night,
   .scene_home_overlay_home,
+  .scene_home_bg scene_home_bg--day,
+  .scene_home_bg scene_home_bg--night,
+  .scene_home_overlay_home
     display: none;
   }
 

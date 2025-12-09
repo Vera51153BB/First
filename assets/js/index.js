@@ -17,7 +17,11 @@ const TICKER_HOME_CONFIG = {
     { id: "litecoin", label: "LTC·USDT" },
     { id: "starcoin", label: "STRC·USDT" },
     { id: "shiba-inu", label: "SHIB·USDT" },
-    { id: "okb", label: "OKB·USDT" }
+    { id: "okb", label: "OKB·USDT" },
+    { id: "vechain", label: "VeChain·USDT" }
+    { id: "pump-fun", label: "PUMP·USDT" }
+    { id: "og-fan-token", label: "OG·USDT" }
+    
   ],
 
   // Параметры обновления

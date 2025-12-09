@@ -74,7 +74,7 @@
   --hero-lang-offset-x: 0;
 
     /* Отдельный сдвиг для знака вопроса по X */
-  --hero-lang-hint-offset-x: -10.1rem;
+  --hero-lang-hint-offset-x: 0.1rem;
 
     /* Вертикальный сдвиг девиза относительно заголовка (ночной экран) */
   --hero-tagline-offset-y: -90px; /* было -18px, -32 подтянет ближе к заголовку */
@@ -378,7 +378,7 @@ body {
 .hero_lang_btn {
   width: 2.1rem;
   height: 2.1rem;
-  border-radius: 999px;
+  border-radius: 8px;
   border: 1px solid rgba(200, 230, 255, 0.7);
   background: rgba(5, 16, 23, 0.88);
   color: #eaf5ff;
@@ -488,10 +488,10 @@ body {
   position: absolute;
 
   /* Координаты, максимально приближенные к оранжевому прямоугольнику */
-  left: 14.4%;      /* вправо/влево */
-  bottom: 37.5%;    /* вверх/вниз */
-  width: 16.6%;     /* длина вдоль моста */
-  height: 11%;    /* при необходимости можно подкорректировать */
+  left: 3%;      /* вправо/влево */
+  bottom: 89.5%;    /* вверх/вниз */
+  width: 97%;     /* длина вдоль моста */
+  height: 0%;    /* при необходимости можно подкорректировать */
 
   display: flex;
   align-items: stretch;

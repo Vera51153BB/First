@@ -223,8 +223,10 @@ body {
 
 .hero_tagline_block {
   display: inline-block;
-  margin-top: 1.3rem;
-  text-align: left; /* чтобы строки девиза выровнять по левому краю */
+  /* небольшой отступ сверху от h2 */
+  margin-top: 0.7rem;
+  /* всё центрировано по центру */
+  text-align: center;
 }
 
 /* Девиз (несколько строк): Medium 500 */
@@ -233,9 +235,12 @@ body {
   margin: 0;
   font-weight: 500; /* Medium */
   font-size: clamp(0.98rem, 2.1vw, 1.3rem);
-  line-height: 1.45;
+  /* уменьшаем межстрочное расстояние */
+  line-height: 1.3;
   color: var(--hero-text-color);
   text-shadow: 0 0 10px rgba(0, 0, 0, 0.7);
+  /* центрируем текст девиза */
+  text-align: center;
   opacity: 0;
   transform: translateY(-18px);
   animation: hero_fade_down var(--hero-anim-duration) ease-out forwards;

@@ -333,3 +333,101 @@ body {
     margin-top: 1.3rem;
   }
 }
+
+/* ---------- Верхнее меню HELP / MENU / LAUNGE ---------- */
+
+.home_topnav {
+  position: absolute;
+  top: 2.2rem; /* ниже бегущей строки */
+  right: 2.5rem;
+  z-index: 50;
+  font-family: "RobotoCondensed", system-ui, sans-serif;
+}
+
+.home_topnav_list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  gap: 1.8rem;
+}
+
+.home_topnav_link {
+  color: #ffffff;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 1rem;
+  letter-spacing: 0.05em;
+  opacity: 0.9;
+  transition: opacity 0.15s ease, color 0.15s ease;
+}
+
+.home_topnav_link:hover,
+.home_topnav_link:focus-visible {
+  opacity: 1;
+  color: #0bf6ff;
+}
+
+/* ---------- Выпадающий список языков ---------- */
+
+.home_topnav_lang {
+  position: relative;
+}
+
+.home_lang_dropdown {
+  position: absolute;
+  top: 110%;
+  right: 0;
+  display: none;
+  flex-direction: column;
+  background: rgba(10, 5, 60, 0.95);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 6px;
+  padding: 0.3rem 0;
+  min-width: 9rem;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.6);
+}
+
+.home_lang_dropdown li {
+  list-style: none;
+  margin: 0;
+}
+
+.home_lang_dropdown a {
+  display: block;
+  padding: 0.45rem 1rem;
+  color: #ffffff;
+  text-decoration: none;
+  font-size: 0.92rem;
+  opacity: 0.9;
+}
+
+.home_lang_dropdown a:hover {
+  background: rgba(255, 255, 255, 0.15);
+  opacity: 1;
+}
+
+/* При наведении на LAUNGE показываем список */
+.home_topnav_lang:hover .home_lang_dropdown {
+  display: flex;
+}
+
+/* На мобильных меню будет немного крупнее */
+@media (max-width: 768px) {
+  .home_topnav {
+    top: 1.8rem;
+    right: 1.2rem;
+  }
+
+  .home_topnav_list {
+    gap: 1.2rem;
+  }
+
+  .home_topnav_link {
+    font-size: 0.95rem;
+  }
+
+  .home_lang_dropdown {
+    right: -0.5rem;
+  }
+}

@@ -73,4 +73,17 @@
   } else {
     initHero();
   }
+    // Смена языка по клику в выпадающем списке LAUNGE
+  document.addEventListener("click", function (e) {
+    var link = e.target.closest(".home_lang_dropdown a[data-lang]");
+    if (!link) return;
+
+    e.preventDefault();
+    var lang = link.getAttribute("data-lang");
+    if (window.I18N && typeof I18N.setLang === "function") {
+      I18N.setLang(lang);
+      const event = new Event("i18n:change");
+      window.dispatchEvent(event);
+    }
+  });
 })();

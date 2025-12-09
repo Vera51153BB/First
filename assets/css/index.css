@@ -300,40 +300,6 @@ body {
   }
 }
 
-/* ---------- Адаптив ---------- */
-
-@media (max-width: 768px) {
-  .ticker_home_mask {
-    padding: 0.35rem 0.6rem;
-  }
-
-  .ticker_home_item {
-    margin-right: 1.8rem;
-  }
-
-  .home_main {
-    padding: 2rem 1rem 2.6rem;
-  }
-
-  .hero_title_block h1 {
-    font-size: clamp(2.4rem, 8.5vw, 3.2rem);
-    letter-spacing: 0.12em;
-  }
-
-  .hero_slogan {
-    text-align: center;
-  }
-
-  .hero_tagline_block {
-    text-align: left;
-    max-width: 100%;
-  }
-
-  .hero_cta {
-    margin-top: 1.3rem;
-  }
-}
-
 /* ---------- Верхнее меню HELP / MENU / LAUNGE ---------- */
 
 .home_topnav {
@@ -368,7 +334,53 @@ body {
   color: #0bf6ff;
 }
 
-/* ---------- Выпадающий список языков ---------- */
+/* ---------- Верхнее меню HELP / MENU / LAUNGE ---------- */
+
+.home_topnav {
+  position: absolute;
+  /* Ниже бегущей строки, в правом верхнем углу */
+  top: 2.4rem;
+  right: 2.5rem;
+  z-index: 50;
+  font-family: "RobotoCondensed", system-ui, -apple-system, BlinkMacSystemFont,
+    "Segoe UI", sans-serif;
+  font-weight: 200; /* RobotoCondensed-Light 200 */
+}
+
+.home_topnav_list {
+  display: flex;
+  align-items: center;
+  gap: 1.8rem;
+
+  margin: 0;
+  padding: 0;
+  list-style: none; /* Убираем точки у списка */
+}
+
+.home_topnav_item {
+  margin: 0;
+  padding: 0;
+}
+
+.home_topnav_link {
+  display: inline-block;
+  text-decoration: none;
+  color: #ffffff;
+  font-weight: 200; /* Light */
+  font-size: 0.98rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  opacity: 0.9;
+  transition: opacity 0.15s ease, color 0.15s ease;
+}
+
+.home_topnav_link:hover,
+.home_topnav_link:focus-visible {
+  opacity: 1;
+  color: #0bf6ff;
+}
+
+/* ---------- Выпадающий список языков (по умолчанию свёрнут) ---------- */
 
 .home_topnav_lang {
   position: relative;
@@ -376,21 +388,24 @@ body {
 
 .home_lang_dropdown {
   position: absolute;
-  top: 110%;
+  top: 120%;
   right: 0;
-  display: none;
+
+  display: none;            /* ИЗНАЧАЛЬНО СВЁРНУТА */
   flex-direction: column;
+
   background: rgba(10, 5, 60, 0.95);
   border: 1px solid rgba(255, 255, 255, 0.3);
   border-radius: 6px;
   padding: 0.3rem 0;
-  min-width: 9rem;
+  min-width: 9.5rem;
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.6);
 }
 
 .home_lang_dropdown li {
   list-style: none;
   margin: 0;
+  padding: 0;
 }
 
 .home_lang_dropdown a {
@@ -407,15 +422,46 @@ body {
   opacity: 1;
 }
 
-/* При наведении на LAUNGE показываем список */
+/* При наведении на LAUNGE раскрываем только CSS-ом */
 .home_topnav_lang:hover .home_lang_dropdown {
   display: flex;
 }
 
-/* На мобильных меню будет немного крупнее */
+/* ---------- Адаптив ---------- */
+
 @media (max-width: 768px) {
-  .home_topnav {
-    top: 1.8rem;
+  .ticker_home_mask {
+    padding: 0.35rem 0.6rem;
+  }
+
+  .ticker_home_item {
+    margin-right: 1.8rem;
+  }
+
+  .home_main {
+    padding: 2rem 1rem 2.6rem;
+  }
+
+  .hero_title_block h1 {
+    font-size: clamp(2.4rem, 8.5vw, 3.2rem);
+    letter-spacing: 0.12em;
+  }
+
+  .hero_slogan {
+    text-align: center;
+  }
+
+  .hero_tagline_block {
+    text-align: left;
+    max-width: 100%;
+  }
+
+  .hero_cta {
+    margin-top: 1.3rem;
+  }
+
+    .home_topnav {
+    top: 2.0rem;
     right: 1.2rem;
   }
 
@@ -424,10 +470,6 @@ body {
   }
 
   .home_topnav_link {
-    font-size: 0.95rem;
-  }
-
-  .home_lang_dropdown {
-    right: -0.5rem;
+    font-size: 0.9rem;
   }
 }

@@ -89,69 +89,6 @@
           <div class="hero_home_divider" aria-hidden="true"></div>
           <h2 class="hero_home_slogan" id="hero_home_tagline_h2" aria-label="Project slogan"></h2>
         </div>
-
-        <!-- ======== МОБИЛЬНЫЙ ГЕРОЙ (адаптивный режим) ======== -->
-        <div class="r_mobile-hero">
-          <!-- Верхняя бегущая строка (уже реализована в desktop, здесь просто обертка) -->
-          <div class="r_mobile-ticker-wrapper">
-            <div id="r_mobile-ticker">
-              <!-- наполняется JS index.js -->
-            </div>
-          </div>
-        
-          <!-- Верхняя панель навигации -->
-          <nav class="r_mobile-topbar">
-            <span class="r_nav-link" data-i18n="nav.help">help</span>
-            <span class="r_nav-link" data-i18n="nav.menu">menu</span>
-            <span class="r_nav-link" id="r_lang-toggle" data-i18n="nav.language">language</span>
-          </nav>
-        
-          <!-- Основной контент героя -->
-          <div class="r_mobile-hero-content">
-            <h1 class="hero_home_title">BOTCRYPTOSIGNAL</h1>
-            <div class="r_mobile-divider"></div>
-            <h2 class="hero_home_slogan" id="hero_home_tagline_h2">
-              <!-- подставляется через I18N.t('landing.slogan') -->
-            </h2>
-        
-            <!-- Девиз: 6 строк, каждая в отдельной белой рамке -->
-            <div class="r_mobile-taglines">
-              <p class="hero_home_tagline">
-                <!-- заполняется JS (I18N.t('landing.hero.line1'...)) -->
-              </p>
-            </div>
-        
-            <!-- Кнопка "Подключить бота" -->
-            <div class="r_mobile-cta-wrapper">
-              <a
-                class="hero_home_cta"
-                href="https://t.me/bcs_okx_signals_bot"
-                target="_blank"
-                rel="noopener noreferrer"
-                data-i18n="landing.cta"
-              >
-                Подключить бота
-              </a>
-            </div>
-          </div>
-        </div>
-        
-        <!-- ======== МОДАЛЬНОЕ ОКНО ВЫБОРА ЯЗЫКА ======== -->
-        <div id="r_lang-modal" class="r_lang-modal hidden">
-          <div class="r_lang-overlay"></div>
-          <div class="r_lang-content">
-            <div class="r_lang-header">
-              <span data-i18n="nav.choose_lang">Choose language</span>
-              <button id="r_lang-close" aria-label="close">&times;</button>
-            </div>
-            <div class="r_lang-grid">
-              <!-- сюда вставляются языковые кружочки (из существующих элементов) -->
-            </div>
-          </div>
-        </div>
-        <!-- ======== КОНЕЦ МОБИЛЬНОГО ГЕРОЯ ======== -->
-
-
         
         <!-- Ряд языков для первого экрана (интро) — теперь ПОД заголовком -->
         <div class="hero_lang_row hero_lang_row--intro">
@@ -263,6 +200,43 @@
       width="1344"
       height="768"
     />
+
+    <!-- ==============================
+         MOBILE HERO (вертикальная версия)
+         ============================== -->
+    <section class="r_mobile-hero" aria-labelledby="hero_home_title_mob">
+      <div class="r_mobile-ticker-wrapper">
+        <!-- Бегущая строка использует тот же JS и класс .ticker_home_frame -->
+        <div class="ticker_home_frame">
+          <div class="ticker_home_mask">
+            <div class="ticker_home_row" id="ticker_home_row_mob"></div>
+          </div>
+        </div>
+      </div>
+    
+      <!-- Верхний бар -->
+      <div class="r_mobile-topbar">
+        <span class="r_nav-link">Help</span>
+        <span class="r_nav-link">Menu</span>
+        <span class="r_nav-link" id="r_nav-lang">Language</span>
+      </div>
+    
+      <!-- Контент -->
+      <div class="r_mobile-hero-content">
+        <h1 class="hero_home_title" id="hero_home_title_mob">BOTCRYPTOSIGNAL</h1>
+        <div class="r_mobile-divider"></div>
+        <h2 class="hero_home_slogan" id="hero_home_tagline_h2_mob"></h2>
+    
+        <div class="r_mobile-taglines">
+          <p class="hero_home_tagline"></p>
+        </div>
+    
+        <div class="r_mobile-cta-wrapper">
+          <a class="hero_home_cta" href="https://t.me/bcs_okx_signals_bot" target="_blank" rel="noopener noreferrer"></a>
+        </div>
+      </div>
+    </section>
+    
   </div>
 
       <!-- I18N + скрипты главной (_home_) -->

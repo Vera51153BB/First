@@ -1,4 +1,10 @@
-  // Список монет с CoinGecko для отображения (можно менять)
+// Конфиг главного тикера (_home_)
+const TICKER_HOME_CONFIG = {
+  // Базовые размеры исходной картинки
+  //  imgWidth: 1344,
+  //  imgHeight: 768,
+
+// Список монет с CoinGecko для отображения (можно менять)
   symbols: [
     { id: "bitcoin", label: "BTC·USDT" },
     { id: "ethereum", label: "ETH·USDT" },

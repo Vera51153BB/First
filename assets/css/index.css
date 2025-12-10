@@ -238,7 +238,7 @@ body {
 /* Девиз (несколько строк): Medium 500 */
 
 .hero_tagline {
-  margin: 0;
+  margin: 30;
   font-weight: 500; /* Medium */
   font-size: clamp(0.98rem, 2.1vw, 1.3rem);  
   line-height: 0.8;    /* межстрочное расстояние */

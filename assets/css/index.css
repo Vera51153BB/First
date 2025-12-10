@@ -1,5 +1,13 @@
 @font-face {
   font-family: "RobotoCondensed";
+  src: url("/assets/fonts/RobotoCondensed-Thin.ttf") format("truetype");
+  font-weight: 100;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "RobotoCondensed";
   src: url("/assets/fonts/RobotoCondensed-Light.ttf") format("truetype");
   font-weight: 200;
   font-style: normal;
@@ -455,6 +463,9 @@ body {
     text-align: center;
   }
 
+  .hero_tagline {
+    font-weight: 100; /* Thin */
+  }
   .hero_tagline_block {
     text-align: left;
     max-width: 100%;

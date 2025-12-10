@@ -93,7 +93,7 @@ body {
 }
 
 .ticker_home_mask {
-  max-width: 1200px;
+  max-width: 100%;
   margin: 0 auto;
   padding: 0.4rem 0.9rem;
   overflow: hidden;

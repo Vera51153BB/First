@@ -86,11 +86,19 @@ body {
 }
 
 .ticker_home_frame {
-  width: 100%;
+  /* full-bleed: фон во всю ширину окна */
+  position: relative;
+  left: 50%;
+  right: 50%;
+  width: 100vw;
+  margin-left: -50vw;
+  margin-right: -50vw;
+
   background: var(--home-ticker-bg);
   border-bottom: 1px solid var(--home-ticker-border);
   box-shadow: 0 0 16px var(--home-ticker-glow);
 }
+
 
 .ticker_home_mask {
   max-width: 1200px;

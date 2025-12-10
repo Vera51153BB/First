@@ -454,13 +454,26 @@ body {
     padding: 4vh 1rem 2.6rem;   /* Чуть больше относительного отступа на высоких телефонах */
   }
 
+  .hero_title_block {
+    max-width: 100%;              /* не даём блоку быть шире экрана */
+  }
+
   .hero_title_block h1 {
-    font-size: clamp(2.4rem, 8.5vw, 3.2rem);
-    letter-spacing: 0.12em;
+    font-size: clamp(1.6rem, 6.5vw, 2.3rem);
+    /* 
+       • min 1.6rem — заметно меньше, чем было 2.4rem,
+         этого достаточно, чтобы BOTCRYPTOSIGNAL влезал по ширине.
+       • 6.5vw — даёт плавное изменение на планшетах.
+    */
+    letter-spacing: 0.06em;       /* уменьшаем межбуквенное расстояние */
+    overflow-wrap: break-word;    /* страховка на сверхузких экранах */
+    word-wrap: break-word;        /* старое имя свойства для совместимости */
   }
 
   .hero_slogan {
+    font-size: clamp(0.9rem, 3.3vw, 1.2rem);  /* чуть меньше на мобиле */
     text-align: center;
+    padding: 0 0.4rem;                        /* небольшой «воздух» от краёв */
   }
 
   .hero_tagline {

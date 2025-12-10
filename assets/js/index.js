@@ -1,8 +1,12 @@
 // Конфиг главного тикера (_home_)
 const TICKER_HOME_CONFIG = {
-  // Базовые размеры исходной картинки
-  imgWidth: 1344,
-  imgHeight: 768,
+  // Масштабирование под ширину окна
+  get width() {
+    return window.innerWidth || document.documentElement.clientWidth;
+  },
+  get height() {
+    return Math.max(120, Math.min(window.innerHeight * 0.1, 180)); // гибкая высота
+  },
 
   // Список монет с CoinGecko для отображения (можно менять)
   symbols: [

@@ -151,15 +151,9 @@ body {
 .home_main {
   flex: 1 1 auto;
   display: flex;
-
-  /* Было align-items:center; justify-content:center; — из-за этого заголовок "проваливался" ниже. */
-  align-items: flex-start;
+  align-items: center;
   justify-content: center;
-
-  /* Ключевое: отступ сверху = safe-area + высота тикера + высота меню + небольшой зазор */
-  padding: calc(env(safe-area-inset-top) + var(--ticker-height) + var(--topnav-height) + 0.6rem)
-           1.5rem
-           3rem;
+  padding: 2.5rem 1.5rem 3rem;
 }
 
 .hero_main {
@@ -170,9 +164,6 @@ body {
   max-width: var(--hero-max-width);
   margin: 0 auto;
   text-align: center;
-
-  /* страховка от горизонтальной прокрутки */
-  overflow-wrap: anywhere;
 }
 
 /* Обёртка, ширина = ширине H1 + полосы */
@@ -241,33 +232,26 @@ body {
 .hero_tagline {
   margin: 0;
   font-weight: 500; /* Medium */
-  font-size: clamp(0.98rem, 2.1vw, 1.3rem);
-  line-height: 1.28;             /* было 0.8 — из-за этого строки наезжали */
+  font-size: clamp(0.98rem, 2.1vw, 1.3rem);  
+  line-height: 0.8;    /* межстрочное расстояние */
   color: var(--hero-text-color);
   text-shadow: 0 0 10px rgba(0, 0, 0, 0.7);
+  /* центрируем текст девиза */
   text-align: center;
   opacity: 0;
   transform: translateY(-18px);
   animation: hero_fade_down var(--hero-anim-duration) ease-out forwards;
   animation-delay: var(--hero-delay-tagline);
-
-  /* Улучшаем перенос/баланс строк на узких экранах */
-  text-wrap: balance;             /* поддерживается современными браузерами */
-  overflow-wrap: break-word;   /* переносим целые слова по возможности, anywhere; - фолбэк: разрешаем перенос в любом месте */
-  word-break: normal;
 }
 
 /* Каждую строку девиза рисуем отдельным блоком */
+
 .hero_tagline_line {
   display: block;
 }
 
-/* небольшой “межабзацный” отступ между строками девиза */
-.hero_tagline_line + .hero_tagline_line {
-  margin-top: 0.25rem;
-}
-
 /* Кнопка по ширине блока девиза */
+
 .hero_cta {
   display: block;
   width: 100%;
@@ -321,18 +305,48 @@ body {
 /* ---------- Верхнее меню HELP / MENU / LAUNGE ---------- */
 
 .home_topnav {
-  /* Было absolute — из-за адресной строки/скрытия UI браузера позиция "плывёт" */
-  position: fixed;
+  position: absolute;
+  top: 2.2rem; /* ниже бегущей строки */
+  right: 2.5rem;
+  z-index: 50;
+  font-family: "RobotoCondensed", system-ui, sans-serif;
+}
 
-  /* Живём у самого верха, но уважая safe-area */
-  top: calc(env(safe-area-inset-top) + 0.2rem);
+.home_topnav_list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  gap: 1.8rem;
+}
 
-  /* Справа на разных ширинах комфортный отступ */
-  right: clamp(0.8rem, 2.2vw, 1.8rem);
+.home_topnav_link {
+  color: #ffffff;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 1rem;
+  letter-spacing: 0.05em;
+  opacity: 0.9;
+  transition: opacity 0.15s ease, color 0.15s ease;
+}
 
-  z-index: 1000;
-  font-family: "RobotoCondensed", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  font-weight: 200;
+.home_topnav_link:hover,
+.home_topnav_link:focus-visible {
+  opacity: 1;
+  color: #0bf6ff;
+}
+
+/* ---------- Верхнее меню HELP / MENU / LAUNGE ---------- */
+
+.home_topnav {
+  position: absolute;
+  /* Ниже бегущей строки, в правом верхнем углу */
+  top: 2.4rem;
+  right: 2.5rem;
+  z-index: 50;
+  font-family: "RobotoCondensed", system-ui, -apple-system, BlinkMacSystemFont,
+    "Segoe UI", sans-serif;
+  font-weight: 200; /* RobotoCondensed-Light 200 */
 }
 
 .home_topnav_list {
@@ -429,30 +443,16 @@ body {
   }
 
   .home_main {
-    /* На мобилках — тот же расчёт, только компактнее низ */
-    padding: calc(env(safe-area-inset-top) + var(--ticker-height) + var(--topnav-height) + 0.4rem)
-             1rem
-             2.2rem;
+    padding: 2rem 1rem 2.6rem;
   }
 
   .hero_title_block h1 {
-    /* Чуть компактнее верхние границы, чтобы длинные слова не "выпирали" */
-    font-size: clamp(2.2rem, 7.6vw, 3.0rem);
-    letter-spacing: 0.10em;
-  }
-  
-  .hero_title_underline {
-    margin-top: 0.45rem;
+    font-size: clamp(2.4rem, 8.5vw, 3.2rem);
+    letter-spacing: 0.12em;
   }
 
   .hero_slogan {
-    font-size: clamp(1.0rem, 2.2vw, 1.4rem);
-    text-wrap: balance;
-    word-break: break-word;   /* безопаснее, чем anywhere для английского */
-  }
-
-    .hero_tagline {
-    line-height: 1.32;  /* чуть свободнее на маленьких экранах */
+    text-align: center;
   }
 
   .hero_tagline_block {
@@ -464,11 +464,10 @@ body {
     margin-top: 1.3rem;
   }
 
-  .home_topnav {
-    top: calc(env(safe-area-inset-top) + 0.1rem);
-    right: 0.8rem;
+    .home_topnav {
+    top: 2.0rem;
+    right: 1.2rem;
   }
-
 
   .home_topnav_list {
     gap: 1.2rem;

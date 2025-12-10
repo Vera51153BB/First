@@ -360,8 +360,10 @@ body {
 }
 
 .home_topnav_item {
+  position: relative;
   margin: 0;
   padding: 0;
+  top: 7px;
 }
 
 .home_topnav_link {

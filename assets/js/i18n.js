@@ -42,6 +42,40 @@ const DICTS = {
       },
       slogan: "signals of trend-reversing coins"
     },
+    news: {
+      show_more_btn: "Show more",
+      master_market_title: "Market Breadth",
+      master_calendar_title: "Calendar",
+      master_ticker_title: "Market ticker",
+    },
+    /* --- Заголовки market-card --- */
+    news_market_headlines: {
+      very_very_weak: ["Decline has turned broad-based"],
+      very_weak: [
+        "Most cryptocurrencies are falling",
+        "The crypto market is down across most assets",
+        "The decline is affecting almost the entire crypto market",
+      ],
+      weak: [
+        "The market looks weak: more coins are falling",
+        "Sellers dominate the crypto market",
+      ],
+      neutral: [
+        "No clear direction in the market",
+        "Gainers and losers are roughly balanced",
+        "The crypto market is in a balance phase",
+      ],
+      strong: [
+        "Most cryptocurrencies are rising",
+        "The rally covers a large part of the market",
+        "Buyers are active in the crypto market",
+      ],
+      very_strong: [
+        "Gains are becoming broad-based across the crypto market",
+        "Most cryptocurrencies are rising strongly",
+        "The market shows broad positive momentum",
+      ],
+    },
   },
 
   /* ============== HINDI ============== */
@@ -84,6 +118,40 @@ const DICTS = {
         cta:   "बॉट को कनेक्ट करें",
       },
       slogan: "ट्रेंड बदलने वाली कॉइनों के संकेत"
+    },
+    news: {
+      show_more_btn: "और दिखाएँ",
+      master_market_title: "बाज़ार की व्यापकता",
+      master_calendar_title: "कैलेंडर",
+      master_ticker_title: "मार्केट टिकर",
+    },
+    /* --- Заголовки market-card --- */
+    news_market_headlines: {
+      very_very_weak: ["गिरावट व्यापक हो गई है"],
+      very_weak: [
+        "अधिकांश क्रिप्टोकरेंसी अभी गिर रही हैं",
+        "क्रिप्टो बाजार अधिकांश एसेट्स में नीचे है",
+        "गिरावट लगभग पूरे क्रिप्टो बाजार को प्रभावित कर रही है",
+      ],
+      weak: [
+        "बाजार कमजोर दिख रहा है: गिरने वाले कॉइन ज्यादा हैं",
+        "क्रिप्टो बाजार में बिकवाली हावी है",
+      ],
+      neutral: [
+        "बाजार में कोई साफ़ दिशा नहीं है",
+        "बढ़त और गिरावट लगभग बराबर हैं",
+        "क्रिप्टो बाजार संतुलन चरण में है",
+      ],
+      strong: [
+        "अधिकांश क्रिप्टोकरेंसी बढ़ रही हैं",
+        "तेजी बाजार के बड़े हिस्से में फैली है",
+        "क्रिप्टो बाजार में खरीदार सक्रिय हैं",
+      ],
+      very_strong: [
+        "तेजी पूरे क्रिप्टो बाजार में व्यापक हो रही है",
+        "क्रिप्टोकरेंसी का बड़ा हिस्सा मजबूत बढ़त में है",
+        "बाजार व्यापक सकारात्मक गति दिखा रहा है",
+      ],
     },
   },
 
@@ -128,6 +196,40 @@ const DICTS = {
       },
       slogan: "сигналы монет меняющих тренд"
     },
+    news: {
+      show_more_btn: "Показать ещё",
+      master_market_title: "Ширина рынка",
+      master_calendar_title: "Календарь",
+      master_ticker_title: "Рыночное табло",
+    },
+    /* --- Заголовки market-card --- */
+    news_market_headlines: {
+      very_very_weak: ["Падение стало массовым"],
+      very_weak: [
+        "Большинство криптовалют сейчас снижается",
+        "Крипторынок падает по большинству активов",
+        "Снижение затрагивает почти весь крипторынок",
+      ],
+      weak: [
+        "Рынок выглядит слабым: падающих монет больше",
+        "На крипторынке преобладают продажи активов",
+      ],
+      neutral: [
+        "Рынок без выраженного направления",
+        "Рост и падение распределены примерно поровну",
+        "Крипторынок находится в фазе баланса",
+      ],
+      strong: [
+        "Большинство криптовалют растёт",
+        "Рост охватывает значительную часть рынка",
+        "На крипторынке активны покупатели",
+      ],
+      very_strong: [
+        "Рост становится массовым по всему крипторынку",
+        "Большая часть криптовалют активно растёт",
+        "Рынок демонстрирует широкую позитивную динамику",
+      ],
+    },
   },
 
   /* ============== PORTUGUÊS ============== */
@@ -170,6 +272,40 @@ const DICTS = {
         cta:   "Conectar o bot",
       },
       slogan: "sinais de moedas que mudam de tendência"
+    },
+    news: {
+      show_more_btn: "Mostrar mais",
+      master_market_title: "Amplitude do mercado",
+      master_calendar_title: "Calendário",
+      master_ticker_title: "Ticker de mercado",
+    },
+        /* --- Заголовки market-card --- */
+    news_market_headlines: {
+      very_very_weak: ["A queda se tornou generalizada"],
+      very_weak: [
+        "A maioria das criptomoedas está caindo",
+        "O mercado cripto cai na maioria dos ativos",
+        "A queda atinge quase todo o mercado cripto",
+      ],
+      weak: [
+        "O mercado parece fraco: há mais moedas em queda",
+        "As vendas predominam no mercado cripto",
+      ],
+      neutral: [
+        "O mercado está sem direção clara",
+        "Altas e baixas estão quase equilibradas",
+        "O mercado cripto está em fase de equilíbrio",
+      ],
+      strong: [
+        "A maioria das criptomoedas está subindo",
+        "A alta abrange uma parte significativa do mercado",
+        "Os compradores estão ativos no mercado cripto",
+      ],
+      very_strong: [
+        "A alta se torna generalizada em todo o mercado cripto",
+        "Grande parte das criptomoedas sobe com força",
+        "O mercado mostra uma dinâmica positiva ampla",
+      ],
     },
   },
   
@@ -214,6 +350,40 @@ const DICTS = {
       },
       slogan: "señales de monedas que cambian de tendencia"
     },
+    news: {
+      show_more_btn: "Mostrar más",
+      master_market_title: "Amplitud del mercado",
+      master_calendar_title: "Calendario",
+      master_ticker_title: "Ticker del mercado",
+    },
+            /* --- Заголовки market-card --- */
+    news_market_headlines: {
+      "very_very_weak": ["La caída se ha vuelto generalizada"],
+      "very_weak": [
+          "La mayoría de las criptomonedas está bajando",
+          "El mercado cripto cae en la mayoría de los activos",
+          "La caída afecta a casi todo el mercado cripto",
+      ],
+      "weak": [
+          "El mercado se ve débil: hay más monedas a la baja",
+          "Predominan las ventas en el mercado cripto",
+      ],
+      "neutral": [
+          "El mercado no muestra una dirección clara",
+          "Las subidas y bajadas están casi equilibradas",
+          "El mercado cripto está en una fase de equilibrio",
+      ],
+      "strong": [
+          "La mayoría de las criptomonedas sube",
+          "El avance abarca una parte importante del mercado",
+          "Los compradores están activos en el mercado cripto",
+      ],
+      "very_strong": [
+          "Las subidas se vuelven generalizadas en todo el mercado cripto",
+          "Gran parte de las criptomonedas sube con fuerza",
+          "El mercado muestra una dinámica positiva amplia",
+      ],
+    },
   },
 
   /* ============== УКРАЇНСЬКА ============== */
@@ -256,6 +426,40 @@ const DICTS = {
         cta:   "Підключити бота",
       },
       slogan: "сигнали монет, що змінюють тренд"
+    },
+    news: {
+      show_more_btn: "Показати ще",
+      master_market_title: "Ширина ринку",
+      master_calendar_title: "Календар",
+      master_ticker_title: "Ринковий тікер",
+    },
+    /* --- Заголовки market-card --- */
+    news_market_headlines: {
+      "very_very_weak": ["Падіння стало масовим"],
+      "very_weak": [
+          "Більшість криптовалют зараз знижується",
+          "Крипторинок падає по більшості активів",
+          "Зниження зачіпає майже весь крипторинок",
+      ],
+      "weak": [
+          "Ринок виглядає слабким: монет, що падають, більше",
+          "На крипторинку переважають продажі",
+      ],
+      "neutral": [
+          "Ринок без вираженого напрямку",
+          "Зростання і падіння розподілені приблизно порівну",
+          "Крипторинок перебуває у фазі балансу",
+      ],
+      "strong": [
+          "Більшість криптовалют зростає",
+          "Зростання охоплює значну частину ринку",
+          "На крипторинку активні покупці",
+      ],
+      "very_strong": [
+          "Зростання стає масовим по всьому крипторинку",
+          "Більша частина криптовалют активно зростає",
+          "Ринок демонструє широку позитивну динаміку",
+      ],
     },
   },
 
@@ -300,6 +504,40 @@ const DICTS = {
       },
       slogan: "Signale zu Coins, die den Trend wenden"
     },
+    news: {
+      show_more_btn: "Mehr anzeigen",
+      master_market_title: "Marktbreite",
+      master_calendar_title: "Kalender",
+      master_ticker_title: "Markt-Ticker",
+    },
+    /* --- Заголовки market-card --- */
+    news_market_headlines: {
+      "very_very_weak": ["Der Rückgang ist breit angelegt"],
+      "very_weak": [
+          "Die meisten Kryptowährungen fallen",
+          "Der Kryptomarkt fällt bei den meisten Assets",
+          "Der Rückgang erfasst fast den gesamten Kryptomarkt",
+      ],
+      "weak": [
+          "Der Markt wirkt schwach: mehr Coins fallen",
+          "Am Kryptomarkt dominieren Verkäufe",
+      ],
+      "neutral": [
+          "Der Markt hat keine klare Richtung",
+          "Gewinner und Verlierer sind etwa ausgeglichen",
+          "Der Kryptomarkt befindet sich in einer Balancephase",
+      ],
+      "strong": [
+          "Die meisten Kryptowährungen steigen",
+          "Der Anstieg erfasst einen großen Teil des Marktes",
+          "Am Kryptomarkt sind Käufer aktiv",
+      ],
+      "very_strong": [
+          "Der Anstieg wird im gesamten Kryptomarkt breit angelegt",
+          "Ein Großteil der Kryptowährungen steigt deutlich",
+          "Der Markt zeigt eine breite positive Dynamik",
+      ],
+    },
   },
   
   /* ============== FRANÇAIS ============== */
@@ -342,6 +580,40 @@ const DICTS = {
         cta:   "Connecter le bot",
       },
       slogan: "signaux des cryptos qui inversent la tendance"
+    },
+    news: {
+      show_more_btn: "Afficher plus",
+      master_market_title: "Amplitude du marché",
+      master_calendar_title: "Calendrier",
+      master_ticker_title: "Ticker de marché",
+    },
+    /* --- Заголовки market-card --- */
+    news_market_headlines: {
+      "very_very_weak": ["La baisse devient généralisée"],
+      "very_weak": [
+          "La plupart des cryptomonnaies reculent",
+          "Le marché crypto baisse sur la majorité des actifs",
+          "La baisse touche presque tout le marché crypto",
+      ],
+      "weak": [
+          "Le marché paraît faible : plus de cryptos baissent",
+          "Les ventes dominent sur le marché crypto",
+      ],
+      "neutral": [
+          "Le marché n’a pas de direction nette",
+          "Hausse et baisse sont à peu près équilibrées",
+          "Le marché crypto est dans une phase d’équilibre",
+      ],
+      "strong": [
+          "La plupart des cryptomonnaies progressent",
+          "La hausse concerne une part importante du marché",
+          "Les acheteurs sont actifs sur le marché crypto",
+      ],
+      "very_strong": [
+          "La hausse devient généralisée sur l’ensemble du marché crypto",
+          "Une grande partie des cryptomonnaies progresse fortement",
+          "Le marché affiche une dynamique positive large",
+      ],
     },
   },
 
@@ -386,6 +658,40 @@ const DICTS = {
       },
       slogan: "segnali delle crypto che invertono il trend"
     },
+    news: {
+      show_more_btn: "Mostra altro",
+      master_market_title: "Ampiezza del mercato",
+      master_calendar_title: "Calendario",
+      master_ticker_title: "Ticker di mercato",
+    },
+    /* --- Заголовки market-card --- */
+    news_market_headlines: {
+      "very_very_weak": ["Il calo è diventato generalizzato"],
+      "very_weak": [
+          "La maggior parte delle criptovalute è in calo",
+          "Il mercato crypto scende sulla maggior parte degli asset",
+          "Il calo coinvolge quasi tutto il mercato crypto",
+      ],
+      "weak": [
+          "Il mercato appare debole: più monete scendono",
+          "Sul mercato crypto prevalgono le vendite",
+      ],
+      "neutral": [
+          "Il mercato non mostra una direzione chiara",
+          "Rialzi e ribassi sono più o meno bilanciati",
+          "Il mercato crypto è in una fase di equilibrio",
+      ],
+      "strong": [
+          "La maggior parte delle criptovalute sale",
+          "Il rialzo coinvolge una parte significativa del mercato",
+          "Sul mercato crypto gli acquirenti sono attivi",
+      ],
+      "very_strong": [
+          "Il rialzo diventa generalizzato in tutto il mercato crypto",
+          "Gran parte delle criptovalute cresce con forza",
+          "Il mercato mostra una dinamica positiva ampia",
+      ],
+    },
   },
 
   /* ============== 日本語 ============== */
@@ -428,6 +734,40 @@ const DICTS = {
         cta:   "ボットを接続する",
       },
       slogan: "トレンド転換するコインのシグナル"
+    },
+    news: {
+      show_more_btn: "もっと見る",
+      master_market_title: "市場の広がり",
+      master_calendar_title: "カレンダー",
+      master_ticker_title: "マーケット・ティッカー",
+    },
+    /* --- Заголовки market-card --- */
+    news_market_headlines: {
+      very_very_weak: ["下落が市場全体に広がっている"],
+      very_weak: [
+        "多くの暗号資産が下落している",
+        "暗号資産市場は大半の銘柄で下落",
+        "下落がほぼ市場全体に及んでいる",
+      ],
+      weak: [
+        "市場は弱含み：下落銘柄が優勢",
+        "暗号資産市場では売りが優勢",
+      ],
+      neutral: [
+        "市場に明確な方向感がない",
+        "上昇と下落がほぼ拮抗",
+        "暗号資産市場は均衡局面",
+      ],
+      strong: [
+        "多くの暗号資産が上昇している",
+        "上昇が市場の広い範囲に及んでいる",
+        "暗号資産市場では買いが活発",
+      ],
+      very_strong: [
+        "上昇が市場全体に広がっている",
+        "大半の暗号資産が力強く上昇",
+        "市場は幅広い上昇モメンタムを示している",
+      ],
     },
   },
 
@@ -472,6 +812,40 @@ const DICTS = {
       },
       slogan: "trendi tersine çeviren coinler için sinyaller"
     },
+    news: {
+      show_more_btn: "Daha fazla göster",
+      master_market_title: "Piyasa genişliği",
+      master_calendar_title: "Takvim",
+      master_ticker_title: "Piyasa bandı",
+    },
+    /* --- Заголовки market-card --- */
+    news_market_headlines: {
+      "very_very_weak": ["Düşüş piyasaya yayıldı"],
+      "very_weak": [
+          "Kripto paraların çoğu düşüyor",
+          "Kripto piyasası varlıkların çoğunda geriliyor",
+          "Düşüş neredeyse tüm kripto piyasasını etkiliyor",
+      ],
+      "weak": [
+          "Piyasa zayıf görünüyor: düşen coin sayısı daha fazla",
+          "Kripto piyasasında satışlar baskın",
+      ],
+      "neutral": [
+          "Piyasada belirgin bir yön yok",
+          "Yükseliş ve düşüşler neredeyse dengede",
+          "Kripto piyasası denge fazında",
+      ],
+      "strong": [
+          "Kripto paraların çoğu yükseliyor",
+          "Yükseliş piyasanın önemli bir kısmına yayılıyor",
+          "Kripto piyasasında alıcılar aktif",
+      ],
+      "very_strong": [
+          "Yükseliş tüm kripto piyasasına yayılıyor",
+          "Kripto paraların büyük kısmı güçlü yükseliyor",
+          "Piyasa geniş çaplı pozitif momentum gösteriyor",
+      ],
+    },
   },
 
   /* ============== 中文 ============== */
@@ -515,7 +889,42 @@ const DICTS = {
       },
       slogan: "趋势反转币种的信号"
     },
+    news: {
+      show_more_btn: "显示更多",
+      master_market_title: "市场广度",
+      master_calendar_title: "日历",
+      master_ticker_title: "行情看板",
+    },
+    /* --- Заголовки market-card --- */
+    news_market_headlines: {
+      very_very_weak: ["下跌已扩散至全市场"],
+      very_weak: [
+        "大多数加密货币正在下跌",
+        "加密市场大部分资产走低",
+        "下跌几乎影响整个加密市场",
+      ],
+      weak: [
+        "市场偏弱：下跌币种更多",
+        "加密市场卖盘占主导",
+      ],
+      neutral: [
+        "市场缺乏明确方向",
+        "上涨与下跌大致均衡",
+        "加密市场处于平衡阶段",
+      ],
+      strong: [
+        "大多数加密货币上涨",
+        "上涨覆盖市场的较大部分",
+        "加密市场买盘活跃",
+      ],
+      very_strong: [
+        "上涨正在全市场扩散",
+        "大部分加密货币强势上涨",
+        "市场呈现广泛的正向动能",
+      ],
+    },
   },
+
 };
 
   function pickLang() {

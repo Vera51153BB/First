@@ -9,11 +9,12 @@
   /* ===== модель ===== */
   const STORAGE_KEY = 'okx_alerts_v1';
   const DEFAULT_ALERTS = [
-    { id: 'balance', name: '', on: true },
-    { id: 'alert2',  name: '', on: true },  // RSI
-    { id: 'alert3',  name: '', on: true },
-    { id: 'alert4',  name: '', on: true },
+    { id: 'alert_rsi',  name: '', on: true },  // RSI: зоны и экстремумы
+    { id: 'alert_ema',  name: '', on: true },  // Скользящая средняя (EMA)
+    { id: 'alert4',  name: '', on: false }, // Скоро (в разработке)
+    { id: 'balance', name: '', on: false }, // Скоро (в разработке), legacy-id
   ];
+
 
   function loadState(){
     const saved = loadLocal(STORAGE_KEY, null);
@@ -73,12 +74,18 @@ function render(){
   </svg>`;
     gearBtn.addEventListener('click', (e)=>{
       e.stopPropagation();
-      if (a.id === 'alert2') {
+      if (a.id === 'alert_rsi') {
+        // Настройки RSI
         window.location.href = 'setting_alerts_rsi.html';
+      } else if (a.id === 'alert_ema') {
+        // Новая страница настроек EMA
+        window.location.href = 'setting_alerts_ma.html';
       } else {
-        window.Core.showToast(t('common.settings'));
+        // Для будущих уведомлений 3–4 показываем "Скоро"
+        window.Core.showToast(tCommon('coming_soon'));
       }
     });
+
 
     // тумблер
     const sw = document.createElement('button');
@@ -154,7 +161,7 @@ function updateOne(id){
   /* СВОДКА статусов для окна/тоста */
   function buildSummary(list){
     const on = Object.fromEntries(list.map(a => [a.id, !!a.on]));
-    const order = [['balance'],['alert2'],['alert3'],['alert4']];
+    const order = [['alert_rsi'], ['alert_ema'], ['alert4'], ['balance']];
     const values = order.map(([id]) => on[id]);
     let body;
     if (values.every(Boolean))      body = t('alerts.summary_all_on')  || t('alerts.summary.all_on');

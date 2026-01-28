@@ -168,32 +168,54 @@
     return parts.join("\n");
   }
 
-  if (saveBtn) {
-    saveBtn.addEventListener("click", function () {
-      persist();
+if (saveBtn) {
+  saveBtn.addEventListener("click", function () {
+    // Сохраняем локально, чтобы при провале sendData не потерять состояние
+    persist();
 
-      const payload = {
-        type: "save_ema",
-        ema: {
-          tfs: state.tfs,
-          signals: state.signals,
+    // Преобразуем словарь tfs -> список включённых таймфреймов
+    const enabledTfs = TF_ORDER.filter((id) => !!state.tfs[id]);
+
+    // Готовим signals так, как уже тестировался бэкенд:
+    // cross  -> как есть
+    // price  -> берём из price_cross
+    // slope  -> как есть
+    const payload = {
+      type: "save_ema",
+      ema: {
+        tfs: enabledTfs,
+        signals: {
+          cross: !!state.signals.cross,
+          price: !!state.signals.price_cross,
+          slope: !!state.signals.slope,
         },
-      };
-      const sent = safeSendData ? safeSendData(JSON.stringify(payload)) : false;
-      if (!sent) {
-        // Уже есть локальное сохранение, так что просто продолжаем
-      }
+      },
+    };
 
-      saveBtn.classList.remove("saved");
-      void saveBtn.offsetWidth;
-      saveBtn.classList.add("saved");
+    const sent = safeSendData ? safeSendData(JSON.stringify(payload)) : false;
+    if (!sent) {
+      // Телеграм не принял WebAppData (старый клиент и т.п.) — остаёмся с локальным сохранением
+    }
 
-      try { tg && tg.HapticFeedback && tg.HapticFeedback.notificationOccurred && tg.HapticFeedback.notificationOccurred("success"); } catch (e) {}
+    // Визуальный отклик на кнопке
+    saveBtn.classList.remove("saved");
+    void saveBtn.offsetWidth;
+    saveBtn.classList.add("saved");
 
-      const message = buildSummary();
-      notifySavedAndMaybeClose && notifySavedAndMaybeClose(message, { title: "OKXcandlebot", closeOnMobile: true });
-    });
-  }
+    try {
+      tg && tg.HapticFeedback &&
+      tg.HapticFeedback.notificationOccurred &&
+      tg.HapticFeedback.notificationOccurred("success");
+    } catch (e) {}
+
+    const message = buildSummary();
+    notifySavedAndMaybeClose &&
+      notifySavedAndMaybeClose(message, {
+        title: "OKXcandlebot",
+        closeOnMobile: true,
+      });
+  });
+}
 
   // Перерисовка при смене языка
   window.addEventListener("i18n:change", function () {

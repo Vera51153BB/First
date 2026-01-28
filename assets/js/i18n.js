@@ -1108,6 +1108,17 @@ const DICTS = {
 };
 
   function pickLang() {
+    // 0) Язык из query-параметра ?lang=xx (прилетает из Telegram-бота, самый высокий приоритет)
+    try {
+      const urlLang = new URLSearchParams(window.location.search).get("lang");
+      const norm = (urlLang || "").slice(0, 2).toLowerCase();
+      if (norm && DICTS[norm]) {
+        return norm;
+      }
+    } catch (_) {
+      // Если что-то пошло не так (очень старый браузер и т.п.) — просто игнорируем
+    }
+
     // 1) Язык страницы из <html lang="..."> (главный источник правды для /en, /hi, /ru и т.д.)
     const htmlLang = (document.documentElement.getAttribute("lang") || "")
       .slice(0, 2)
@@ -1130,23 +1141,6 @@ const DICTS = {
     const navCode = (navigator.language || "en").slice(0, 2).toLowerCase();
     return DICTS[navCode] ? navCode : "en";
   }
-
-
-  function get(obj, path) {
-    return path.split('.').reduce((o,k)=> (o && o[k] != null ? o[k] : undefined), obj);
-  }
-
-  const I18N = {
-    lang: pickLang(),
-    t(key) { return get(DICTS[this.lang], key) ?? key; },
-    setLang(l) {
-      if (!DICTS[l]) return;
-      this.lang = l;
-      try { localStorage.setItem('okx_lang', l); } catch {}
-      window.dispatchEvent(new CustomEvent('i18n:change', { detail: { lang:l } }));
-    },
-    _dicts: DICTS,
-  };
 
   window.I18N = I18N;
 })();

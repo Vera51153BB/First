@@ -45,7 +45,7 @@
   // ----- Рендер -----
   const tfRoot = document.getElementById("emaTfList");
   const sigRoot = document.getElementById("emaSignalList");
-  const saveBtn = document.getElementById("emaSaveBtn");
+  const saveBtn = document.getElementById("SaveBtn");
 
   const TF_ORDER = ["15m", "1h", "4h", "8h", "12h", "1d"];
   const TF_LABELS = {

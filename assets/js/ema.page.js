@@ -204,3 +204,49 @@
     render();
   });
 })();
+
+// ===== EMA settings → отправка в Telegram WebAppData =====
+(function(){
+  "use strict";
+
+  const core = window.Core || {};
+  const tg = core.tg;
+  const safeSendData = core.safeSendData;
+  const notifySavedAndMaybeClose = core.notifySavedAndMaybeClose;
+
+  // Если по какой-то причине core не инициализировался — тихо выходим
+  if (!safeSendData) return;
+
+  // Кнопка "Сохранить настройки EMA" на странице EMA
+  const emaSaveBtn = document.getElementById('emaSaveBtn');
+  if (!emaSaveBtn) return;
+
+  emaSaveBtn.addEventListener('click', () => {
+    // ⚠️ Временный стаб: все TF включены, все типы сигналов включены.
+    // Структура должна соответствовать ожиданиям build_ema_patch_from_payload().
+    const payload = {
+      type: "save_ema",
+      ema: {
+        tfs: ["15m", "1h", "4h", "8h", "12h", "1d"],
+        signals: {
+          cross: true,      // пересечение быстрой и медленной EMA
+          price: true,      // цена пересекает EMA (на бэке → price_cross)
+          slope: true       // смена наклона EMA
+        }
+      }
+    };
+
+    const ok = safeSendData(JSON.stringify(payload));
+    if (!ok) {
+      alert("Не удалось отправить настройки EMA в Telegram. Попробуйте обновить приложение.");
+      return;
+    }
+
+    try { tg?.HapticFeedback?.notificationOccurred?.("success"); } catch (e) {}
+
+    notifySavedAndMaybeClose(
+      "Новые настройки EMA отправлены боту и будут использованы при формировании сигналов.",
+      { title: "BotCryptoSignal", closeOnMobile: false }
+    );
+  });
+})();

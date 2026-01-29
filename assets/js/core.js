@@ -83,13 +83,19 @@
   // ===== i18n обвязка (интеграция с window.I18N) =====
   const LANGS = [
     { code:'en', label:'English'  },
-    { code:'hi', label:'हिन्दी'    },
-    { code:'ru', label:'Русский'  },    
+    { code:'hi', label:'हिन्दी'   },
+    { code:'ru', label:'Русский'  },
+    { code:'pt', label:'Português'  },
     { code:'es', label:'Español'  },
-    { code:'fr', label:'Français' },
-    { code:'fr', label:'Deutsch' },
-    { code:'ru', label:'Italiano'  },
+    { code:'uk', label:'Українська'  },
+    { code:'de', label:'Deutsch'  },
+    { code:'fr', label:'Français' },    
+    { code:'it', label:'Italiano' },
+    { code:'ja', label:'日本語'  },
+    { code:'tr', label:'Türkçe'  },
+    { code:'zh', label:'中文'  },
   ];
+
   function t(path){ return window.I18N?.t(path) ?? path; }
   function currentLang(){ return window.I18N?.lang || 'en'; }
   function setLang(code){ window.I18N?.setLang(code); Bus.emit('langchange', code); }

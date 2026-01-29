@@ -1153,6 +1153,26 @@ const DICTS = {
 
   const initialLang = pickLang();
 
+  const I18N = {
+    lang: initialLang,
+    t(key) {
+      return get(DICTS[this.lang], key) ?? key;
+    },
+    setLang(l) {
+      if (!DICTS[l]) return;
+      this.lang = l;
+      try {
+        localStorage.setItem("okx_lang", l);
+      } catch (_) {
+        // localStorage может быть недоступен — просто игнорируем
+      }
+      window.dispatchEvent(
+        new CustomEvent("i18n:change", { detail: { lang: l } })
+      );
+    },
+    _dicts: DICTS,
+  };
+
   window.I18N = I18N;
 })();
 

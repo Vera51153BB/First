@@ -1108,9 +1108,15 @@ const DICTS = {
 };
 
   function pickLang() {
-    // 0) Язык из query-параметра ?lang=... — это то, что прислал бот
+    // 0) Язык из query-параметра ?lang=... — это то, что прислал бот.
+    //    В Telegram WebApp query может оказаться в search или в hash,
+    //    поэтому пытаемся разобрать оба варианта.
     try {
-      const params = new URLSearchParams(window.location.search || "");
+      let raw = window.location.search || window.location.hash || "";
+      if (raw.startsWith("#")) {
+        raw = raw.slice(1);
+      }
+      const params = new URLSearchParams(raw || "");
       const qLang = (params.get("lang") || "")
         .slice(0, 2)
         .toLowerCase();
@@ -1121,7 +1127,26 @@ const DICTS = {
       // если вдруг URLSearchParams не взлетел — просто игнорируем
     }
 
-    // 1) Язык страницы из <html lang="..."> (для обычных статических страниц)
+    // 1) Язык из Telegram WebApp (язык интерфейса пользователя в приложении)
+    try {
+      const tg = window.Telegram && window.Telegram.WebApp;
+      const tgLang = (
+        tg &&
+        tg.initDataUnsafe &&
+        tg.initDataUnsafe.user &&
+        tg.initDataUnsafe.user.language_code ||
+        ""
+      )
+        .slice(0, 2)
+        .toLowerCase();
+      if (tgLang && DICTS[tgLang]) {
+        return tgLang;
+      }
+    } catch (_) {
+      // если Telegram.WebApp недоступен (например, открытие в обычном браузере) — просто игнорируем
+    }
+
+    // 2) Язык страницы из <html lang="..."> (для обычных статических страниц)
     const htmlLang = (document.documentElement.getAttribute("lang") || "")
       .slice(0, 2)
       .toLowerCase();
@@ -1129,7 +1154,7 @@ const DICTS = {
       return htmlLang;
     }
 
-    // 2) Сохранённый выбор пользователя
+    // 3) Сохранённый выбор пользователя
     try {
       const saved = localStorage.getItem("okx_lang");
       if (saved && DICTS[saved]) {
@@ -1139,7 +1164,7 @@ const DICTS = {
       // localStorage может быть недоступен в режиме инкогнито / жёстком режиме приватности
     }
 
-    // 3) Язык браузера как запасной вариант
+    // 4) Язык браузера как запасной вариант
     const navCode = (navigator.language || "en").slice(0, 2).toLowerCase();
     return DICTS[navCode] ? navCode : "en";
   }

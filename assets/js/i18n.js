@@ -1031,17 +1031,17 @@ const DICTS = {
       all_on_btn: "Enable",
       all_off_btn: "Disable",
       items: {
-        alert2:  "RSI：区域与极值",
-        alert3:  "移动平均线（EMA）",
+        alert_rsi:  "RSI：区域与极值",
+        alert_ema:  "移动平均线（EMA）",
         alert4:  "即将推出（开发中）",
         balance: "即将推出（开发中）",
       },
-      save: "Save settings",
-      footnote: "Switches are saved on this device and applied instantly",
-      saved_prefix: "New notification settings:",
-      saved_footer: "Settings are saved on this device.",
-      summary_all_on: "All notifications: ON",
-      summary_all_off: "All notifications: OFF",
+      save: "保存设置",
+      footnote: "开关会保存在此设备上并立即生效",
+      saved_prefix: "新的通知设置：",
+      saved_footer: "设置已保存在此设备上。",
+      summary_all_on: "所有通知：已开启",
+      summary_all_off: "所有通知：已关闭",
     },
     ema: {
       title: "EMA 警报设置",
@@ -1143,24 +1143,15 @@ const DICTS = {
     const navCode = (navigator.language || "en").slice(0, 2).toLowerCase();
     return DICTS[navCode] ? navCode : "en";
   }
-  const initialLang = pickLang();
-  try {
-    // чтобы <html lang="..."> совпадал с текущим языком mini-app
-    document.documentElement.setAttribute('lang', initialLang);
-  } catch (_) {}
 
-  const I18N = {
-    lang: initialLang,
-    t(key) { return get(DICTS[this.lang], key) ?? key; },
-    setLang(l) {
-      if (!DICTS[l]) return;
-      this.lang = l;
-      try { localStorage.setItem('okx_lang', l); } catch {}
-      try { document.documentElement.setAttribute('lang', l); } catch {}
-      window.dispatchEvent(new CustomEvent('i18n:change', { detail: { lang:l } }));
-    },
-    _dicts: DICTS,
-  };
+  function get(obj, path) {
+    return path.split('.').reduce(
+      (o, k) => (o && o[k] != null ? o[k] : undefined),
+      obj
+    );
+  }
+
+  const initialLang = pickLang();
 
   window.I18N = I18N;
 })();

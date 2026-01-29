@@ -1108,18 +1108,20 @@ const DICTS = {
 };
 
   function pickLang() {
-    // 0) Язык из query-параметра ?lang=xx (прилетает из Telegram-бота, самый высокий приоритет)
+    // 0) Язык из query-параметра ?lang=... — это то, что прислал бот
     try {
-      const urlLang = new URLSearchParams(window.location.search).get("lang");
-      const norm = (urlLang || "").slice(0, 2).toLowerCase();
-      if (norm && DICTS[norm]) {
-        return norm;
+      const params = new URLSearchParams(window.location.search || "");
+      const qLang = (params.get("lang") || "")
+        .slice(0, 2)
+        .toLowerCase();
+      if (qLang && DICTS[qLang]) {
+        return qLang;
       }
     } catch (_) {
-      // Если что-то пошло не так (очень старый браузер и т.п.) — просто игнорируем
+      // если вдруг URLSearchParams не взлетел — просто игнорируем
     }
 
-    // 1) Язык страницы из <html lang="..."> (главный источник правды для /en, /hi, /ru и т.д.)
+    // 1) Язык страницы из <html lang="..."> (для обычных статических страниц)
     const htmlLang = (document.documentElement.getAttribute("lang") || "")
       .slice(0, 2)
       .toLowerCase();
@@ -1127,20 +1129,39 @@ const DICTS = {
       return htmlLang;
     }
 
-    // 2) Сохранённый выбор пользователя (если по какой-то причине lang в <html> не задан)
+    // 2) Сохранённый выбор пользователя
     try {
       const saved = localStorage.getItem("okx_lang");
       if (saved && DICTS[saved]) {
         return saved;
       }
     } catch (_) {
-      // localStorage может быть недоступен в режиме инкогнито / жестком режиме приватности
+      // localStorage может быть недоступен в режиме инкогнито / жёстком режиме приватности
     }
 
     // 3) Язык браузера как запасной вариант
     const navCode = (navigator.language || "en").slice(0, 2).toLowerCase();
     return DICTS[navCode] ? navCode : "en";
   }
+  const initialLang = pickLang();
+  try {
+    // чтобы <html lang="..."> совпадал с текущим языком mini-app
+    document.documentElement.setAttribute('lang', initialLang);
+  } catch (_) {}
+
+  const I18N = {
+    lang: initialLang,
+    t(key) { return get(DICTS[this.lang], key) ?? key; },
+    setLang(l) {
+      if (!DICTS[l]) return;
+      this.lang = l;
+      try { localStorage.setItem('okx_lang', l); } catch {}
+      try { document.documentElement.setAttribute('lang', l); } catch {}
+      window.dispatchEvent(new CustomEvent('i18n:change', { detail: { lang:l } }));
+    },
+    _dicts: DICTS,
+  };
 
   window.I18N = I18N;
 })();
+

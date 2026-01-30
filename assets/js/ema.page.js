@@ -45,7 +45,7 @@
   // ----- Рендер -----
   const tfRoot = document.getElementById("emaTfList");
   const sigRoot = document.getElementById("emaSignalList");
-  const saveBtn = document.getElementById("SaveBtn");
+  const saveBtn = document.getElementById("saveBtn");  // id совпадает с HTML
 
   const TF_ORDER = ["15m", "1h", "4h", "8h", "12h", "1d"];
   const TF_LABELS = {
@@ -173,24 +173,25 @@ if (saveBtn) {
     // Сохраняем локально, чтобы при провале sendData не потерять состояние
     persist();
 
-    // Преобразуем словарь tfs -> список включённых таймфреймов
-    const enabledTfs = TF_ORDER.filter((id) => !!state.tfs[id]);
-
-    // Готовим signals так, как уже тестировался бэкенд:
-    // cross  -> как есть
-    // price  -> берём из price_cross
-    // slope  -> как есть
+    // Готовим tfs в формате dict { "15m": true/false, ... }
+    const tfsPayload = {};
+    TF_ORDER.forEach(function (id) {
+      tfsPayload[id] = !!state.tfs[id];
+    });
+    
+    // Готовим signals в формате, который ждёт бэкенд
     const payload = {
       type: "save_ema",
       ema: {
-        tfs: enabledTfs,
+        tfs: tfsPayload,
         signals: {
           cross: !!state.signals.cross,
-          price: !!state.signals.price_cross,
+          price_cross: !!state.signals.price_cross,
           slope: !!state.signals.slope,
         },
       },
     };
+
 
     const sent = safeSendData ? safeSendData(JSON.stringify(payload)) : false;
     if (!sent) {

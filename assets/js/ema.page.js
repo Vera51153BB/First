@@ -168,55 +168,60 @@
     return parts.join("\n");
   }
 
-if (saveBtn) {
-  saveBtn.addEventListener("click", function () {
-    // Сохраняем локально, чтобы при провале sendData не потерять состояние
-    persist();
-
-    // Готовим tfs в формате dict { "15m": true/false, ... }
-    const tfsPayload = {};
-    TF_ORDER.forEach(function (id) {
-      tfsPayload[id] = !!state.tfs[id];
-    });
-    
-    // Готовим signals в формате, который ждёт бэкенд
-    const payload = {
-      type: "save_ema",
-      ema: {
-        tfs: tfsPayload,
-        signals: {
-          cross: !!state.signals.cross,
-          price_cross: !!state.signals.price_cross,
-          slope: !!state.signals.slope,
-        },
-      },
-    };
-
-
-    const sent = safeSendData ? safeSendData(JSON.stringify(payload)) : false;
-    if (!sent) {
-      // Телеграм не принял WebAppData (старый клиент и т.п.) — остаёмся с локальным сохранением
-    }
-
-    // Визуальный отклик на кнопке
-    saveBtn.classList.remove("saved");
-    void saveBtn.offsetWidth;
-    saveBtn.classList.add("saved");
-
+  // --- helper: перейти на основную страницу настроек (alerts.html) после сохранения EMA ---
+  function openMainAlertsPage() {
     try {
-      tg && tg.HapticFeedback &&
-      tg.HapticFeedback.notificationOccurred &&
-      tg.HapticFeedback.notificationOccurred("success");
-    } catch (e) {}
+      // ФАКТ: основная страница настроек — alerts.html на том же домене.
+      // Сохраняем текущие query-параметры (?lang=XX и т.п.).
+      var url = window.location.origin + "/alerts.html" + window.location.search;
+      window.location.href = url;
+    } catch (e) {
+      // Если что-то пошло не так – просто остаёмся на текущей странице EMA.
+    }
+  }
 
-    const message = buildSummary();
-    notifySavedAndMaybeClose &&
-      notifySavedAndMaybeClose(message, {
-        title: "OKXcandlebot",
-        closeOnMobile: true,
-      });
-  });
-}
+  if (saveBtn) {
+    saveBtn.addEventListener("click", function () {
+      // Сохраняем локально, чтобы при провале sendData не потерять состояние
+      persist();
+  
+      // Преобразуем словарь tfs -> список включённых таймфреймов
+      const enabledTfs = Object.keys(state.tfs).filter((tf) => state.tfs[tf]);
+      const enabledSignals = SIGNAL_ORDER.filter((id) => state.signals[id]);
+  
+      const payload = {
+        type: "save_ema",
+        ema: {
+          tfs: enabledTfs,
+          signals: enabledSignals,
+        },
+      };
+  
+      const payloadStr = JSON.stringify(payload);
+  
+      try {
+        tg && tg.sendData && tg.sendData(payloadStr);
+      } catch (e) {
+        // игнорируем, локальное состояние уже сохранено
+      }
+  
+      const message = buildSummary();
+  
+      // Показываем стандартное уведомление, НО НЕ закрываем WebApp автоматически.
+      if (notifySavedAndMaybeClose) {
+        notifySavedAndMaybeClose(message, {
+          title: "OKXcandlebot",
+          // важно: не закрываем, чтобы успеть перейти на alerts.html
+          closeOnMobile: false,
+        });
+      }
+  
+      // После удачного сохранения/отправки просто переводим пользователя
+      // на основную страницу настроек оповещений (alerts.html).
+      openMainAlertsPage();
+    });
+  }
+
 
   // Перерисовка при смене языка
   window.addEventListener("i18n:change", function () {

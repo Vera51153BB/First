@@ -4,7 +4,7 @@
   const t = (k)=> window.I18N?.t(k) ?? k;
   const tCommon  = (k)=> t('common.'+k);
   const tAlerts  = (k)=> t('alerts.'+k);
-  const tItem    = (id)=> t(`alerts.items.${id}`);
+  const tItem    = (id)=> t(`alerts.item.${id}`);
 
   /* ===== модель ===== */
   const STORAGE_KEY = 'okx_alerts_v1';

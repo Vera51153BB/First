@@ -1,4 +1,4 @@
-/* global window */
+/* global window var-www-botcryptosignal-assets-js-ema.page.js*/
 /* Настройки сигналов EMA: таймфреймы + типы сигналов */
 (function () {
   "use strict";
@@ -201,39 +201,29 @@
       // Сохраняем локально, чтобы при провале sendData не потерять состояние
       persist();
   
-      // Преобразуем словарь tfs -> список включённых таймфреймов
-      const enabledTfs = Object.keys(state.tfs).filter((tf) => state.tfs[tf]);
-      const enabledSignals = SIGNAL_ORDER.filter((id) => state.signals[id]);
-  
-      const payload = {
-        type: "save_ema",
-        ema: {
-          tfs: enabledTfs,
-          signals: enabledSignals,
-        },
-      };
-  
-      const payloadStr = JSON.stringify(payload);
-  
-      try {
-        tg && tg.sendData && tg.sendData(payloadStr);
-      } catch (e) {
-        // игнорируем, локальное состояние уже сохранено
-      }
-  
-      const message = buildSummary();
-  
-      // Показываем стандартное уведомление, НО НЕ закрываем WebApp автоматически.
-      if (notifySavedAndMaybeClose) {
-        notifySavedAndMaybeClose(message, {
-          title: "OKXcandlebot",
-          // важно: не закрываем, чтобы успеть перейти на alerts.html
-          closeOnMobile: false,
-        });
-      }
-  
       // После удачного сохранения/отправки просто переводим пользователя
       // на основную страницу настроек оповещений (alerts.html).
+      openMainAlertsPage();
+            // Готовим состояние строго под ветку save_ema в alerts.py
+      // (в alerts.py читается data.type === "save_ema" и data.ema как dict)
+      const sendState = clone(state);
+
+      // ВАЖНО:
+      // state.tfs / state.signals у нас внутри — это dict(bool).
+      // Чтобы не зависеть от формата в build_ema_patch_from_payload,
+      // нормализуем в списки включённых значений.
+      sendState.tfs = Object.keys(state.tfs).filter((tf) => state.tfs[tf]);
+      sendState.signals = SIGNAL_ORDER.filter((id) => state.signals[id]);
+
+      // === ОБЯЗАТЕЛЬНОЕ: отправка в бота в формате { type:"save_ema", ema:{...} }
+      try {
+        tg && tg.sendData && tg.sendData(JSON.stringify({ type: "save_ema", ema: sendState }));
+      } catch (e) {
+        // Ничего не делаем: локально уже persist() сохранил состояние
+      }
+
+      // UX: сразу возвращаем пользователя на основную страницу настроек (alerts.html)
+      // Вместо tg.close(), потому что нам нужен переход на главный экран настроек.
       openMainAlertsPage();
     });
   }

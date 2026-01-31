@@ -169,16 +169,32 @@
   }
 
   // --- helper: перейти на основную страницу настроек (alerts.html) после сохранения EMA ---
+  // Переход на основную страницу настроек (alerts.html)
   function openMainAlertsPage() {
     try {
-      // ФАКТ: основная страница настроек — alerts.html на том же домене.
-      // Сохраняем текущие query-параметры (?lang=XX и т.п.).
-      var url = window.location.origin + "/alerts.html" + window.location.search;
-      window.location.href = url;
+      // 1) Берём URL из data-атрибута <body data-alerts-url="...">
+      // 2) Если его нет (маловероятно) – fallback на origin + "/alerts.html"
+      var base =
+        (document.body &&
+          document.body.dataset &&
+          document.body.dataset.alertsUrl) ||
+        (window.location.origin + "/alerts.html");
+
+      // Сохраняем все query-параметры (?lang=..., initData и т.п.)
+      var url = base + window.location.search;
+
+      // В среде Telegram WebApp предпочтительно использовать tg.openLink,
+      // чтобы переход отработал корректно внутри веб-приложения.
+      if (tg && tg.openLink) {
+        tg.openLink(url);
+      } else {
+        window.location.href = url;
+      }
     } catch (e) {
-      // Если что-то пошло не так – просто остаёмся на текущей странице EMA.
+      // Если что-то пошло не так – просто остаёмся на странице EMA.
     }
   }
+
 
   if (saveBtn) {
     saveBtn.addEventListener("click", function () {

@@ -170,26 +170,23 @@
 
   // --- helper: перейти на основную страницу настроек (alerts.html) после сохранения EMA ---
   // Переход на основную страницу настроек (alerts.html)
-  function openMainAlertsPage() {
+    function openMainAlertsPage() {
     try {
       // 1) Берём URL из data-атрибута <body data-alerts-url="...">
-      // 2) Если его нет (маловероятно) – fallback на origin + "/alerts.html"
+      // 2) Если его нет – fallback на origin + "/alerts.html"
       var base =
         (document.body &&
           document.body.dataset &&
           document.body.dataset.alertsUrl) ||
         (window.location.origin + "/alerts.html");
 
-      // Сохраняем все query-параметры (?lang=..., initData и т.п.)
+      // Сохраняем query-параметры (?lang=..., v=..., и т.п.)
       var url = base + window.location.search;
 
-      // В среде Telegram WebApp предпочтительно использовать tg.openLink,
-      // чтобы переход отработал корректно внутри веб-приложения.
-      if (tg && tg.openLink) {
-        tg.openLink(url);
-      } else {
-        window.location.href = url;
-      }
+      // ВАЖНО:
+      // Не используем tg.openLink — он уводит в системный браузер и "сворачивает" WebApp.
+      // Нам нужен переход внутри текущего WebView.
+      window.location.replace(url);
     } catch (e) {
       // Если что-то пошло не так – просто остаёмся на странице EMA.
     }
@@ -197,59 +194,31 @@
 
   if (saveBtn) {
     saveBtn.addEventListener("click", function () {
-      // 1) Сохраняем локально, чтобы при любом раскладе не потерять состояние
+      // 1) Сохраняем локально, чтобы при провале sendData не потерять состояние
       persist();
 
-      // 2) Формируем краткую сводку для всплывающего окна
-      const enabledTfs = TF_ORDER.filter((id) => !!state.tfs[id]);
-      const enabledSignals = SIGNAL_ORDER.filter((id) => !!state.signals[id]);
+      // 2) Готовим состояние строго под ветку save_ema в alerts.py:
+      //    { type: "save_ema", ema: { tfs: [...], signals: [...] } }
+      const sendState = clone(state);
 
-      const popupTitle = "EMA settings";
-      const popupText =
-        "tfs: " + (enabledTfs.length ? enabledTfs.join(", ") : "—") + "\n" +
-        "signals: " + (enabledSignals.length ? enabledSignals.join(", ") : "—");
+      // state.tfs/state.signals внутри — dict(bool).
+      // Нормализуем в списки включённых значений.
+      sendState.tfs = Object.keys(state.tfs).filter((tf) => state.tfs[tf]);
+      sendState.signals = SIGNAL_ORDER.filter((id) => state.signals[id]);
 
-      // 3) Функция, которая реально отправляет данные и только потом уводит на alerts.html
-      const sendAndGoBack = function () {
-        // ВАЖНО:
-        // Отправляем в формате { type:"save_ema", ema:{...} }
-        // ema содержит исходный state (dict(bool)), без лишних преобразований.
-        try {
-          if (tg && typeof tg.sendData === "function") {
-            tg.sendData(JSON.stringify({ type: "save_ema", ema: clone(state) }));
-          }
-        } catch (e) {
-          // ничего: persist() уже сохранил локально
-        }
-
-        // Переход на основной экран настроек
-        openMainAlertsPage();
-      };
-
-      // 4) Показываем popup (Telegram) или fallback alert(); после OK -> sendAndGoBack()
+      // 3) Отправка в бота
       try {
-        if (tg && typeof tg.showPopup === "function") {
-          tg.showPopup(
-            {
-              title: popupTitle,
-              message: popupText,
-              buttons: [{ id: "ok", type: "default", text: "OK" }],
-            },
-            function (_buttonId) {
-              sendAndGoBack();
-            }
-          );
-        } else {
-          alert(popupTitle + "\n\n" + popupText);
-          sendAndGoBack();
+        if (tg && tg.sendData) {
+          tg.sendData(JSON.stringify({ type: "save_ema", ema: sendState }));
         }
       } catch (e) {
-        try { alert(popupTitle + "\n\n" + popupText); } catch (_) {}
-        sendAndGoBack();
+        // Игнорируем: локально уже сохранили persist()
       }
+
+      // 4) Один переход обратно на alerts.html внутри WebView (без системного браузера)
+      openMainAlertsPage();
     });
   }
-
 
   // Перерисовка при смене языка
   window.addEventListener("i18n:change", function () {

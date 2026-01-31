@@ -195,36 +195,58 @@
     }
   }
 
-
   if (saveBtn) {
     saveBtn.addEventListener("click", function () {
-      // Сохраняем локально, чтобы при провале sendData не потерять состояние
+      // 1) Сохраняем локально, чтобы при любом раскладе не потерять состояние
       persist();
-  
-      // После удачного сохранения/отправки просто переводим пользователя
-      // на основную страницу настроек оповещений (alerts.html).
-      openMainAlertsPage();
-            // Готовим состояние строго под ветку save_ema в alerts.py
-      // (в alerts.py читается data.type === "save_ema" и data.ema как dict)
-      const sendState = clone(state);
 
-      // ВАЖНО:
-      // state.tfs / state.signals у нас внутри — это dict(bool).
-      // Чтобы не зависеть от формата в build_ema_patch_from_payload,
-      // нормализуем в списки включённых значений.
-      sendState.tfs = Object.keys(state.tfs).filter((tf) => state.tfs[tf]);
-      sendState.signals = SIGNAL_ORDER.filter((id) => state.signals[id]);
+      // 2) Формируем краткую сводку для всплывающего окна
+      const enabledTfs = TF_ORDER.filter((id) => !!state.tfs[id]);
+      const enabledSignals = SIGNAL_ORDER.filter((id) => !!state.signals[id]);
 
-      // === ОБЯЗАТЕЛЬНОЕ: отправка в бота в формате { type:"save_ema", ema:{...} }
+      const popupTitle = "EMA settings";
+      const popupText =
+        "tfs: " + (enabledTfs.length ? enabledTfs.join(", ") : "—") + "\n" +
+        "signals: " + (enabledSignals.length ? enabledSignals.join(", ") : "—");
+
+      // 3) Функция, которая реально отправляет данные и только потом уводит на alerts.html
+      const sendAndGoBack = function () {
+        // ВАЖНО:
+        // Отправляем в формате { type:"save_ema", ema:{...} }
+        // ema содержит исходный state (dict(bool)), без лишних преобразований.
+        try {
+          if (tg && typeof tg.sendData === "function") {
+            tg.sendData(JSON.stringify({ type: "save_ema", ema: clone(state) }));
+          }
+        } catch (e) {
+          // ничего: persist() уже сохранил локально
+        }
+
+        // Переход на основной экран настроек
+        openMainAlertsPage();
+      };
+
+      // 4) Показываем popup (Telegram) или fallback alert(); после OK -> sendAndGoBack()
       try {
-        tg && tg.sendData && tg.sendData(JSON.stringify({ type: "save_ema", ema: sendState }));
+        if (tg && typeof tg.showPopup === "function") {
+          tg.showPopup(
+            {
+              title: popupTitle,
+              message: popupText,
+              buttons: [{ id: "ok", type: "default", text: "OK" }],
+            },
+            function (_buttonId) {
+              sendAndGoBack();
+            }
+          );
+        } else {
+          alert(popupTitle + "\n\n" + popupText);
+          sendAndGoBack();
+        }
       } catch (e) {
-        // Ничего не делаем: локально уже persist() сохранил состояние
+        try { alert(popupTitle + "\n\n" + popupText); } catch (_) {}
+        sendAndGoBack();
       }
-
-      // UX: сразу возвращаем пользователя на основную страницу настроек (alerts.html)
-      // Вместо tg.close(), потому что нам нужен переход на главный экран настроек.
-      openMainAlertsPage();
     });
   }
 

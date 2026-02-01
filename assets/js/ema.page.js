@@ -162,76 +162,33 @@
   }
 
   // ----- Сохранение и отправка в бота -----
-  function buildSummary() {
-    const onTfs = TF_ORDER.filter((id) => state.tfs[id]);
-    const onSignals = SIGNAL_ORDER.filter((id) => state.signals[id]);
+  // Текст всплывающей подсказки при сохранении EMA-настроек.
+  // Использует i18n-ключи:
+  //   ema.toast_prefix
+  //   ema.toast_tfs_label
+  //   ema.toast_signals_label
+  //   ema.toast_saved
+  function buildShortSummaryText() {
+    const onTfs = TF_ORDER.filter((id) => !!state.tfs[id]);
+    const onSignals = SIGNAL_ORDER.filter((id) => !!state.signals[id]);
+
+    const tfsText = onTfs.length ? onTfs.join(", ") : "—";
+
+    const signalNames = onSignals.map((id) => {
+      const key = SIGNAL_LABEL_KEYS[id];
+      return tEma(key);
+    });
+    const signalsText = signalNames.length ? signalNames.join(", ") : "—";
 
     const parts = [];
-    parts.push(tEma("saved_prefix"));
-    parts.push("");
-    parts.push(
-      tEma("summary_timeframes") +
-        " " +
-        (onTfs.length ? onTfs.join(", ") : "—")
-    );
-    parts.push(
-      tEma("summary_signals") +
-        " " +
-        (onSignals.length
-          ? onSignals.map((id) => tEma(SIGNAL_LABEL_KEYS[id])).join(", ")
-          : "—")
-    );
-    parts.push("");
-    parts.push(tEma("saved_footer"));
+    parts.push(tEma("toast_prefix"));                            // "Ваш выбор:"
+    parts.push(tEma("toast_tfs_label") + " " + tfsText);         // "ТФ: 15m и 1h"
+    parts.push(tEma("toast_signals_label") + " " + signalsText); // "Сигналы: пересечения, наклон"
+    parts.push("");                                              // пустая строка
+    parts.push(tEma("toast_saved"));                             // "Настройки сохранены на вашем аккаунте."
+    parts.push("");                                              // ещё одна пустая строка
+    parts.push("BotCryptoSignal");
     return parts.join("\n");
-  }
-
-  // Короткий многострочный текст для всплывающей подсказки:
-  // Ваш выбор:
-  // ТФ: 15m и 1h
-  // Сигналы: пересечения, наклон
-  // Настройки сохранены в вашем профиле.
-  //
-  // BotCryptoSignal
-  function buildShortSummaryText() {
-    const onTfs = TF_ORDER.filter(function (id) {
-      return state.tfs[id];
-    });
-    const onSignals = SIGNAL_ORDER.filter(function (id) {
-      return state.signals[id];
-    });
-
-    // Максимум два ТФ (как и на бэкенде)
-    let tfText = "—";
-    if (onTfs.length === 1) {
-      tfText = onTfs[0];
-    } else if (onTfs.length >= 2) {
-      tfText = onTfs[0] + " и " + onTfs[1];
-    }
-
-    // Короткие имена сигналов. Сейчас жёстко по-русски, как ты и просил.
-    const signalShortNames = {
-      cross: "пересечения",
-      price_cross: "пересечение цены",
-      slope: "наклон",
-    };
-
-    const sigTextParts = onSignals.map(function (id) {
-      return signalShortNames[id] || id;
-    });
-    const sigText = sigTextParts.length ? sigTextParts.join(", ") : "—";
-
-    return (
-      "Ваш выбор:\n" +
-      "ТФ: " +
-      tfText +
-      "\n" +
-      "Сигналы: " +
-      sigText +
-      "\n" +
-      "Настройки сохранены в вашем профиле.\n\n" +
-      "BotCryptoSignal"
-    );
   }
 
   // Небольшой toast-оверлей снизу экрана, сам исчезает через timeoutMs мс
@@ -308,41 +265,38 @@
 
   if (saveBtn) {
     saveBtn.addEventListener("click", function () {
-      // 1) Сохраняем локально, чтобы при провале sendData не потерять состояние
+      // 1) Всегда сразу сохраняем состояние локально,
+      //    чтобы его можно было восстановить даже при сбое сети.
       persist();
 
-      // 2) Готовим состояние строго под ветку save_ema в alerts.py:
-      //    { type: "save_ema", ema: { tfs: [...], signals: [...] } }
-      const sendState = clone(state);
+      // 2) Собираем текст подсказки (локализованный).
+      const summaryText = buildShortSummaryText();
 
-      // state.tfs / state.signals внутри — dict(bool).
-      // Нормализуем в списки включённых значений.
-      sendState.tfs = Object.keys(state.tfs).filter(function (tf) {
-        return state.tfs[tf];
-      });
-      sendState.signals = SIGNAL_ORDER.filter(function (id) {
-        return state.signals[id];
-      });
-
-      // 3) Отправка в бота
-      try {
-        if (tg && tg.sendData) {
-          tg.sendData(
-            JSON.stringify({
-              type: "save_ema",
-              ema: sendState,
-            })
-          );
-        }
-      } catch (e) {
-        // Игнорируем: локально уже сохранили persist()
+      // 3) НЕ Telegram WebApp (открыто напрямую в браузере):
+      //    показываем toast и после этого переходим на alerts.html.
+      if (!tg || !tg.sendData) {
+        showToast(summaryText, 2600, function () {
+          openMainAlertsPage();
+        });
+        return;
       }
 
-      // 4) Короткая подсказка на ~2.5 секунды с выбранными ТФ и сигналами,
-      //    после чего мягко уезжаем на основную страницу alerts.html.
-      const summaryText = buildShortSummaryText();
-      showToast(summaryText, 2500, function () {
-        openMainAlertsPage();
+      // 4) Telegram WebApp:
+      //    готовим state в формате dict(bool), который ожидает backend.
+      const sendState = clone(state);
+      sendState.tfs = Object.assign({}, state.tfs);
+      sendState.signals = Object.assign({}, state.signals);
+
+      //    Показываем toast ~2.6 сек, а потом вызываем sendData.
+      //    После sendData Telegram САМ закроет mini-app и вернёт
+      //    пользователя в чат, где он увидит подтверждение от бота.
+      showToast(summaryText, 2600, function () {
+        try {
+          tg.sendData(JSON.stringify({ type: "save_ema", ema: sendState }));
+        } catch (e) {
+          // Если tg.sendData не сработал — просто ничего не делаем:
+          // локальное состояние уже сохранено, пользователь может повторить попытку.
+        }
       });
     });
   }

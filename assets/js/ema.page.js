@@ -161,18 +161,22 @@
     const parts = [];
     parts.push(tEma("saved_prefix"));
     parts.push("");
-    parts.push(tEma("summary_timeframes") + " " + (onTfs.length ? onTfs.join(", ") : "—"));
-    parts.push(tEma("summary_signals") + " " + (onSignals.length ? onSignals.map((id)=>tEma(SIGNAL_LABEL_KEYS[id])).join(", ") : "—"));
+    parts.push(
+      tEma("summary_timeframes") +
+        " " +
+        (onTfs.length ? onTfs.join(", ") : "—")
+    );
+    parts.push(
+      tEma("summary_signals") +
+        " " +
+        (onSignals.length
+          ? onSignals.map((id) => tEma(SIGNAL_LABEL_KEYS[id])).join(", ")
+          : "—")
+    );
     parts.push("");
     parts.push(tEma("saved_footer"));
     return parts.join("\n");
   }
-
-  // Короткий текст для всплывающей подсказки:
-  // "Вы выбрали ТФ 15m и 1h; сигналы: пересечения, наклон"
-  function buildShortSummaryText() {
-    const onTfs = TF_ORDER.filter((id) => state.tfs[id]);
-    const onSignals = SIGNAL_ORDER.filter((id) => state.signals[id]);
 
   // Короткий многострочный текст для всплывающей подсказки:
   // Ваш выбор:
@@ -190,33 +194,36 @@
     });
 
     // Максимум два ТФ (как и на бэкенде)
-    var tfText = "—";
+    let tfText = "—";
     if (onTfs.length === 1) {
       tfText = onTfs[0];
     } else if (onTfs.length >= 2) {
       tfText = onTfs[0] + " и " + onTfs[1];
     }
 
-    // Короткие имена сигналов. ПРЕДПОЛОЖЕНИЕ: интерфейс сейчас на русском.
-    var signalShortNames = {
+    // Короткие имена сигналов. Сейчас жёстко по-русски, как ты и просил.
+    const signalShortNames = {
       cross: "пересечения",
       price_cross: "пересечение цены",
       slope: "наклон",
     };
 
-    var sigTextParts = onSignals.map(function (id) {
+    const sigTextParts = onSignals.map(function (id) {
       return signalShortNames[id] || id;
     });
-    var sigText = sigTextParts.length ? sigTextParts.join(", ") : "—";
+    const sigText = sigTextParts.length ? sigTextParts.join(", ") : "—";
 
-    return [
-      "Ваш выбор:",
-      "ТФ: " + tfText,
-      "Сигналы: " + sigText,
-      "Настройки сохранены в вашем профиле.",
-      "",
-      "BotCryptoSignal",
-    ].join("\n");
+    return (
+      "Ваш выбор:\n" +
+      "ТФ: " +
+      tfText +
+      "\n" +
+      "Сигналы: " +
+      sigText +
+      "\n" +
+      "Настройки сохранены в вашем профиле.\n\n" +
+      "BotCryptoSignal"
+    );
   }
 
   // Небольшой toast-оверлей снизу экрана, сам исчезает через timeoutMs мс
@@ -243,7 +250,7 @@
       transition: "opacity 0.3s ease",
       pointerEvents: "none",
       boxSizing: "border-box",
-      whiteSpace: "pre-line", // ← добавили, чтобы \n работали как в тексте выше
+      whiteSpace: "pre-line", // чтобы \n отображались строками
     });
 
     document.body.appendChild(div);
@@ -253,7 +260,7 @@
       div.style.opacity = "1";
     });
 
-    const visibleMs = typeof timeoutMs === "number" ? timeoutMs : 2000;
+    const visibleMs = typeof timeoutMs === "number" ? timeoutMs : 2500;
 
     setTimeout(function () {
       // Плавное исчезновение
@@ -269,23 +276,21 @@
     }, visibleMs);
   }
 
-  // --- helper: перейти на основную страницу настроек (alerts.html) после сохранения EMA ---
   // Переход на основную страницу настроек (alerts.html)
-    function openMainAlertsPage() {
+  function openMainAlertsPage() {
     try {
       // 1) Берём URL из data-атрибута <body data-alerts-url="...">
       // 2) Если его нет – fallback на origin + "/alerts.html"
-      var base =
+      const base =
         (document.body &&
           document.body.dataset &&
           document.body.dataset.alertsUrl) ||
-        (window.location.origin + "/alerts.html");
+        window.location.origin + "/alerts.html";
 
       // Сохраняем query-параметры (?lang=..., v=..., и т.п.)
-      var url = base + window.location.search;
+      const url = base + window.location.search;
 
-      // ВАЖНО:
-      // Не используем tg.openLink — он уводит в системный браузер и "сворачивает" WebApp.
+      // Не используем tg.openLink — он уводит в системный браузер.
       // Нам нужен переход внутри текущего WebView.
       window.location.replace(url);
     } catch (e) {
@@ -302,7 +307,7 @@
       //    { type: "save_ema", ema: { tfs: [...], signals: [...] } }
       const sendState = clone(state);
 
-      // state.tfs/state.signals внутри — dict(bool).
+      // state.tfs / state.signals внутри — dict(bool).
       // Нормализуем в списки включённых значений.
       sendState.tfs = Object.keys(state.tfs).filter(function (tf) {
         return state.tfs[tf];
@@ -314,13 +319,18 @@
       // 3) Отправка в бота
       try {
         if (tg && tg.sendData) {
-          tg.sendData(JSON.stringify({ type: "save_ema", ema: sendState }));
+          tg.sendData(
+            JSON.stringify({
+              type: "save_ema",
+              ema: sendState,
+            })
+          );
         }
       } catch (e) {
         // Игнорируем: локально уже сохранили persist()
       }
 
-      // 4) Короткая подсказка на 2.5 секунды с выбранными ТФ и сигналами,
+      // 4) Короткая подсказка на ~2.5 секунды с выбранными ТФ и сигналами,
       //    после чего мягко уезжаем на основную страницу alerts.html.
       const summaryText = buildShortSummaryText();
       showToast(summaryText, 2500, function () {

@@ -168,24 +168,55 @@
     return parts.join("\n");
   }
 
-    // Короткий текст для всплывающей подсказки:
+  // Короткий текст для всплывающей подсказки:
   // "Вы выбрали ТФ 15m и 1h; сигналы: пересечения, наклон"
   function buildShortSummaryText() {
     const onTfs = TF_ORDER.filter((id) => state.tfs[id]);
     const onSignals = SIGNAL_ORDER.filter((id) => state.signals[id]);
 
-    // Показываем максимум два ТФ (как и в серверной логике)
-    let tfText = "—";
+  // Короткий многострочный текст для всплывающей подсказки:
+  // Ваш выбор:
+  // ТФ: 15m и 1h
+  // Сигналы: пересечения, наклон
+  // Настройки сохранены в вашем профиле.
+  //
+  // BotCryptoSignal
+  function buildShortSummaryText() {
+    const onTfs = TF_ORDER.filter(function (id) {
+      return state.tfs[id];
+    });
+    const onSignals = SIGNAL_ORDER.filter(function (id) {
+      return state.signals[id];
+    });
+
+    // Максимум два ТФ (как и на бэкенде)
+    var tfText = "—";
     if (onTfs.length === 1) {
       tfText = onTfs[0];
     } else if (onTfs.length >= 2) {
       tfText = onTfs[0] + " и " + onTfs[1];
     }
 
-    const sigNames = onSignals.map((id) => tEma(SIGNAL_LABEL_KEYS[id]));
-    const sigText = sigNames.length ? sigNames.join(", ") : "—";
+    // Короткие имена сигналов. ПРЕДПОЛОЖЕНИЕ: интерфейс сейчас на русском.
+    var signalShortNames = {
+      cross: "пересечения",
+      price_cross: "пересечение цены",
+      slope: "наклон",
+    };
 
-    return "Вы выбрали ТФ " + tfText + "; сигналы: " + sigText;
+    var sigTextParts = onSignals.map(function (id) {
+      return signalShortNames[id] || id;
+    });
+    var sigText = sigTextParts.length ? sigTextParts.join(", ") : "—";
+
+    return [
+      "Ваш выбор:",
+      "ТФ: " + tfText,
+      "Сигналы: " + sigText,
+      "Настройки сохранены в вашем профиле.",
+      "",
+      "BotCryptoSignal",
+    ].join("\n");
   }
 
   // Небольшой toast-оверлей снизу экрана, сам исчезает через timeoutMs мс
@@ -212,6 +243,7 @@
       transition: "opacity 0.3s ease",
       pointerEvents: "none",
       boxSizing: "border-box",
+      whiteSpace: "pre-line", // ← добавили, чтобы \n работали как в тексте выше
     });
 
     document.body.appendChild(div);

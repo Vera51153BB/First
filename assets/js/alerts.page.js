@@ -171,7 +171,7 @@ function updateOne(id){
     else body = order.map(([id]) => `${tItem(id)} — ${on[id] ? tCommon('on') : tCommon('off')}`).join('\n');
 
     return [
-      'OKXcandlebot',
+      'BotCryptoSignal',
       t('alerts.saved_prefix'),
       '',
       body,
@@ -191,7 +191,7 @@ function updateOne(id){
     try{ tg?.HapticFeedback?.notificationOccurred?.('success'); }catch{}
 
     const message = buildSummary(alerts);
-    notifySavedAndMaybeClose(message, { title:'OKXcandlebot', closeOnMobile:true });
+    notifySavedAndMaybeClose(message, { title:'BotCryptoSignal', closeOnMobile:true });
   });
 
   // Перерисовка при смене языка

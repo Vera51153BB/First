@@ -3,7 +3,7 @@
 (function () {
   "use strict";
 
-  const { tg, safeSendData, showToast, attachRipple, saveLocal, loadLocal } = window.Core || {};
+  const { tg, safeSendData, attachRipple, saveLocal, loadLocal } = window.Core || {};
   const t = (k) => (window.I18N && window.I18N.t ? window.I18N.t(k) : k);
   const tCommon = (k) => t("common." + k);
   const tEma = (k) => t("ema." + k);
@@ -193,7 +193,8 @@
 
   // Небольшой toast-оверлей снизу экрана, сам исчезает через timeoutMs мс
   // и затем вызывает onDone (например, переход на alerts.html).
-  function showToast(text, timeoutMs, onDone) {
+  // Имя функции отличаем от Core.showToast, чтобы не было конфликта.
+  function showEmaToast(text, timeoutMs, onDone) {
     const div = document.createElement("div");
     div.className = "ema-toast";
     div.textContent = text;
@@ -275,7 +276,7 @@
       // 3) НЕ Telegram WebApp (открыто напрямую в браузере):
       //    показываем toast и после этого переходим на alerts.html.
       if (!tg || !tg.sendData) {
-        showToast(summaryText, 2600, function () {
+        showEmaToast(summaryText, 2600, function () {
           openMainAlertsPage();
         });
         return;
@@ -290,9 +291,11 @@
       //    Показываем toast ~2.6 сек, а потом вызываем sendData.
       //    После sendData Telegram САМ закроет mini-app и вернёт
       //    пользователя в чат, где он увидит подтверждение от бота.
-      showToast(summaryText, 2600, function () {
+      showEmaToast(summaryText, 2600, function () {
         try {
           tg.sendData(JSON.stringify({ type: "save_ema", ema: sendState }));
+          // ФАКТ: после успешного sendData Telegram сам закроет WebApp
+          // и вернёт пользователя в чат. Повлиять на это нельзя.
         } catch (e) {
           // Если tg.sendData не сработал — просто ничего не делаем:
           // локальное состояние уже сохранено, пользователь может повторить попытку.

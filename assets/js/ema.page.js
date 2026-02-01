@@ -3,7 +3,7 @@
 (function () {
   "use strict";
 
-  const { tg, safeSendData, notifySavedAndMaybeClose, attachRipple, saveLocal, loadLocal } = window.Core || {};
+  const { tg, safeSendData, showToast, attachRipple, saveLocal, loadLocal } = window.Core || {};
   const t = (k) => (window.I18N && window.I18N.t ? window.I18N.t(k) : k);
   const tCommon = (k) => t("common." + k);
   const tEma = (k) => t("ema." + k);
@@ -151,6 +151,14 @@
 
   function persist() {
     if (saveLocal) saveLocal(STORAGE_KEY, state);
+  }
+
+  // Приводим state к формату, который ожидает бэкенд (dict с tfs и signals)
+  function normalizeEmaStateForPayload(st) {
+    return {
+      tfs: Object.assign({}, (st && st.tfs) || {}),
+      signals: Object.assign({}, (st && st.signals) || {}),
+    };
   }
 
   // ----- Сохранение и отправка в бота -----

@@ -168,6 +168,75 @@
     return parts.join("\n");
   }
 
+    // Короткий текст для всплывающей подсказки:
+  // "Вы выбрали ТФ 15m и 1h; сигналы: пересечения, наклон"
+  function buildShortSummaryText() {
+    const onTfs = TF_ORDER.filter((id) => state.tfs[id]);
+    const onSignals = SIGNAL_ORDER.filter((id) => state.signals[id]);
+
+    // Показываем максимум два ТФ (как и в серверной логике)
+    let tfText = "—";
+    if (onTfs.length === 1) {
+      tfText = onTfs[0];
+    } else if (onTfs.length >= 2) {
+      tfText = onTfs[0] + " и " + onTfs[1];
+    }
+
+    const sigNames = onSignals.map((id) => tEma(SIGNAL_LABEL_KEYS[id]));
+    const sigText = sigNames.length ? sigNames.join(", ") : "—";
+
+    return "Вы выбрали ТФ " + tfText + "; сигналы: " + sigText;
+  }
+
+  // Небольшой toast-оверлей снизу экрана, сам исчезает через timeoutMs мс
+  // и затем вызывает onDone (например, переход на alerts.html).
+  function showToast(text, timeoutMs, onDone) {
+    const div = document.createElement("div");
+    div.className = "ema-toast";
+    div.textContent = text;
+
+    Object.assign(div.style, {
+      position: "fixed",
+      left: "50%",
+      bottom: "24px",
+      transform: "translateX(-50%)",
+      maxWidth: "90%",
+      padding: "10px 14px",
+      borderRadius: "10px",
+      background: "rgba(0, 0, 0, 0.8)",
+      color: "#fff",
+      fontSize: "14px",
+      zIndex: 9999,
+      textAlign: "center",
+      opacity: "0",
+      transition: "opacity 0.3s ease",
+      pointerEvents: "none",
+      boxSizing: "border-box",
+    });
+
+    document.body.appendChild(div);
+
+    // Плавное появление
+    requestAnimationFrame(function () {
+      div.style.opacity = "1";
+    });
+
+    const visibleMs = typeof timeoutMs === "number" ? timeoutMs : 2000;
+
+    setTimeout(function () {
+      // Плавное исчезновение
+      div.style.opacity = "0";
+      setTimeout(function () {
+        if (div.parentNode) {
+          div.parentNode.removeChild(div);
+        }
+        if (typeof onDone === "function") {
+          onDone();
+        }
+      }, 300); // время на fade-out
+    }, visibleMs);
+  }
+
   // --- helper: перейти на основную страницу настроек (alerts.html) после сохранения EMA ---
   // Переход на основную страницу настроек (alerts.html)
     function openMainAlertsPage() {
@@ -203,8 +272,12 @@
 
       // state.tfs/state.signals внутри — dict(bool).
       // Нормализуем в списки включённых значений.
-      sendState.tfs = Object.keys(state.tfs).filter((tf) => state.tfs[tf]);
-      sendState.signals = SIGNAL_ORDER.filter((id) => state.signals[id]);
+      sendState.tfs = Object.keys(state.tfs).filter(function (tf) {
+        return state.tfs[tf];
+      });
+      sendState.signals = SIGNAL_ORDER.filter(function (id) {
+        return state.signals[id];
+      });
 
       // 3) Отправка в бота
       try {
@@ -215,8 +288,12 @@
         // Игнорируем: локально уже сохранили persist()
       }
 
-      // 4) Один переход обратно на alerts.html внутри WebView (без системного браузера)
-      openMainAlertsPage();
+      // 4) Короткая подсказка на 2.5 секунды с выбранными ТФ и сигналами,
+      //    после чего мягко уезжаем на основную страницу alerts.html.
+      const summaryText = buildShortSummaryText();
+      showToast(summaryText, 2500, function () {
+        openMainAlertsPage();
+      });
     });
   }
 

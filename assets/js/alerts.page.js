@@ -25,6 +25,7 @@
   function saveState(arr){ saveLocal(STORAGE_KEY, arr); }
   
   // ===== EMA: локальный кэш из отдельной страницы настроек =====
+  // ===== EMA: локальные настройки, сохранённые на отдельной странице =====
   const EMA_STORAGE_KEY = 'okx_ema_settings_v1';
 
   function loadEmaState(){
@@ -37,8 +38,8 @@
     return { tfs, signals };
   }
 
-  // Приводим EMA-состояние к аккуратному виду для отправки:
-  // dict с tfs/signals, значения — строгие bool.
+  // Приводим EMA-состояние к аккуратному виду для отправки в бота:
+  // обе ветки (tfs и signals) — обычные dict, значения жёстко приводим к bool.
   function normalizeEmaForPayload(ema){
     if (!ema || typeof ema !== 'object') return null;
 
@@ -59,7 +60,7 @@
     return out;
   }
 
-  // EMA-состояние, загруженное один раз при инициализации страницы alerts.
+  // EMA-состояние, загруженное один раз при инициализации alerts.html
   let emaState = loadEmaState();
 
   /* ===== рендер ===== */

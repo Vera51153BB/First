@@ -273,33 +273,11 @@
       // 2) Собираем текст подсказки (локализованный).
       const summaryText = buildShortSummaryText();
 
-      // 3) НЕ Telegram WebApp (открыто напрямую в браузере):
-      //    показываем toast и после этого переходим на alerts.html.
-      if (!tg || !tg.sendData) {
-        showEmaToast(summaryText, 2600, function () {
-          openMainAlertsPage();
-        });
-        return;
-      }
-
-      // 4) Telegram WebApp:
-      //    готовим state в формате dict(bool), который ожидает backend.
-      const sendState = clone(state);
-      sendState.tfs = Object.assign({}, state.tfs);
-      sendState.signals = Object.assign({}, state.signals);
-
-      //    Показываем toast ~2.6 сек, а потом вызываем sendData.
-      //    После sendData Telegram САМ закроет mini-app и вернёт
-      //    пользователя в чат, где он увидит подтверждение от бота.
-      showEmaToast(summaryText, 2600, function () {
-        try {
-          tg.sendData(JSON.stringify({ type: "save_ema", ema: sendState }));
-          // ФАКТ: после успешного sendData Telegram сам закроет WebApp
-          // и вернёт пользователя в чат. Повлиять на это нельзя.
-        } catch (e) {
-          // Если tg.sendData не сработал — просто ничего не делаем:
-          // локальное состояние уже сохранено, пользователь может повторить попытку.
-        }
+      // 3) Показываем toast и после небольшой паузы
+      //    возвращаем пользователя на главную страницу настроек alerts.html.
+      //    Никаких запросов в бота отсюда не шлём.
+      showToast(summaryText, 2600, function () {
+        openMainAlertsPage();
       });
     });
   }

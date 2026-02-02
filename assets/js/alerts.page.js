@@ -60,8 +60,10 @@
     return out;
   }
 
-  // EMA-состояние, загруженное один раз при инициализации alerts.html
-  let emaState = loadEmaState();
+  // EMA-состояние читаем из localStorage непосредственно перед отправкой
+  // (в обработчике кнопки «Сохранить»), чтобы после возврата с EMA-страницы
+  // всегда брать самые свежие значения.
+  // let emaState = loadEmaState();
 
   /* ===== рендер ===== */
   const listEl     = document.getElementById('list');
@@ -225,6 +227,9 @@ function updateOne(id){
     const payloadObj = { type:'save', alerts };
 
     // Подхватываем EMA-настройки из локального кэша, если они есть.
+    // ВАЖНО: каждый раз читаем их из localStorage, чтобы поймать
+    // изменения, сделанные на отдельной странице EMA (setting_alerts_ma.html).
+    const emaState = loadEmaState();
     const emaNormalized = normalizeEmaForPayload(emaState);
     if (emaNormalized) {
       payloadObj.ema = emaNormalized;

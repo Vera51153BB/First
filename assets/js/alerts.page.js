@@ -23,6 +23,44 @@
     return DEFAULT_ALERTS.map(d => ({...d, on: map[d.id] ?? d.on}));
   }
   function saveState(arr){ saveLocal(STORAGE_KEY, arr); }
+  
+  // ===== EMA: локальный кэш из отдельной страницы настроек =====
+  const EMA_STORAGE_KEY = 'okx_ema_settings_v1';
+
+  function loadEmaState(){
+    const saved = loadLocal(EMA_STORAGE_KEY, null);
+    if (!saved || typeof saved !== 'object') return null;
+
+    const tfs = (saved.tfs && typeof saved.tfs === 'object') ? saved.tfs : {};
+    const signals = (saved.signals && typeof saved.signals === 'object') ? saved.signals : {};
+
+    return { tfs, signals };
+  }
+
+  // Приводим EMA-состояние к аккуратному виду для отправки:
+  // dict с tfs/signals, значения — строгие bool.
+  function normalizeEmaForPayload(ema){
+    if (!ema || typeof ema !== 'object') return null;
+
+    const out = { tfs: {}, signals: {} };
+
+    if (ema.tfs && typeof ema.tfs === 'object') {
+      Object.keys(ema.tfs).forEach((k)=>{
+        out.tfs[k] = !!ema.tfs[k];
+      });
+    }
+
+    if (ema.signals && typeof ema.signals === 'object') {
+      Object.keys(ema.signals).forEach((k)=>{
+        out.signals[k] = !!ema.signals[k];
+      });
+    }
+
+    return out;
+  }
+
+  // EMA-состояние, загруженное один раз при инициализации страницы alerts.
+  let emaState = loadEmaState();
 
   /* ===== рендер ===== */
   const listEl     = document.getElementById('list');
@@ -182,7 +220,16 @@ function updateOne(id){
 
   /* «Сохранить настройки» — отправка, вспышка, сводка */
   saveEl.addEventListener('click', ()=>{
-    const payload = JSON.stringify({ type:'save', alerts });
+    // Базовый payload с тумблерами основных алертов
+    const payloadObj = { type:'save', alerts };
+
+    // Подхватываем EMA-настройки из локального кэша, если они есть.
+    const emaNormalized = normalizeEmaForPayload(emaState);
+    if (emaNormalized) {
+      payloadObj.ema = emaNormalized;
+    }
+
+    const payload = JSON.stringify(payloadObj);
     const sent = safeSendData(payload);
     if (!sent) saveState(alerts);
 

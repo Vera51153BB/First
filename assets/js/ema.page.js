@@ -276,7 +276,7 @@
       // 3) Показываем toast и после небольшой паузы
       //    возвращаем пользователя на главную страницу настроек alerts.html.
       //    Никаких запросов в бота отсюда НЕ шлём.
-      showToast(summaryText, 2600, function () {
+      showEmaToast(summaryText, 2600, function () {
         openMainAlertsPage();
       });
     });

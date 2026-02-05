@@ -266,6 +266,31 @@
 
   if (saveBtn) {
     saveBtn.addEventListener("click", function () {
+      // 0) Валидация: максимум 2 таймфрейма и 2 типа сигналов.
+      const onTfs = TF_ORDER.filter(function (id) { return !!state.tfs[id]; });
+      const onSignals = SIGNAL_ORDER.filter(function (id) { return !!state.signals[id]; });
+
+      let errorText = "";
+
+      if (onTfs.length > 2 && onSignals.length > 2) {
+        // Обе группы превышают лимит
+        errorText = tEma("validation_both_too_many");
+      } else if (onTfs.length > 2) {
+        // Превышен лимит по таймфреймам
+        const tpl = tEma("validation_tfs_too_many");
+        // Подставляем количество выбранных ТФ вместо {count}
+        errorText = tpl.replace("{count}", String(onTfs.length));
+      } else if (onSignals.length > 2) {
+        // Превышен лимит по видам сигналов
+        errorText = tEma("validation_signals_too_many");
+      }
+
+      if (errorText) {
+        // Если есть ошибка — показываем тост и НЕ сохраняем / НЕ уходим со страницы.
+        showEmaToast(errorText, 2600);
+        return;
+      }
+
       // 1) Всегда сразу сохраняем состояние локально,
       //    чтобы его можно было восстановить даже при сбое сети.
       persist();

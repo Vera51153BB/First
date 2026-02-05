@@ -44,6 +44,9 @@ const DICTS = {
       saved_footer: "EMA settings are saved on this device.",
       summary_timeframes: "Timeframes:",
       summary_signals: "Signals:",
+      validation_tfs_too_many: "You selected {count} timeframes.\nOnly 2 timeframes are allowed.",
+      validation_signals_too_many: "Please reduce the number of signal types to two.",
+      validation_both_too_many: "You can use up to 2 timeframes and 2 signal types.",
     },
     landing: {
       hero: {
@@ -136,6 +139,9 @@ const DICTS = {
       saved_footer: "EMA सेटिंग्स इस डिवाइस पर सहेजी गई हैं।",
       summary_timeframes: "टाइमफ़्रेम:",
       summary_signals: "सिग्नल:",
+      validation_tfs_too_many: "आपने {count} टाइमफ्रेम चुने हैं.\nअधिकतम 2 टाइमफ्रेम की अनुमति है.",
+      validation_signals_too_many: "कृपया सिग्नल के प्रकारों की संख्या घटाकर दो कर दें.",
+      validation_both_too_many: "आप केवल 2 टाइमफ्रेम और 2 प्रकार के सिग्नल का उपयोग कर सकते हैं.",
     },
     landing: {
       hero: {
@@ -228,6 +234,9 @@ const DICTS = {
       saved_footer: "Настройки EMA сохранены на этом устройстве.",
       summary_timeframes: "Таймфреймы:",
       summary_signals: "Сигналы:",
+      validation_tfs_too_many: "Вы выбрали {count} ТФ.\nДоступно только 2 ТФ.",
+      validation_signals_too_many: "Пожалуйста, уменьшите количество типов сигналов до двух.",
+      validation_both_too_many: "Доступно 2 ТФ и 2 типа сигналов.",
     },
     landing: {
       hero: {
@@ -320,6 +329,9 @@ const DICTS = {
       saved_footer: "Configurações de EMA salvas neste dispositivo.",
       summary_timeframes: "Timeframes:",
       summary_signals: "Sinais:",
+      validation_tfs_too_many: "Você selecionou {count} timeframes.\nSó são permitidos 2 timeframes.",
+      validation_signals_too_many: "Reduza o número de tipos de sinal para dois, por favor.",
+      validation_both_too_many: "Você pode usar no máximo 2 timeframes e 2 tipos de sinal.",
     },
     landing: {
       hero: {
@@ -412,6 +424,9 @@ const DICTS = {
       saved_footer: "Los ajustes de EMA se guardan en este dispositivo.",
       summary_timeframes: "Marcos temporales:",
       summary_signals: "Señales:",
+      validation_tfs_too_many: "Has seleccionado {count} marcos temporales.\nSolo se permiten 2 marcos temporales.",
+      validation_signals_too_many: "Por favor, reduce el número de tipos de señal a dos.",
+      validation_both_too_many: "Solo puedes usar 2 marcos temporales y 2 tipos de señal.",
     },
     landing: {
       hero: {
@@ -504,6 +519,9 @@ const DICTS = {
       saved_footer: "Налаштування EMA збережені на цьому пристрої.",
       summary_timeframes: "Таймфрейми:",
       summary_signals: "Сигнали:",
+      validation_tfs_too_many: "Ви обрали {count} таймфрейми.\nДозволено не більше двох.",
+      validation_signals_too_many: "Будь ласка, зменште кількість типів сигналів до двох.",
+      validation_both_too_many: "Доступно 2 таймфрейми і 2 типи сигналів.",
     },
     landing: {
       hero: {
@@ -596,6 +614,9 @@ const DICTS = {
       saved_footer: "EMA-Einstellungen werden auf diesem Gerät gespeichert.",
       summary_timeframes: "Zeiteinheiten:",
       summary_signals: "Signale:",
+      validation_tfs_too_many: "Sie haben {count} Timeframes ausgewählt.\nEs sind nur 2 Timeframes erlaubt.",
+      validation_signals_too_many: "Bitte reduzieren Sie die Anzahl der Signalarten auf zwei.",
+      validation_both_too_many: "Es sind höchstens 2 Timeframes und 2 Signalarten möglich.",
     },
     landing: {
       hero: {
@@ -688,6 +709,9 @@ const DICTS = {
       saved_footer: "Les paramètres EMA sont enregistrés sur cet appareil.",
       summary_timeframes: "Unités de temps :",
       summary_signals: "Signaux :",
+      validation_tfs_too_many: "Vous avez sélectionné {count} unités de temps.\nSeulement 2 unités de temps sont autorisées.",
+      validation_signals_too_many: "Veuillez réduire le nombre de types de signaux à deux.",
+      validation_both_too_many: "Vous pouvez utiliser au maximum 2 unités de temps et 2 types de signaux.",
     },
     landing: {
       hero: {
@@ -780,6 +804,9 @@ const DICTS = {
       saved_footer: "Impostazioni EMA salvate su questo dispositivo.",
       summary_timeframes: "Timeframe:",
       summary_signals: "Segnali:",
+      validation_tfs_too_many: "Hai selezionato {count} timeframe.\nSono consentiti al massimo 2 timeframe.",
+      validation_signals_too_many: "Riduci il numero di tipi di segnale a due, per favore.",
+      validation_both_too_many: "Puoi usare al massimo 2 timeframe e 2 tipi di segnale.",
     },
     landing: {
       hero: {
@@ -872,6 +899,9 @@ const DICTS = {
       saved_footer: "EMA設定はこのデバイスに保存されました。",
       summary_timeframes: "時間足:",
       summary_signals: "シグナル:",
+      validation_tfs_too_many: "{count}個の時間足を選択しました。\n使用できる時間足は最大2つまでです。",
+      validation_signals_too_many: "シグナルの種類は2つまでに減らしてください。",
+      validation_both_too_many: "時間足は2つまで、シグナルの種類も2つまで利用できます。",
     },
     landing: {
       hero: {
@@ -964,6 +994,9 @@ const DICTS = {
       saved_footer: "EMA ayarları bu cihazda saklandı.",
       summary_timeframes: "Zaman dilimleri:",
       summary_signals: "Sinyaller:",
+      validation_tfs_too_many: "{count} zaman dilimi seçtiniz.\nEn fazla 2 zaman dilimine izin verilir.",
+      validation_signals_too_many: "Lütfen sinyal türü sayısını ikiye düşürün.",
+      validation_both_too_many: "En fazla 2 zaman dilimi ve 2 sinyal türü kullanabilirsiniz.",
     },
     landing: {
       hero: {
@@ -1056,6 +1089,9 @@ const DICTS = {
       saved_footer: "EMA 设置已保存在此设备上。",
       summary_timeframes: "时间周期：",
       summary_signals: "信号：",
+      validation_tfs_too_many: "您选择了 {count} 个周期。\n最多只能选择 2 个周期。",
+      validation_signals_too_many: "请将信号类型的数量减少到 2 个。",
+      validation_both_too_many: "最多可以选择 2 个周期和 2 种信号类型。",
     },
     landing: {
       hero: {

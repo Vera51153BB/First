@@ -13,12 +13,12 @@
   // ----- Модель -----
   const DEFAULT_STATE = {
     tfs: {
-      "15m": true,
+      "15m": false,
       "1h": true,
       "4h": true,
-      "8h": false,
+      "6h": false,
       "12h": false,
-      "1d": true,
+      "1d": false,
     },
     signals: {
       cross: true,         // пересечение быстрая/медленная
@@ -47,12 +47,12 @@
   const sigRoot = document.getElementById("emaSignalList");
   const saveBtn = document.getElementById("saveBtn");  // id совпадает с HTML
 
-  const TF_ORDER = ["15m", "1h", "4h", "8h", "12h", "1d"];
+  const TF_ORDER = ["15m", "1h", "4h", "6h", "12h", "1d"];
   const TF_LABELS = {
     "15m": "15m",
     "1h": "1h",
     "4h": "4h",
-    "8h": "8h",
+    "6h": "6h",
     "12h": "12h",
     "1d": "1d",
   };

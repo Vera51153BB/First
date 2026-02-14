@@ -163,11 +163,11 @@
 
   // ----- Сохранение и отправка в бота -----
   // Текст всплывающей подсказки при сохранении EMA-настроек.
-  // Использует i18n-ключи:
-  //   ema.toast_prefix
-  //   ema.toast_tfs_label
-  //   ema.toast_signals_label
-  //   ema.toast_saved
+  // Использует существующие i18n-ключи:
+  //   ema.saved_prefix
+  //   ema.summary_timeframes
+  //   ema.summary_signals
+  //   ema.saved_footer
   function buildShortSummaryText() {
     const onTfs = TF_ORDER.filter((id) => !!state.tfs[id]);
     const onSignals = SIGNAL_ORDER.filter((id) => !!state.signals[id]);
@@ -181,12 +181,16 @@
     const signalsText = signalNames.length ? signalNames.join(", ") : "—";
 
     const parts = [];
-    parts.push(tEma("toast_prefix"));                            // "Ваш выбор:"
-    parts.push(tEma("toast_tfs_label") + " " + tfsText);         // "ТФ: 15m и 1h"
-    parts.push(tEma("toast_signals_label") + " " + signalsText); // "Сигналы: пересечения, наклон"
-    parts.push("");                                              // пустая строка
-    parts.push(tEma("toast_saved"));                             // "Настройки сохранены на вашем аккаунте."
-    parts.push("");                                              // ещё одна пустая строка
+    // "Новые настройки EMA:" / "New EMA settings:"
+    parts.push(tEma("saved_prefix"));
+    // "Таймфреймы: 15m, 4h" / "Timeframes: 15m, 4h"
+    parts.push(tEma("summary_timeframes") + " " + tfsText);
+    // "Сигналы: Цена пересекает EMA, Смена наклона EMA"
+    parts.push(tEma("summary_signals") + " " + signalsText);
+    parts.push(""); // пустая строка
+    // "Настройки EMA сохранены на этом устройстве."
+    parts.push(tEma("saved_footer"));
+    parts.push(""); // ещё одна пустая строка
     parts.push("BotCryptoSignal");
     return parts.join("\n");
   }

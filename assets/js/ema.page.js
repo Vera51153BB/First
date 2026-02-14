@@ -313,10 +313,19 @@
 
   // Перерисовка при смене языка
   window.addEventListener("i18n:change", function () {
+    // Применяем переводы для всех data-i18n на странице
+    if (window.Core && typeof window.Core.translateHTML === "function") {
+      window.Core.translateHTML();
+    }
     render();
   });
 
   document.addEventListener("DOMContentLoaded", function () {
+    // На всякий случай сами запускаем локализацию страницы,
+    // даже если по какой-то причине хендлер из core.js не сработал
+    if (window.Core && typeof window.Core.translateHTML === "function") {
+      window.Core.translateHTML();
+    }
     render();
   });
 })();

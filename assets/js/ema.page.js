@@ -223,7 +223,7 @@
   // После закрытия (таймером или крестиком) вызывается onDone.
   
   // Время показа всплывающего окна EMA (toast), мс
-  const EMA_TOAST_VISIBLE_MS = 9000;
+  const EMA_TOAST_VISIBLE_MS = 11000;
 
   function showEmaToast(text, timeoutMs, onDone) {
     const div = document.createElement("div");

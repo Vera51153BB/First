@@ -217,13 +217,40 @@
     return lines.join("\n");
   }
 
-  // Небольшой toast-оверлей снизу экрана, сам исчезает через timeoutMs мс
-  // и затем вызывает onDone (например, переход на alerts.html).
+  // Информационный toast-оверлей посреди экрана, сам исчезает через timeoutMs мс
+  // и затем вызывает onDone для перехода на alerts.html.
   // Имя функции отличаем от Core.showToast, чтобы не было конфликта.
+  // После закрытия (таймером или крестиком) вызывается onDone.
+  
+  // Время показа всплывающего окна EMA (toast), мс
+  const EMA_TOAST_VISIBLE_MS = 9000;
+
   function showEmaToast(text, timeoutMs, onDone) {
     const div = document.createElement("div");
     div.className = "ema-toast";
-    div.innerHTML = text;
+
+    // ВНУТРЕННИЙ блок с текстом, сюда кладём HTML
+    const content = document.createElement("div");
+    content.innerHTML = text || "";
+    div.appendChild(content);
+
+    // Красный крестик в правом верхнем углу тоста
+    const closeBtn = document.createElement("button");
+    closeBtn.type = "button";
+    closeBtn.textContent = "✖";
+    Object.assign(closeBtn.style, {
+      position: "absolute",
+      top: "8px",
+      right: "10px",
+      background: "transparent",
+      border: "none",
+      color: "#ff5f5f",
+      fontSize: "16px",
+      cursor: "pointer",
+      padding: "0",
+    });
+
+    div.appendChild(closeBtn);
 
     Object.assign(div.style, {
       position: "fixed",
@@ -241,10 +268,10 @@
       zIndex: 9999,
       textAlign: "center",
       opacity: "0",
-      transition: "opacity 0.5s ease",
-      pointerEvents: "none",
+      transition: "opacity 0.3s ease",
+      pointerEvents: "auto",      // нужно, чтобы клик по крестику работал
       boxSizing: "border-box",
-      whiteSpace: "pre-line", // \n → переносы строк
+      whiteSpace: "pre-line",     // \n → переносы строк
     });
 
     document.body.appendChild(div);
@@ -254,19 +281,41 @@
       div.style.opacity = "1";
     });
 
-    const visibleMs = typeof timeoutMs === "number" ? timeoutMs : 4500;
+    // дефолт берём из EMA_TOAST_VISIBLE_MS (9000мс)
+    const visibleMs = typeof timeoutMs === "number" ? timeoutMs : EMA_TOAST_VISIBLE_MS;
 
-    setTimeout(function () {
-      // Плавное исчезновение
+    let closed = false;
+    let hideTimer = null;
+
+    function closeToast(needOnDone) {
+      if (closed) return;
+      closed = true;
+
+      if (hideTimer !== null) {
+        clearTimeout(hideTimer);
+        hideTimer = null;
+      }
+
       div.style.opacity = "0";
       setTimeout(function () {
         if (div.parentNode) {
           div.parentNode.removeChild(div);
         }
-        if (typeof onDone === "function") {
+        if (needOnDone && typeof onDone === "function") {
           onDone();
         }
-      }, 500); // время на fade-out
+      }, 300); // время на fade-out, синхронизировано с transition
+    }
+
+    // Клик по крестику: сразу закрыть и выполнить onDone (переход на alerts.html)
+    closeBtn.addEventListener("click", function (evt) {
+      evt.stopPropagation();
+      closeToast(true);
+    });
+
+    // Автоматическое закрытие по таймауту (резервный вариант)
+    hideTimer = setTimeout(function () {
+      closeToast(true);
     }, visibleMs);
   }
 
@@ -315,7 +364,7 @@
 
       if (errorText) {
         // Если есть ошибка — показываем тост и НЕ сохраняем / НЕ уходим со страницы.
-        showEmaToast(errorText, 2600);
+        showEmaToast(errorText, EMA_TOAST_VISIBLE_MS);
         return;
       }
 
@@ -329,7 +378,7 @@
       // 3) Показываем toast и после небольшой паузы
       //    возвращаем пользователя на главную страницу настроек alerts.html.
       //    Никаких запросов в бота отсюда НЕ шлём.
-      showEmaToast(summaryText, 2600, function () {
+      showEmaToast(summaryText, EMA_TOAST_VISIBLE_MS, function () {
         openMainAlertsPage();
       });
     });

@@ -261,7 +261,7 @@
     div.style.opacity = "1";
 
     // Длительность показа (по умолчанию ~2.6–3.5 сек)
-    const visibleMs = typeof timeoutMs === "number" ? timeoutMs : 3500;
+    const visibleMs = typeof timeoutMs === "number" ? timeoutMs : 5500;
 
     setTimeout(function () {
       // Плавное исчезновение

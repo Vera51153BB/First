@@ -172,78 +172,99 @@
     const onTfs = TF_ORDER.filter((id) => !!state.tfs[id]);
     const onSignals = SIGNAL_ORDER.filter((id) => !!state.signals[id]);
 
-    const tfsText = onTfs.length ? onTfs.join(", ") : "—";
+    const tfLabels = onTfs.map((id) => id); // 15m, 1h, 4h, ...
 
-    const signalNames = onSignals.map((id) => {
-      const key = SIGNAL_LABEL_KEYS[id];
-      return tEma(key);
-    });
-    const signalsText = signalNames.length ? signalNames.join(", ") : "—";
+    const signalLabels = [];
+    if (onSignals.includes("cross")) {
+        signalLabels.push(tEma("sig_cross"));
+    }
+    if (onSignals.includes("price_cross")) {
+        signalLabels.push(tEma("sig_price_cross"));
+    }
+    if (onSignals.includes("slope")) {
+        signalLabels.push(tEma("sig_slope"));
+    }
 
-    const parts = [];
-    // "Новые настройки EMA:" / "New EMA settings:"
-    parts.push(tEma("saved_prefix"));
-    // "Таймфреймы: 15m, 4h" / "Timeframes: 15m, 4h"
-    parts.push(tEma("summary_timeframes") + " " + tfsText);
-    // "Сигналы: Цена пересекает EMA, Смена наклона EMA"
-    parts.push(tEma("summary_signals") + " " + signalsText);
-    parts.push(""); // пустая строка
-    // "Настройки EMA сохранены на этом устройстве."
-    parts.push(tEma("saved_footer"));
-    parts.push(""); // ещё одна пустая строка
-    parts.push("BotCryptoSignal");
-    return parts.join("\n");
-  }
+    const sep = "──────────────";
+
+    const lines = [];
+
+    // Блок-подсказка про "Применить настройки"
+    lines.push("☝️");
+    lines.push(tEma("apply_hint_before_button"));
+    lines.push(`🔹<b>${tEma("apply_hint_button")}</b>🔹`);
+    lines.push(tEma("apply_hint_after_button"));
+    lines.push("");
+    lines.push(sep);
+    lines.push("");
+
+    // Основной блок с кратким резюме настроек
+    lines.push(tEma("saved_prefix")); // "Новые настройки EMA:"
+
+    if (tfLabels.length) {
+        lines.push(`${tEma("summary_timeframes")} ${tfLabels.join(", ")}`);
+    }
+
+    // "Сигналы:" – отдельной строкой
+    lines.push(tEma("summary_signals"));
+    signalLabels.forEach((label) => lines.push(label));
+
+    lines.push("");
+    lines.push(sep);
+    lines.push("");
+    lines.push("BotCryptoSignal"); // бренд без i18n
+
+    return lines.join("\n");
+}
 
   // Небольшой toast-оверлей снизу экрана, сам исчезает через timeoutMs мс
   // и затем вызывает onDone (например, переход на alerts.html).
   // Имя функции отличаем от Core.showToast, чтобы не было конфликта.
-  function showEmaToast(text, timeoutMs, onDone) {
+  function showEmaToast(message) {
+    if (!message) return;
+
+    const existing = document.querySelector('[data-ema-toast="1"]');
+    if (existing) existing.remove();
+
     const div = document.createElement("div");
-    div.className = "ema-toast";
-    div.textContent = text;
+    div.setAttribute("data-ema-toast", "1");
 
     Object.assign(div.style, {
       position: "fixed",
       left: "50%",
-      top: "50%",
-      transform: "translate(-50%, -50%)",
-      maxWidth: "90%",
-      padding: "10px 14px",
-      borderRadius: "10px",
-      background: "#ff5f5f",
-      color: "#050029",
+      bottom: "24px",
+      transform: "translateX(-50%)",
+      maxWidth: "480px",
+      width: "calc(100% - 32px)", // чуть шире, с полями по краям
+      padding: "16px 20px",
+      borderRadius: "24px",
+      background: "#181722",
+      color: "#ffffff",
       fontSize: "14px",
+      lineHeight: "1.4",
       zIndex: 9999,
       textAlign: "center",
       opacity: "0",
       transition: "opacity 0.3s ease",
       pointerEvents: "none",
       boxSizing: "border-box",
-      whiteSpace: "pre-line", // чтобы \n отображались строками
+      whiteSpace: "pre-line", // \n → переносы строк
     });
+
+    // ВАЖНО: теперь используем HTML, чтобы <b> работал
+    div.innerHTML = message;
 
     document.body.appendChild(div);
 
-    // Плавное появление
-    requestAnimationFrame(function () {
-      div.style.opacity = "1";
-    });
+    void div.offsetWidth; // reflow
+    div.style.opacity = "1";
 
-    const visibleMs = typeof timeoutMs === "number" ? timeoutMs : 2500;
-
-    setTimeout(function () {
-      // Плавное исчезновение
+    setTimeout(() => {
       div.style.opacity = "0";
-      setTimeout(function () {
-        if (div.parentNode) {
-          div.parentNode.removeChild(div);
-        }
-        if (typeof onDone === "function") {
-          onDone();
-        }
-      }, 300); // время на fade-out
-    }, visibleMs);
+      setTimeout(() => {
+        div.remove();
+      }, 300);
+    }, 3500);
   }
 
   // Переход на основную страницу настроек (alerts.html)

@@ -192,7 +192,7 @@
     // Блок-подсказка про "Применить настройки"
     lines.push("☝️");
     lines.push(tEma("apply_hint_before_button"));
-    lines.push(`🔹<b>${tАlerts("save")}</b>🔹`);
+    lines.push(`🔹<b>${tAlerts("save")}</b>🔹`);
     lines.push(tEma("apply_hint_after_button"));
     lines.push("");
     lines.push(sep);

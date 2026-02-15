@@ -47,6 +47,9 @@ const DICTS = {
       validation_tfs_too_many: "You selected {count} timeframes.\nOnly 2 timeframes are allowed.",
       validation_signals_too_many: "Please reduce the number of signal types to two.",
       validation_both_too_many: "You can use up to 2 timeframes and 2 signal types.",
+      apply_hint_before_button: "To apply these settings, tap the button",
+      apply_hint_button: "Apply settings",
+      apply_hint_after_button: "in the menu: Manage settings",
     },
     landing: {
       hero: {
@@ -142,6 +145,9 @@ const DICTS = {
       validation_tfs_too_many: "आपने {count} टाइमफ्रेम चुने हैं.\nअधिकतम 2 टाइमफ्रेम की अनुमति है.",
       validation_signals_too_many: "कृपया सिग्नल के प्रकारों की संख्या घटाकर दो कर दें.",
       validation_both_too_many: "आप केवल 2 टाइमफ्रेम और 2 प्रकार के सिग्नल का उपयोग कर सकते हैं.",
+      apply_hint_before_button: "इन सेटिंग्स को लागू करने के लिए बटन दबाएँ",
+      apply_hint_button: "सेटिंग्स लागू करें",
+      apply_hint_after_button: "मेन्यू में: सेटिंग प्रबंधन",
     },
     landing: {
       hero: {
@@ -237,6 +243,9 @@ const DICTS = {
       validation_tfs_too_many: "Вы выбрали {count} ТФ.\nДоступно только 2 ТФ.",
       validation_signals_too_many: "Пожалуйста, уменьшите количество типов сигналов до двух.",
       validation_both_too_many: "Доступно 2 ТФ и 2 типа сигналов.",
+      apply_hint_before_button: "Для применения настроек нажмите кнопку",
+      apply_hint_button: "Применить настройки",
+      apply_hint_after_button: "в меню: Управление настройками",
     },
     landing: {
       hero: {
@@ -332,6 +341,9 @@ const DICTS = {
       validation_tfs_too_many: "Você selecionou {count} timeframes.\nSó são permitidos 2 timeframes.",
       validation_signals_too_many: "Reduza o número de tipos de sinal para dois, por favor.",
       validation_both_too_many: "Você pode usar no máximo 2 timeframes e 2 tipos de sinal.",
+      apply_hint_before_button: "Para aplicar estas configurações, toque no botão",
+      apply_hint_button: "Aplicar configurações",
+      apply_hint_after_button: "no menu: Gerenciar configurações",
     },
     landing: {
       hero: {
@@ -427,6 +439,9 @@ const DICTS = {
       validation_tfs_too_many: "Has seleccionado {count} marcos temporales.\nSolo se permiten 2 marcos temporales.",
       validation_signals_too_many: "Por favor, reduce el número de tipos de señal a dos.",
       validation_both_too_many: "Solo puedes usar 2 marcos temporales y 2 tipos de señal.",
+      apply_hint_before_button: "Para aplicar estos ajustes, pulsa el botón",
+      apply_hint_button: "Aplicar ajustes",
+      apply_hint_after_button: "en el menú: Gestión de ajustes",
     },
     landing: {
       hero: {
@@ -522,6 +537,9 @@ const DICTS = {
       validation_tfs_too_many: "Ви обрали {count} таймфрейми.\nДозволено не більше двох.",
       validation_signals_too_many: "Будь ласка, зменште кількість типів сигналів до двох.",
       validation_both_too_many: "Доступно 2 таймфрейми і 2 типи сигналів.",
+      apply_hint_before_button: "Щоб застосувати налаштування, натисніть кнопку",
+      apply_hint_button: "Застосувати налаштування",
+      apply_hint_after_button: "в меню: Керування налаштуваннями",
     },
     landing: {
       hero: {
@@ -617,6 +635,9 @@ const DICTS = {
       validation_tfs_too_many: "Sie haben {count} Timeframes ausgewählt.\nEs sind nur 2 Timeframes erlaubt.",
       validation_signals_too_many: "Bitte reduzieren Sie die Anzahl der Signalarten auf zwei.",
       validation_both_too_many: "Es sind höchstens 2 Timeframes und 2 Signalarten möglich.",
+      apply_hint_before_button: "Um diese Einstellungen zu übernehmen, tippe auf die Schaltfläche",
+      apply_hint_button: "Einstellungen übernehmen",
+      apply_hint_after_button: "im Menü: Einstellungen verwalten",
     },
     landing: {
       hero: {
@@ -712,6 +733,9 @@ const DICTS = {
       validation_tfs_too_many: "Vous avez sélectionné {count} unités de temps.\nSeulement 2 unités de temps sont autorisées.",
       validation_signals_too_many: "Veuillez réduire le nombre de types de signaux à deux.",
       validation_both_too_many: "Vous pouvez utiliser au maximum 2 unités de temps et 2 types de signaux.",
+      apply_hint_before_button: "Pour appliquer ces paramètres, appuyez sur le bouton",
+      apply_hint_button: "Appliquer les paramètres",
+      apply_hint_after_button: "dans le menu : Gestion des paramètres",
     },
     landing: {
       hero: {
@@ -807,6 +831,9 @@ const DICTS = {
       validation_tfs_too_many: "Hai selezionato {count} timeframe.\nSono consentiti al massimo 2 timeframe.",
       validation_signals_too_many: "Riduci il numero di tipi di segnale a due, per favore.",
       validation_both_too_many: "Puoi usare al massimo 2 timeframe e 2 tipi di segnale.",
+      apply_hint_before_button: "Per applicare queste impostazioni, tocca il pulsante",
+      apply_hint_button: "Applica impostazioni",
+      apply_hint_after_button: "nel menu: Gestione impostazioni",
     },
     landing: {
       hero: {
@@ -902,6 +929,9 @@ const DICTS = {
       validation_tfs_too_many: "{count}個の時間足を選択しました。\n使用できる時間足は最大2つまでです。",
       validation_signals_too_many: "シグナルの種類は2つまでに減らしてください。",
       validation_both_too_many: "時間足は2つまで、シグナルの種類も2つまで利用できます。",
+      apply_hint_before_button: "設定を適用するには、ボタンを押してください。",
+      apply_hint_button: "設定を適用",
+      apply_hint_after_button: "メニュー「設定の管理」で。",
     },
     landing: {
       hero: {
@@ -997,6 +1027,9 @@ const DICTS = {
       validation_tfs_too_many: "{count} zaman dilimi seçtiniz.\nEn fazla 2 zaman dilimine izin verilir.",
       validation_signals_too_many: "Lütfen sinyal türü sayısını ikiye düşürün.",
       validation_both_too_many: "En fazla 2 zaman dilimi ve 2 sinyal türü kullanabilirsiniz.",
+      apply_hint_before_button: "Bu ayarları uygulamak için düğmeye dokunun",
+      apply_hint_button: "Ayarları uygula",
+      apply_hint_after_button: "menüde: Ayar yönetimi",
     },
     landing: {
       hero: {
@@ -1092,6 +1125,9 @@ const DICTS = {
       validation_tfs_too_many: "您选择了 {count} 个周期。\n最多只能选择 2 个周期。",
       validation_signals_too_many: "请将信号类型的数量减少到 2 个。",
       validation_both_too_many: "最多可以选择 2 个周期和 2 种信号类型。",
+      apply_hint_before_button: "要应用这些设置，请点击按钮",
+      apply_hint_button: "应用设置",
+      apply_hint_after_button: "在菜单中：设置管理",
     },
     landing: {
       hero: {

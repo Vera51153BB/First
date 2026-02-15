@@ -223,13 +223,13 @@
   function showEmaToast(text, timeoutMs, onDone) {
     const div = document.createElement("div");
     div.className = "ema-toast";
-    div.textContent = text;
+    div.innerHTML = text;
 
     Object.assign(div.style, {
       position: "fixed",
       left: "50%",
-      bottom: "24px",
-      transform: "translateX(-50%)",
+      top: "50%",
+      transform: "translate(-50%, -50%)",
       maxWidth: "480px",
       width: "calc(100% - 32px)", // чуть шире, с полями по краям
       padding: "16px 20px",
@@ -241,7 +241,7 @@
       zIndex: 9999,
       textAlign: "center",
       opacity: "0",
-      transition: "opacity 0.3s ease",
+      transition: "opacity 0.5s ease",
       pointerEvents: "none",
       boxSizing: "border-box",
       whiteSpace: "pre-line", // \n → переносы строк
@@ -254,7 +254,7 @@
       div.style.opacity = "1";
     });
 
-    const visibleMs = typeof timeoutMs === "number" ? timeoutMs : 2500;
+    const visibleMs = typeof timeoutMs === "number" ? timeoutMs : 4500;
 
     setTimeout(function () {
       // Плавное исчезновение
@@ -266,7 +266,7 @@
         if (typeof onDone === "function") {
           onDone();
         }
-      }, 300); // время на fade-out
+      }, 500); // время на fade-out
     }, visibleMs);
   }
 

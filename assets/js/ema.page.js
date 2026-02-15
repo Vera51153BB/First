@@ -215,19 +215,15 @@
     lines.push("BotCryptoSignal"); // бренд без i18n
 
     return lines.join("\n");
-}
+  }
 
   // Небольшой toast-оверлей снизу экрана, сам исчезает через timeoutMs мс
   // и затем вызывает onDone (например, переход на alerts.html).
   // Имя функции отличаем от Core.showToast, чтобы не было конфликта.
-  function showEmaToast(message, timeoutMs, onDone) {
-    if (!message) return;
-
-    const existing = document.querySelector('[data-ema-toast="1"]');
-    if (existing) existing.remove();
-
+  function showEmaToast(text, timeoutMs, onDone) {
     const div = document.createElement("div");
-    div.setAttribute("data-ema-toast", "1");
+    div.className = "ema-toast";
+    div.textContent = text;
 
     Object.assign(div.style, {
       position: "fixed",
@@ -251,23 +247,22 @@
       whiteSpace: "pre-line", // \n → переносы строк
     });
 
-    // ВАЖНО: используем HTML, чтобы <b> ... </b> работал
-    div.innerHTML = message;
-
     document.body.appendChild(div);
 
     // Плавное появление
-    void div.offsetWidth; // reflow
-    div.style.opacity = "1";
+    requestAnimationFrame(function () {
+      div.style.opacity = "1";
+    });
 
-    // Длительность показа (по умолчанию ~2.6–3.5 сек)
-    const visibleMs = typeof timeoutMs === "number" ? timeoutMs : 5500;
+    const visibleMs = typeof timeoutMs === "number" ? timeoutMs : 2500;
 
     setTimeout(function () {
       // Плавное исчезновение
       div.style.opacity = "0";
       setTimeout(function () {
-        div.remove();
+        if (div.parentNode) {
+          div.parentNode.removeChild(div);
+        }
         if (typeof onDone === "function") {
           onDone();
         }

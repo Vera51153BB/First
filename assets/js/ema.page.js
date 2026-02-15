@@ -220,7 +220,7 @@
   // Небольшой toast-оверлей снизу экрана, сам исчезает через timeoutMs мс
   // и затем вызывает onDone (например, переход на alerts.html).
   // Имя функции отличаем от Core.showToast, чтобы не было конфликта.
-  function showEmaToast(message) {
+  function showEmaToast(message, timeoutMs, onDone) {
     if (!message) return;
 
     const existing = document.querySelector('[data-ema-toast="1"]');
@@ -251,20 +251,28 @@
       whiteSpace: "pre-line", // \n → переносы строк
     });
 
-    // ВАЖНО: теперь используем HTML, чтобы <b> работал
+    // ВАЖНО: используем HTML, чтобы <b> ... </b> работал
     div.innerHTML = message;
 
     document.body.appendChild(div);
 
+    // Плавное появление
     void div.offsetWidth; // reflow
     div.style.opacity = "1";
 
-    setTimeout(() => {
+    // Длительность показа (по умолчанию ~2.6–3.5 сек)
+    const visibleMs = typeof timeoutMs === "number" ? timeoutMs : 3500;
+
+    setTimeout(function () {
+      // Плавное исчезновение
       div.style.opacity = "0";
-      setTimeout(() => {
+      setTimeout(function () {
         div.remove();
-      }, 300);
-    }, 3500);
+        if (typeof onDone === "function") {
+          onDone();
+        }
+      }, 300); // время на fade-out
+    }, visibleMs);
   }
 
   // Переход на основную страницу настроек (alerts.html)

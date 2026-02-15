@@ -7,6 +7,7 @@
   const t = (k) => (window.I18N && window.I18N.t ? window.I18N.t(k) : k);
   const tCommon = (k) => t("common." + k);
   const tEma = (k) => t("ema." + k);
+  const tAlerts = (k) => t("alerts." + k);
 
   const STORAGE_KEY = "okx_ema_settings_v1";
 

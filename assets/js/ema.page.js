@@ -331,8 +331,8 @@
           document.body.dataset.alertsUrl) ||
         window.location.origin + "/alerts.html";
 
-      // Сохраняем query-параметры (?lang=..., v=..., и т.п.)
-      const url = base + window.location.search;
+      // Сохраняем query-параметры (?lang=..., v=..., и т.п.) и добавляем якорь на кнопку "Применить настройки"
+      const url = base + window.location.search + "#saveBtn";
 
       // Не используем tg.openLink — он уводит в системный браузер.
       // Нам нужен переход внутри текущего WebView.

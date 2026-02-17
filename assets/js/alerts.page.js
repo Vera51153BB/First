@@ -23,6 +23,69 @@
     return DEFAULT_ALERTS.map(d => ({...d, on: map[d.id] ?? d.on}));
   }
   function saveState(arr){ saveLocal(STORAGE_KEY, arr); }
+
+  // ===== RSI: локальный кэш из отдельной страницы настроек =====
+  const RSI_STORAGE_KEY = "okx_rsi_settings_v1";
+
+  // ===== RSI: локальный кэш из отдельной страницы настроек =====
+  // ===== RSI: локальные настройки, сохранённые на отдельной странице =====
+  function loadRsiState() {
+    const stored = loadLocal(RSI_STORAGE_KEY, null);
+    if (!stored || typeof stored !== 'object') return null;
+
+    return stored;
+  }
+  // Приводим RSI-состояние к аккуратному виду для отправки в бота:
+    function normalizeRsiForPayload(rsi){
+    if (!rsi || typeof rsi !== 'object') return null;
+
+    const out = { cross: {}, extrema: {} };
+
+    ["cross", "extrema"].forEach(function (group) {
+      const srcGroup = rsi[group];
+      if (!srcGroup || typeof srcGroup !== "object") return;
+
+      Object.keys(srcGroup).forEach(function (tf) {
+        const src = srcGroup[tf];
+        if (!src || typeof src !== "object") return;
+
+        const rec = {};
+
+        if (typeof src.on !== "undefined") {
+          rec.on = !!src.on;
+        }
+        if (typeof src.strategy === "string") {
+          rec.strategy = src.strategy;
+        }
+        if (typeof src.rsi_len !== "undefined") {
+          rec.rsi_len = Number(src.rsi_len) || 0;
+        }
+        if (typeof src.zones === "string") {
+          rec.zones = src.zones;
+        }
+        if (typeof src.cross50 === "string") {
+          rec.cross50 = src.cross50;
+        }
+        if (typeof src.window !== "undefined") {
+          rec.window = Number(src.window) || 0;
+        }
+        if (typeof src.in_delta !== "undefined") {
+          rec.in_delta = Number(src.in_delta) || 0;
+        }
+        if (typeof src.confirm !== "undefined") {
+          rec.confirm = Number(src.confirm) || 0;
+        }
+
+        out[group][tf] = rec;
+      });
+    });
+
+    if (!Object.keys(out.cross).length && !Object.keys(out.extrema).length) {
+      return null;
+    }
+
+    return out;
+  }
   
   // ===== EMA: локальный кэш из отдельной страницы настроек =====
   // ===== EMA: локальные настройки, сохранённые на отдельной странице =====
@@ -234,7 +297,13 @@ function updateOne(id){
     if (emaNormalized) {
       payloadObj.ema = emaNormalized;
     }
-
+        
+    // Подхватываем RSI-настройки из локального кэша, если они есть.
+    const rsiState = loadRsiState();
+    const rsiNormalized = normalizeRsiForPayload(rsiState);
+    if (rsiNormalized) {
+      payloadObj.rsi = rsiNormalized;
+    }
     const payload = JSON.stringify(payloadObj);
     const sent = safeSendData(payload);
     if (!sent) saveState(alerts);

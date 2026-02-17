@@ -1,1 +1,213 @@
-/* rsi page overrides (placeholder) */
+/* File: assets/css/rsi.css
+   Purpose: Layout and styling for RSI alerts settings page.
+   This file is loaded after core.css and overrides only local classes. */
+
+body.rsi-body {
+  margin: 0;
+  min-height: 100vh;
+  background: #050029;
+  color: #e6ddcd;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  display: flex;
+  justify-content: center;
+}
+
+.wrap.rsi-wrap {
+  width: min(860px, 100vw);
+  padding: 16px 14px 24px;
+  box-sizing: border-box;
+}
+
+.page-title {
+  margin: 0 0 8px;
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.page-subtitle {
+  margin: 0 0 16px;
+  font-size: 13px;
+  color: #a7a093;
+}
+
+.section {
+  margin-top: 18px;
+  padding: 14px 14px 16px;
+  border-radius: 22px;
+  border: 1px solid #252046;
+  background: radial-gradient(circle at top left, rgba(120, 180, 255, 0.1), transparent 55%),
+              radial-gradient(circle at bottom right, rgba(255, 120, 180, 0.06), transparent 55%),
+              rgba(4, 3, 25, 0.96);
+}
+
+.section-title {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.section-title-main {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.section-title-caption {
+  font-size: 11px;
+  color: #8e8679;
+}
+
+/* TF cards grid */
+
+.tf-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 12px;
+}
+
+.tf-card {
+  border-radius: 18px;
+  padding: 10px 11px 12px;
+  background: rgba(13, 10, 40, 0.96);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.02);
+}
+
+.tf-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.tf-name {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+/* Switch */
+
+.switch {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 6px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  background: rgba(255, 255, 255, 0.04);
+  cursor: pointer;
+  font-size: 10px;
+  line-height: 1;
+  user-select: none;
+  transition: border-color 0.2s ease, background-color 0.2s ease;
+}
+
+.switch .label {
+  position: relative;
+  z-index: 2;
+}
+
+.switch .thumb {
+  position: absolute;
+  top: 2px;
+  bottom: 2px;
+  width: calc(50% - 6px);
+  border-radius: 999px;
+  background: linear-gradient(135deg, #79c172, #58e1ff);
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.35);
+  transition: transform 0.2s ease;
+}
+
+/* OFF → thumb справа, ON → слева */
+.switch[data-on="true"] .thumb {
+  transform: translateX(0);
+}
+
+.switch[data-on="false"] .thumb {
+  transform: translateX(100%);
+}
+
+.switch[data-on="true"] {
+  border-color: rgba(121, 193, 114, 0.9);
+  background: rgba(121, 193, 114, 0.12);
+}
+
+.switch[data-on="false"] {
+  border-color: rgba(189, 101, 101, 0.8);
+  background: rgba(189, 101, 101, 0.05);
+}
+
+/* Rows */
+
+.row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+.row .lbl {
+  font-size: 11px;
+  color: #c7bfb0;
+}
+
+.row .field {
+  flex: 0 0 125px;
+  max-width: 50%;
+  padding: 3px 7px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: rgba(3, 2, 20, 0.9);
+  color: #f3ece0;
+  font-size: 11px;
+}
+
+/* Save row */
+
+.save-row {
+  margin-top: 18px;
+  display: flex;
+  justify-content: center;
+}
+
+.save-btn {
+  min-width: 180px;
+  padding: 10px 18px;
+  border-radius: 999px;
+  border: none;
+  background: linear-gradient(135deg, #ff5f5f, #ffb36b);
+  color: #050029;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.35);
+}
+
+.save-btn:active {
+  transform: translateY(1px);
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.4);
+}
+
+.note {
+  margin-top: 10px;
+  font-size: 11px;
+  color: #a7a093;
+}
+
+/* Mobile tweaks */
+
+@media (max-width: 480px) {
+  .wrap.rsi-wrap {
+    padding-inline: 10px;
+  }
+  .section {
+    padding-inline: 10px;
+  }
+  .row .field {
+    flex-basis: 120px;
+  }
+}

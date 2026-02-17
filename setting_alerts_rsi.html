@@ -1,477 +1,792 @@
 <!doctype html>
-<html lang="ru">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <script src="https://telegram.org/js/telegram-web-app.js"></script>
-  <title>RSI Alerts</title>
-  <meta name="color-scheme" content="dark light" />
-  <!-- <link rel="preload" as="font" type="font/woff2" crossorigin href="/assets/fonts/momo-trust-display-400.woff2"> -->
-  <link rel="icon" href="/images/bts153.ico" sizes="16x16" type="image/x-icon" />
-  <link rel="icon" href="/images/bts153-32.ico" sizes="32x32" type="image/x-icon" />
-  <link rel="icon" href="/images/bts153-48.png" sizes="48x48" type="image/x-icon" />
-  <link rel="icon" href="/images/bts153-256.png" sizes="256x256" type="image/x-icon" />
-  <link rel="icon" href="/images/bts153-512.svg" sizes="512x512" type="image/x-icon" />
-<style>
-  :root{ --bg:#050029; --text:#e6ddcd; --green:#79c172; --red:#ff5f5f; --muted:#a7a093;
-    --card-r:20px; --v-gap:clamp(14px,3.5vw,22px); --pill-h:clamp(40px,9vw,56px); --pill-w:clamp(180px,60vw,320px);}
-  *{box-sizing:border-box} html,body{height:100%}
-  body{margin:0;background:var(--bg);color:var(--text);font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Inter,Arial;line-height:1.35;display:flex;justify-content:center}
-  .wrap{width:min(800px,94vw);padding:clamp(16px,3vw,28px);display:flex;flex-direction:column}
-  h1{margin:0 0 .8rem;font-weight:800;letter-spacing:.02em;font-size:clamp(21px,5vw,30px);text-transform:uppercase}
-  .langbar{display:flex;gap:8px;margin:.6rem 0 1rem}
-  .chip{border:1px solid #3a3276;border-radius:999px;padding:.35em .9em;cursor:pointer}
-  .chip.active{background:#211a53}
-  .section{padding:clamp(12px,2.6vw,18px);border:1px solid #2a2458;border-radius:var(--card-r);background:rgba(255,255,255,.02);margin-top:var(--v-gap)}
-  .title{font-size:clamp(16px,3.6vw,22px);font-weight:800;margin-bottom:.4rem}
-  .tf-card{border:1px solid #38306d;border-radius:16px;padding:14px;margin-top:12px}
-  .tf-head{display:flex;align-items:center;justify-content:space-between;gap:10px}
-  .tf-name{font-size:18px;font-weight:800}
-  .switch{--pad:6px;position:relative;width:var(--pill-w);height:var(--pill-h);border-radius:999px;border:1px solid #382f78;background:linear-gradient(90deg,var(--green) 0 50%,var(--red) 50% 100%);display:inline-flex;align-items:center;justify-content:space-between;padding:0 var(--pad);color:#050029;user-select:none;cursor:pointer;box-shadow:inset 0 0 0 1px rgba(255,255,255,.04),0 6px 18px rgba(0,0,0,.25)}
-  .switch .label{font-weight:900;letter-spacing:.03em;text-transform:uppercase;font-size:13px;width:50%;display:flex;align-items:center;justify-content:center;opacity:.65}
-  .switch[data-on="true"] .label:first-child{opacity:1}
-  .switch[data-on="false"] .label:last-child{opacity:1}
-  .switch .knob{position:absolute;top:50%;transform:translateY(-50%);width:calc(var(--pill-h) - var(--pad)*2);height:calc(var(--pill-h) - var(--pad)*2);border-radius:50%;background:#2d2a59;box-shadow:0 6px 12px rgba(0,0,0,.35), inset 0 0 0 1px rgba(255,255,255,.06);transition:left .22s cubic-bezier(.2,.9,.2,1.2)}
-  .switch[data-on="true"]  .knob{left:var(--pad)}
-  .switch[data-on="false"] .knob{left:calc(100% - var(--pill-h) + var(--pad))}
-  .grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
-  .fld{display:flex;flex-direction:column;gap:6px}
-  .lbl{color:var(--muted);font-size:12px;letter-spacing:.02em}
-  select{background:#1b1645;color:var(--text);border:1px solid #3a3276;border-radius:10px;padding:10px}
-  .save-btn{width:100%;border-radius: var(--card-r);border:1px solid var(--text);background:var(--bg);color:var(--text);padding: clamp(14px,3.5vw,18px);font-weight:800;letter-spacing:.02em;font-size: clamp(16px,4vw,22px);text-align:center;box-shadow: 0 6px 18px rgba(0,0,0,.25);cursor:pointer;margin-top:var(--v-gap)}
-  .footnote{color:var(--muted);text-align:center;font-size:13px;margin-top:6px}
-  @media(max-width:760px){.grid{grid-template-columns:1fr}}
-</style>
-</head>
-<body>
-<main class="wrap">
-  <div class="langbar">
-    <span class="chip" data-lang="en">EN</span>
-    <span class="chip" data-lang="hi">हिन्दी</span>
-    <span class="chip active" data-lang="ru">RU</span>
-  </div>
-  <h1 id="hMain">СИГНАЛЫ РАЗВОРОТА RSI</h1>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>RSI Alerts · BotCryptoSignal</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="format-detection" content="telephone=no" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 
-  <!-- Пересечение уровней -->
-  <section class="section" id="secCross">
-    <div class="title" id="tCross">Пересечение уровней</div>
+    <link rel="icon" type="image/svg+xml" href="assets/img/favicon.svg" />
+    <link rel="alternate icon" href="assets/img/favicon.ico" />
+    <link rel="apple-touch-icon" href="assets/img/apple-touch-icon.png" />
 
-    <!-- таймфреймы -->
-    <div class="tf-card" data-tf="15m" data-group="cross">
-      <div class="tf-head">
-        <div class="tf-name">15 мин</div>
-        <button class="switch" data-on="false" aria-pressed="false">
-          <span class="label">ВКЛ</span><span class="label">ВЫК</span><span class="knob"></span>
+    <link rel="stylesheet" href="assets/css/core.css?v=1" />
+    <link rel="stylesheet" href="assets/css/rsi.css?v=1" />
+  </head>
+  <body class="rsi-body">
+    <main class="wrap rsi-wrap">
+      <h1 class="page-title" data-i18n="rsi.main">RSI reversal signals</h1>
+
+      <!-- CROSS SECTION -->
+      <section class="section" id="secCross">
+        <div class="section-title">
+          <div class="section-title-main" data-i18n="rsi.cross">Level crossings</div>
+          <div class="section-title-caption" data-i18n="rsi.cross_hint">
+            Work around overbought / oversold zones and 50-level crosses.
+          </div>
+        </div>
+
+        <div class="tf-grid">
+          <!-- 15m -->
+          <div class="tf-card" data-group="cross" data-tf="15m">
+            <div class="tf-head">
+              <div class="tf-name">15m</div>
+              <button type="button" class="switch" data-on="false" aria-pressed="false">
+                <span class="thumb"></span>
+                <span class="label">ON</span>
+                <span class="label">OFF</span>
+              </button>
+            </div>
+
+            <div class="row">
+              <div class="lbl" data-i18n="rsi.strategy">Strategy</div>
+              <select class="field" data-key="strategy">
+                <option value="both" data-i18n="rsi.both">Long + Short</option>
+                <option value="long" data-i18n="rsi.long">Long</option>
+                <option value="short" data-i18n="rsi.short">Short</option>
+              </select>
+            </div>
+
+            <div class="row">
+              <div class="lbl" data-i18n="rsi.rsi_len">RSI length</div>
+              <select class="field" data-key="rsi_len">
+                <option value="7">7</option>
+                <option value="14">14</option>
+                <option value="21">21</option>
+              </select>
+            </div>
+
+            <div class="row">
+              <div class="lbl" data-i18n="rsi.zones">Zones</div>
+              <select class="field" data-key="zones">
+                <option value="30/70">30 / 70</option>
+                <option value="25/75">25 / 75</option>
+                <option value="35/65">35 / 65</option>
+                <option value="none" data-i18n="rsi.z_none">no limits</option>
+              </select>
+            </div>
+
+            <div class="row">
+              <div class="lbl" data-i18n="rsi.cross50">Cross 50</div>
+              <select class="field" data-key="cross50">
+                <option value="none" data-i18n="rsi.no">NONE</option>
+                <option value="long" data-i18n="rsi.c_long">Long (bottom→top)</option>
+                <option value="short" data-i18n="rsi.c_short">Short (top→bottom)</option>
+                <option value="both" data-i18n="rsi.c_both">Long + Short</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- 1h -->
+          <div class="tf-card" data-group="cross" data-tf="1h">
+            <div class="tf-head">
+              <div class="tf-name">1h</div>
+              <button type="button" class="switch" data-on="true" aria-pressed="true">
+                <span class="thumb"></span>
+                <span class="label">ON</span>
+                <span class="label">OFF</span>
+              </button>
+            </div>
+
+            <div class="row">
+              <div class="lbl" data-i18n="rsi.strategy">Strategy</div>
+              <select class="field" data-key="strategy">
+                <option value="both" data-i18n="rsi.both">Long + Short</option>
+                <option value="long" data-i18n="rsi.long">Long</option>
+                <option value="short" data-i18n="rsi.short">Short</option>
+              </select>
+            </div>
+
+            <div class="row">
+              <div class="lbl" data-i18n="rsi.rsi_len">RSI length</div>
+              <select class="field" data-key="rsi_len">
+                <option value="7">7</option>
+                <option value="14" selected>14</option>
+                <option value="21">21</option>
+              </select>
+            </div>
+
+            <div class="row">
+              <div class="lbl" data-i18n="rsi.zones">Zones</div>
+              <select class="field" data-key="zones">
+                <option value="30/70" selected>30 / 70</option>
+                <option value="25/75">25 / 75</option>
+                <option value="35/65">35 / 65</option>
+                <option value="none" data-i18n="rsi.z_none">no limits</option>
+              </select>
+            </div>
+
+            <div class="row">
+              <div class="lbl" data-i18n="rsi.cross50">Cross 50</div>
+              <select class="field" data-key="cross50">
+                <option value="none" data-i18n="rsi.no" selected>NONE</option>
+                <option value="long" data-i18n="rsi.c_long">Long (bottom→top)</option>
+                <option value="short" data-i18n="rsi.c_short">Short (top→bottom)</option>
+                <option value="both" data-i18n="rsi.c_both">Long + Short</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- 4h -->
+          <div class="tf-card" data-group="cross" data-tf="4h">
+            <div class="tf-head">
+              <div class="tf-name">4h</div>
+              <button type="button" class="switch" data-on="true" aria-pressed="true">
+                <span class="thumb"></span>
+                <span class="label">ON</span>
+                <span class="label">OFF</span>
+              </button>
+            </div>
+
+            <div class="row">
+              <div class="lbl" data-i18n="rsi.strategy">Strategy</div>
+              <select class="field" data-key="strategy">
+                <option value="both" data-i18n="rsi.both">Long + Short</option>
+                <option value="long" data-i18n="rsi.long">Long</option>
+                <option value="short" data-i18n="rsi.short">Short</option>
+              </select>
+            </div>
+
+            <div class="row">
+              <div class="lbl" data-i18n="rsi.rsi_len">RSI length</div>
+              <select class="field" data-key="rsi_len">
+                <option value="7">7</option>
+                <option value="14" selected>14</option>
+                <option value="21">21</option>
+              </select>
+            </div>
+
+            <div class="row">
+              <div class="lbl" data-i18n="rsi.zones">Zones</div>
+              <select class="field" data-key="zones">
+                <option value="30/70" selected>30 / 70</option>
+                <option value="25/75">25 / 75</option>
+                <option value="35/65">35 / 65</option>
+                <option value="none" data-i18n="rsi.z_none">no limits</option>
+              </select>
+            </div>
+
+            <div class="row">
+              <div class="lbl" data-i18n="rsi.cross50">Cross 50</div>
+              <select class="field" data-key="cross50">
+                <option value="none" data-i18n="rsi.no" selected>NONE</option>
+                <option value="long" data-i18n="rsi.c_long">Long (bottom→top)</option>
+                <option value="short" data-i18n="rsi.c_short">Short (top→bottom)</option>
+                <option value="both" data-i18n="rsi.c_both">Long + Short</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- 6h -->
+          <div class="tf-card" data-group="cross" data-tf="6h">
+            <div class="tf-head">
+              <div class="tf-name">6h</div>
+              <button type="button" class="switch" data-on="false" aria-pressed="false">
+                <span class="thumb"></span>
+                <span class="label">ON</span>
+                <span class="label">OFF</span>
+              </button>
+            </div>
+
+            <div class="row">
+              <div class="lbl" data-i18n="rsi.strategy">Strategy</div>
+              <select class="field" data-key="strategy">
+                <option value="both" data-i18n="rsi.both">Long + Short</option>
+                <option value="long" data-i18n="rsi.long">Long</option>
+                <option value="short" data-i18n="rsi.short">Short</option>
+              </select>
+            </div>
+
+            <div class="row">
+              <div class="lbl" data-i18n="rsi.rsi_len">RSI length</div>
+              <select class="field" data-key="rsi_len">
+                <option value="7">7</option>
+                <option value="14" selected>14</option>
+                <option value="21">21</option>
+              </select>
+            </div>
+
+            <div class="row">
+              <div class="lbl" data-i18n="rsi.zones">Zones</div>
+              <select class="field" data-key="zones">
+                <option value="30/70" selected>30 / 70</option>
+                <option value="25/75">25 / 75</option>
+                <option value="35/65">35 / 65</option>
+                <option value="none" data-i18n="rsi.z_none">no limits</option>
+              </select>
+            </div>
+
+            <div class="row">
+              <div class="lbl" data-i18n="rsi.cross50">Cross 50</div>
+              <select class="field" data-key="cross50">
+                <option value="none" data-i18n="rsi.no" selected>NONE</option>
+                <option value="long" data-i18n="rsi.c_long">Long (bottom→top)</option>
+                <option value="short" data-i18n="rsi.c_short">Short (top→bottom)</option>
+                <option value="both" data-i18n="rsi.c_both">Long + Short</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- 12h -->
+          <div class="tf-card" data-group="cross" data-tf="12h">
+            <div class="tf-head">
+              <div class="tf-name">12h</div>
+              <button type="button" class="switch" data-on="false" aria-pressed="false">
+                <span class="thumb"></span>
+                <span class="label">ON</span>
+                <span class="label">OFF</span>
+              </button>
+            </div>
+
+            <div class="row">
+              <div class="lbl" data-i18n="rsi.strategy">Strategy</div>
+              <select class="field" data-key="strategy">
+                <option value="both" data-i18n="rsi.both">Long + Short</option>
+                <option value="long" data-i18n="rsi.long">Long</option>
+                <option value="short" data-i18n="rsi.short">Short</option>
+              </select>
+            </div>
+
+            <div class="row">
+              <div class="lbl" data-i18n="rsi.rsi_len">RSI length</div>
+              <select class="field" data-key="rsi_len">
+                <option value="7">7</option>
+                <option value="14" selected>14</option>
+                <option value="21">21</option>
+              </select>
+            </div>
+
+            <div class="row">
+              <div class="lbl" data-i18n="rsi.zones">Zones</div>
+              <select class="field" data-key="zones">
+                <option value="30/70" selected>30 / 70</option>
+                <option value="25/75">25 / 75</option>
+                <option value="35/65">35 / 65</option>
+                <option value="none" data-i18n="rsi.z_none">no limits</option>
+              </select>
+            </div>
+
+            <div class="row">
+              <div class="lbl" data-i18n="rsi.cross50">Cross 50</div>
+              <select class="field" data-key="cross50">
+                <option value="none" data-i18n="rsi.no" selected>NONE</option>
+                <option value="long" data-i18n="rsi.c_long">Long (bottom→top)</option>
+                <option value="short" data-i18n="rsi.c_short">Short (top→bottom)</option>
+                <option value="both" data-i18n="rsi.c_both">Long + Short</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- 1d -->
+          <div class="tf-card" data-group="cross" data-tf="1d">
+            <div class="tf-head">
+              <div class="tf-name">1d</div>
+              <button type="button" class="switch" data-on="false" aria-pressed="false">
+                <span class="thumb"></span>
+                <span class="label">ON</span>
+                <span class="label">OFF</span>
+              </button>
+            </div>
+
+            <div class="row">
+              <div class="lbl" data-i18n="rsi.strategy">Strategy</div>
+              <select class="field" data-key="strategy">
+                <option value="both" data-i18n="rsi.both">Long + Short</option>
+                <option value="long" data-i18n="rsi.long">Long</option>
+                <option value="short" data-i18n="rsi.short">Short</option>
+              </select>
+            </div>
+
+            <div class="row">
+              <div class="lbl" data-i18n="rsi.rsi_len">RSI length</div>
+              <select class="field" data-key="rsi_len">
+                <option value="7">7</option>
+                <option value="14" selected>14</option>
+                <option value="21">21</option>
+              </select>
+            </div>
+
+            <div class="row">
+              <div class="lbl" data-i18n="rsi.zones">Zones</div>
+              <select class="field" data-key="zones">
+                <option value="30/70" selected>30 / 70</option>
+                <option value="25/75">25 / 75</option>
+                <option value="35/65">35 / 65</option>
+                <option value="none" data-i18n="rsi.z_none">no limits</option>
+              </select>
+            </div>
+
+            <div class="row">
+              <div class="lbl" data-i18n="rsi.cross50">Cross 50</div>
+              <select class="field" data-key="cross50">
+                <option value="none" data-i18n="rsi.no" selected>NONE</option>
+                <option value="long" data-i18n="rsi.c_long">Long (bottom→top)</option>
+                <option value="short" data-i18n="rsi.c_short">Short (top→bottom)</option>
+                <option value="both" data-i18n="rsi.c_both">Long + Short</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- EXTREMA SECTION -->
+      <section class="section" id="secExtrema">
+        <div class="section-title">
+          <div class="section-title-main" data-i18n="rsi.extrema">Catch minimum & maximum</div>
+          <div class="section-title-caption" data-i18n="rsi.extrema_hint">
+            Detect strong local reversals with adaptive window and delta.
+          </div>
+        </div>
+
+        <div class="tf-grid">
+          <!-- 15m -->
+          <div class="tf-card" data-group="extrema" data-tf="15m">
+            <div class="tf-head">
+              <div class="tf-name">15m</div>
+              <button type="button" class="switch" data-on="false" aria-pressed="false">
+                <span class="thumb"></span>
+                <span class="label">ON</span>
+                <span class="label">OFF</span>
+              </button>
+            </div>
+
+            <div class="row">
+              <div class="lbl" data-i18n="rsi.strategy">Strategy</div>
+              <select class="field" data-key="strategy">
+                <option value="both" data-i18n="rsi.both">Long + Short</option>
+                <option value="long" data-i18n="rsi.long">Long</option>
+                <option value="short" data-i18n="rsi.short">Short</option>
+              </select>
+            </div>
+
+            <div class="row">
+              <div class="lbl" data-i18n="rsi.rsi_len">RSI length</div>
+              <select class="field" data-key="rsi_len">
+                <option value="7">7</option>
+                <option value="14">14</option>
+                <option value="21">21</option>
+              </select>
+            </div>
+
+            <div class="row">
+              <div class="lbl" data-i18n="rsi.window">Window</div>
+              <select class="field" data-key="window">
+                <option value="3">3</option>
+                <option value="4">4</option>
+                <option value="5">5</option>
+                <option value="6">6</option>
+                <option value="8" selected>8</option>
+                <option value="9">9</option>
+              </select>
+            </div>
+
+            <div class="row">
+              <div class="lbl" data-i18n="rsi.in_delta">Delta</div>
+              <select class="field" data-key="in_delta">
+                <option value="0.3">0.3</option>
+                <option value="0.5">0.5</option>
+                <option value="0.7">0.7</option>
+                <option value="1">1.0</option>
+                <option value="1.5">1.5</option>
+                <option value="2">2.0</option>
+              </select>
+            </div>
+
+            <div class="row">
+              <div class="lbl" data-i18n="rsi.confirm">Confirm</div>
+              <select class="field" data-key="confirm">
+                <option value="1" selected>1</option>
+                <option value="2">2</option>
+              </select>
+            </div>
+
+            <div class="row">
+              <div class="lbl" data-i18n="rsi.zones">Zones</div>
+              <select class="field" data-key="zones">
+                <option value="30/70" selected>30 / 70</option>
+                <option value="25/75">25 / 75</option>
+                <option value="35/65">35 / 65</option>
+                <option value="none" data-i18n="rsi.z_none">no limits</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- 1h -->
+          <div class="tf-card" data-group="extrema" data-tf="1h">
+            <div class="tf-head">
+              <div class="tf-name">1h</div>
+              <button type="button" class="switch" data-on="true" aria-pressed="true">
+                <span class="thumb"></span>
+                <span class="label">ON</span>
+                <span class="label">OFF</span>
+              </button>
+            </div>
+
+            <div class="row">
+              <div class="lbl" data-i18n="rsi.strategy">Strategy</div>
+              <select class="field" data-key="strategy">
+                <option value="both" data-i18n="rsi.both">Long + Short</option>
+                <option value="long" data-i18n="rsi.long">Long</option>
+                <option value="short" data-i18n="rsi.short">Short</option>
+              </select>
+            </div>
+
+            <div class="row">
+              <div class="lbl" data-i18n="rsi.rsi_len">RSI length</div>
+              <select class="field" data-key="rsi_len">
+                <option value="7">7</option>
+                <option value="14" selected>14</option>
+                <option value="21">21</option>
+              </select>
+            </div>
+
+            <div class="row">
+              <div class="lbl" data-i18n="rsi.window">Window</div>
+              <select class="field" data-key="window">
+                <option value="3">3</option>
+                <option value="4">4</option>
+                <option value="5">5</option>
+                <option value="6" selected>6</option>
+                <option value="8">8</option>
+                <option value="9">9</option>
+              </select>
+            </div>
+
+            <div class="row">
+              <div class="lbl" data-i18n="rsi.in_delta">Delta</div>
+              <select class="field" data-key="in_delta">
+                <option value="0.3">0.3</option>
+                <option value="0.5">0.5</option>
+                <option value="0.7">0.7</option>
+                <option value="0.8" selected>0.8</option>
+                <option value="1">1.0</option>
+                <option value="1.5">1.5</option>
+              </select>
+            </div>
+
+            <div class="row">
+              <div class="lbl" data-i18n="rsi.confirm">Confirm</div>
+              <select class="field" data-key="confirm">
+                <option value="1" selected>1</option>
+                <option value="2">2</option>
+              </select>
+            </div>
+
+            <div class="row">
+              <div class="lbl" data-i18n="rsi.zones">Zones</div>
+              <select class="field" data-key="zones">
+                <option value="30/70" selected>30 / 70</option>
+                <option value="25/75">25 / 75</option>
+                <option value="35/65">35 / 65</option>
+                <option value="none" data-i18n="rsi.z_none">no limits</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- 4h -->
+          <div class="tf-card" data-group="extrema" data-tf="4h">
+            <div class="tf-head">
+              <div class="tf-name">4h</div>
+              <button type="button" class="switch" data-on="true" aria-pressed="true">
+                <span class="thumb"></span>
+                <span class="label">ON</span>
+                <span class="label">OFF</span>
+              </button>
+            </div>
+
+            <div class="row">
+              <div class="lbl" data-i18n="rsi.strategy">Strategy</div>
+              <select class="field" data-key="strategy">
+                <option value="both" data-i18n="rsi.both">Long + Short</option>
+                <option value="long" data-i18n="rsi.long">Long</option>
+                <option value="short" data-i18n="rsi.short">Short</option>
+              </select>
+            </div>
+
+            <div class="row">
+              <div class="lbl" data-i18n="rsi.rsi_len">RSI length</div>
+              <select class="field" data-key="rsi_len">
+                <option value="7">7</option>
+                <option value="14" selected>14</option>
+                <option value="21">21</option>
+              </select>
+            </div>
+
+            <div class="row">
+              <div class="lbl" data-i18n="rsi.window">Window</div>
+              <select class="field" data-key="window">
+                <option value="3">3</option>
+                <option value="4" selected>4</option>
+                <option value="5">5</option>
+                <option value="6">6</option>
+                <option value="8">8</option>
+                <option value="9">9</option>
+              </select>
+            </div>
+
+            <div class="row">
+              <div class="lbl" data-i18n="rsi.in_delta">Delta</div>
+              <select class="field" data-key="in_delta">
+                <option value="0.3">0.3</option>
+                <option value="0.5">0.5</option>
+                <option value="0.7" selected>0.7</option>
+                <option value="1">1.0</option>
+                <option value="1.5">1.5</option>
+                <option value="2">2.0</option>
+              </select>
+            </div>
+
+            <div class="row">
+              <div class="lbl" data-i18n="rsi.confirm">Confirm</div>
+              <select class="field" data-key="confirm">
+                <option value="1" selected>1</option>
+                <option value="2">2</option>
+              </select>
+            </div>
+
+            <div class="row">
+              <div class="lbl" data-i18n="rsi.zones">Zones</div>
+              <select class="field" data-key="zones">
+                <option value="30/70" selected>30 / 70</option>
+                <option value="25/75">25 / 75</option>
+                <option value="35/65">35 / 65</option>
+                <option value="none" data-i18n="rsi.z_none">no limits</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- 6h -->
+          <div class="tf-card" data-group="extrema" data-tf="6h">
+            <div class="tf-head">
+              <div class="tf-name">6h</div>
+              <button type="button" class="switch" data-on="false" aria-pressed="false">
+                <span class="thumb"></span>
+                <span class="label">ON</span>
+                <span class="label">OFF</span>
+              </button>
+            </div>
+
+            <div class="row">
+              <div class="lbl" data-i18n="rsi.strategy">Strategy</div>
+              <select class="field" data-key="strategy">
+                <option value="both" data-i18n="rsi.both">Long + Short</option>
+                <option value="long" data-i18n="rsi.long">Long</option>
+                <option value="short" data-i18n="rsi.short">Short</option>
+              </select>
+            </div>
+
+            <div class="row">
+              <div class="lbl" data-i18n="rsi.rsi_len">RSI length</div>
+              <select class="field" data-key="rsi_len">
+                <option value="7">7</option>
+                <option value="14" selected>14</option>
+                <option value="21">21</option>
+              </select>
+            </div>
+
+            <div class="row">
+              <div class="lbl" data-i18n="rsi.window">Window</div>
+              <select class="field" data-key="window">
+                <option value="3">3</option>
+                <option value="4">4</option>
+                <option value="5" selected>5</option>
+                <option value="6">6</option>
+                <option value="8">8</option>
+                <option value="9">9</option>
+              </select>
+            </div>
+
+            <div class="row">
+              <div class="lbl" data-i18n="rsi.in_delta">Delta</div>
+              <select class="field" data-key="in_delta">
+                <option value="0.3">0.3</option>
+                <option value="0.5">0.5</option>
+                <option value="0.6" selected>0.6</option>
+                <option value="0.7">0.7</option>
+                <option value="1">1.0</option>
+                <option value="1.5">1.5</option>
+              </select>
+            </div>
+
+            <div class="row">
+              <div class="lbl" data-i18n="rsi.confirm">Confirm</div>
+              <select class="field" data-key="confirm">
+                <option value="1" selected>1</option>
+                <option value="2">2</option>
+              </select>
+            </div>
+
+            <div class="row">
+              <div class="lbl" data-i18n="rsi.zones">Zones</div>
+              <select class="field" data-key="zones">
+                <option value="30/70" selected>30 / 70</option>
+                <option value="25/75">25 / 75</option>
+                <option value="35/65">35 / 65</option>
+                <option value="none" data-i18n="rsi.z_none">no limits</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- 12h -->
+          <div class="tf-card" data-group="extrema" data-tf="12h">
+            <div class="tf-head">
+              <div class="tf-name">12h</div>
+              <button type="button" class="switch" data-on="false" aria-pressed="false">
+                <span class="thumb"></span>
+                <span class="label">ON</span>
+                <span class="label">OFF</span>
+              </button>
+            </div>
+
+            <div class="row">
+              <div class="lbl" data-i18n="rsi.strategy">Strategy</div>
+              <select class="field" data-key="strategy">
+                <option value="both" data-i18n="rsi.both">Long + Short</option>
+                <option value="long" data-i18n="rsi.long">Long</option>
+                <option value="short" data-i18n="rsi.short">Short</option>
+              </select>
+            </div>
+
+            <div class="row">
+              <div class="lbl" data-i18n="rsi.rsi_len">RSI length</div>
+              <select class="field" data-key="rsi_len">
+                <option value="7">7</option>
+                <option value="14" selected>14</option>
+                <option value="21">21</option>
+              </select>
+            </div>
+
+            <div class="row">
+              <div class="lbl" data-i18n="rsi.window">Window</div>
+              <select class="field" data-key="window">
+                <option value="3">3</option>
+                <option value="4" selected>4</option>
+                <option value="5">5</option>
+                <option value="6">6</option>
+                <option value="8">8</option>
+                <option value="9">9</option>
+              </select>
+            </div>
+
+            <div class="row">
+              <div class="lbl" data-i18n="rsi.in_delta">Delta</div>
+              <select class="field" data-key="in_delta">
+                <option value="0.3">0.3</option>
+                <option value="0.5" selected>0.5</option>
+                <option value="0.7">0.7</option>
+                <option value="1">1.0</option>
+                <option value="1.5">1.5</option>
+                <option value="2">2.0</option>
+              </select>
+            </div>
+
+            <div class="row">
+              <div class="lbl" data-i18n="rsi.confirm">Confirm</div>
+              <select class="field" data-key="confirm">
+                <option value="1" selected>1</option>
+                <option value="2">2</option>
+              </select>
+            </div>
+
+            <div class="row">
+              <div class="lbl" data-i18n="rsi.zones">Zones</div>
+              <select class="field" data-key="zones">
+                <option value="30/70" selected>30 / 70</option>
+                <option value="25/75">25 / 75</option>
+                <option value="35/65">35 / 65</option>
+                <option value="none" data-i18n="rsi.z_none">no limits</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- 1d -->
+          <div class="tf-card" data-group="extrema" data-tf="1d">
+            <div class="tf-head">
+              <div class="tf-name">1d</div>
+              <button type="button" class="switch" data-on="false" aria-pressed="false">
+                <span class="thumb"></span>
+                <span class="label">ON</span>
+                <span class="label">OFF</span>
+              </button>
+            </div>
+
+            <div class="row">
+              <div class="lbl" data-i18n="rsi.strategy">Strategy</div>
+              <select class="field" data-key="strategy">
+                <option value="both" data-i18n="rsi.both">Long + Short</option>
+                <option value="long" data-i18n="rsi.long">Long</option>
+                <option value="short" data-i18n="rsi.short">Short</option>
+              </select>
+            </div>
+
+            <div class="row">
+              <div class="lbl" data-i18n="rsi.rsi_len">RSI length</div>
+              <select class="field" data-key="rsi_len">
+                <option value="7">7</option>
+                <option value="14" selected>14</option>
+                <option value="21">21</option>
+              </select>
+            </div>
+
+            <div class="row">
+              <div class="lbl" data-i18n="rsi.window">Window</div>
+              <select class="field" data-key="window">
+                <option value="3">3</option>
+                <option value="4">4</option>
+                <option value="5" selected>5</option>
+                <option value="6">6</option>
+                <option value="8">8</option>
+                <option value="9">9</option>
+              </select>
+            </div>
+
+            <div class="row">
+              <div class="lbl" data-i18n="rsi.in_delta">Delta</div>
+              <select class="field" data-key="in_delta">
+                <option value="0.3">0.3</option>
+                <option value="0.5" selected>0.5</option>
+                <option value="0.7">0.7</option>
+                <option value="1">1.0</option>
+                <option value="1.5">1.5</option>
+                <option value="2">2.0</option>
+              </select>
+            </div>
+
+            <div class="row">
+              <div class="lbl" data-i18n="rsi.confirm">Confirm</div>
+              <select class="field" data-key="confirm">
+                <option value="1" selected>1</option>
+                <option value="2">2</option>
+              </select>
+            </div>
+
+            <div class="row">
+              <div class="lbl" data-i18n="rsi.zones">Zones</div>
+              <select class="field" data-key="zones">
+                <option value="30/70" selected>30 / 70</option>
+                <option value="25/75">25 / 75</option>
+                <option value="35/65">35 / 65</option>
+                <option value="none" data-i18n="rsi.z_none">no limits</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <div class="save-row">
+        <button id="saveBtn" class="save-btn" type="button" data-i18n="rsi.save">
+          Save settings
         </button>
       </div>
-      <div class="grid">
-        <div class="fld">
-          <div class="lbl" data-i="strategy">Стратегия</div>
-          <select data-key="strategy">
-            <option value="both" selected>Лонг + Шорт</option>
-            <option value="long">Лонг</option>
-            <option value="short">Шорт</option>
-          </select>
-        </div>
-        <div class="fld">
-          <div class="lbl" data-i="rsi_len">Период RSI</div>
-          <select data-key="rsi_len">
-            <option>7</option><option selected>14</option><option>21</option>
-          </select>
-        </div>
-        <div class="fld">
-          <div class="lbl" data-i="zones">Границы</div>
-          <select data-key="zones">
-            <option value="30/70" selected>30/70</option>
-            <option value="25/75">25/75</option>
-            <option value="35/65">35/65</option>
-            <option value="none">без границ</option>
-          </select>
-        </div>
-        <div class="fld">
-          <div class="lbl" data-i="cross50">Пересечение 50</div>
-          <select data-key="cross50">
-            <option value="none" selected>НЕТ</option>
-            <option value="long">Лонг (снизу→вверх)</option>
-            <option value="short">Шорт (сверху→вниз)</option>
-            <option value="both">Лонг + Шорт</option>
-          </select>
-        </div>
-      </div>
-    </div>
+      <p class="note" data-i18n="rsi.note">
+        Switches are saved on this device and applied instantly.
+      </p>
+    </main>
 
-    <!-- 1h -->
-    <div class="tf-card" data-tf="1h" data-group="cross">
-      <div class="tf-head">
-        <div class="tf-name">1 час</div>
-        <button class="switch" data-on="true" aria-pressed="true">
-          <span class="label">ВКЛ</span><span class="label">ВЫК</span><span class="knob"></span>
-        </button>
-      </div>
-      <div class="grid">
-        <div class="fld"><div class="lbl" data-i="strategy"></div>
-          <select data-key="strategy">
-            <option value="both" selected>Лонг + Шорт</option><option value="long">Лонг</option><option value="short">Шорт</option>
-          </select>
-        </div>
-        <div class="fld"><div class="lbl" data-i="rsi_len"></div>
-          <select data-key="rsi_len"><option>7</option><option selected>14</option><option>21</option></select>
-        </div>
-        <div class="fld"><div class="lbl" data-i="zones"></div>
-          <select data-key="zones"><option value="30/70" selected>30/70</option><option value="25/75">25/75</option><option value="35/65">35/65</option><option value="none">без границ</option></select>
-        </div>
-        <div class="fld"><div class="lbl" data-i="cross50"></div>
-          <select data-key="cross50"><option value="none" selected>НЕТ</option><option value="long">Лонг (снизу→вверх)</option><option value="short">Шорт (сверху→вниз)</option><option value="both">Лонг + Шорт</option></select>
-        </div>
-      </div>
-    </div>
-
-    <!-- 4h -->
-    <div class="tf-card" data-tf="4h" data-group="cross">
-      <div class="tf-head"><div class="tf-name">4 часа</div>
-        <button class="switch" data-on="true" aria-pressed="true"><span class="label">ВКЛ</span><span class="label">ВЫК</span><span class="knob"></span></button>
-      </div>
-      <div class="grid">
-        <div class="fld"><div class="lbl" data-i="strategy"></div>
-          <select data-key="strategy"><option value="both" selected>Лонг + Шорт</option><option value="long">Лонг</option><option value="short">Шорт</option></select></div>
-        <div class="fld"><div class="lbl" data-i="rsi_len"></div>
-          <select data-key="rsi_len"><option>7</option><option selected>14</option><option>21</option></select></div>
-        <div class="fld"><div class="lbl" data-i="zones"></div>
-          <select data-key="zones"><option value="30/70" selected>30/70</option><option value="25/75">25/75</option><option value="35/65">35/65</option><option value="none">без границ</option></select></div>
-        <div class="fld"><div class="lbl" data-i="cross50"></div>
-          <select data-key="cross50"><option value="none" selected>НЕТ</option><option value="long">Лонг (снизу→вверх)</option><option value="short">Шорт (сверху→вниз)</option><option value="both">Лонг + Шорт</option></select></div>
-      </div>
-    </div>
-
-    <!-- 8h -->
-    <div class="tf-card" data-tf="8h" data-group="cross">
-      <div class="tf-head"><div class="tf-name">8 часов</div>
-        <button class="switch" data-on="false" aria-pressed="false"><span class="label">ВКЛ</span><span class="label">ВЫК</span><span class="knob"></span></button>
-      </div>
-      <div class="grid">
-        <div class="fld"><div class="lbl" data-i="strategy"></div>
-          <select data-key="strategy"><option value="both" selected>Лонг + Шорт</option><option value="long">Лонг</option><option value="short">Шорт</option></select></div>
-        <div class="fld"><div class="lbl" data-i="rsi_len"></div>
-          <select data-key="rsi_len"><option>7</option><option selected>14</option><option>21</option></select></div>
-        <div class="fld"><div class="lbl" data-i="zones"></div>
-          <select data-key="zones"><option value="30/70" selected>30/70</option><option value="25/75">25/75</option><option value="35/65">35/65</option><option value="none">без границ</option></select></div>
-        <div class="fld"><div class="lbl" data-i="cross50"></div>
-          <select data-key="cross50"><option value="none" selected>НЕТ</option><option value="long">Лонг (снизу→вверх)</option><option value="short">Шорт (сверху→вниз)</option><option value="both">Лонг + Шорт</option></select></div>
-      </div>
-    </div>
-  </section>
-
-  <!-- Ловим минимум & максимум -->
-  <section class="section" id="secExtrema">
-    <div class="title" id="tExtrema">Ловим минимум & максимум</div>
-
-    <!-- карта таймфреймов для экстремумов (15m/1h/4h/8h) — те же поля + window/in_delta/confirm -->
-    <!-- 15m -->
-    <div class="tf-card" data-tf="15m" data-group="extrema">
-      <div class="tf-head"><div class="tf-name">15 мин</div>
-        <button class="switch" data-on="false" aria-pressed="false"><span class="label">ВКЛ</span><span class="label">ВЫК</span><span class="knob"></span></button>
-      </div>
-      <div class="grid">
-        <div class="fld"><div class="lbl" data-i="strategy"></div>
-          <select data-key="strategy"><option value="both" selected>Лонг + Шорт</option><option value="long">Лонг</option><option value="short">Шорт</option></select></div>
-        <div class="fld"><div class="lbl" data-i="rsi_len"></div>
-          <select data-key="rsi_len"><option>7</option><option selected>14</option><option>21</option></select></div>
-        <div class="fld"><div class="lbl" data-i="window">Наблюдение</div>
-          <select data-key="window"><option>3</option><option>4</option><option>5</option><option>6</option><option selected>8</option><option>9</option></select></div>
-        <div class="fld"><div class="lbl" data-i="in_delta">Дельта</div>
-          <select data-key="in_delta"><option>0.3</option><option>0.5</option><option>0.7</option><option>0.8</option><option>0.9</option><option selected>1.0</option><option>1.2</option><option>1.5</option><option>1.7</option><option>2.0</option></select></div>
-        <div class="fld"><div class="lbl" data-i="zones"></div>
-          <select data-key="zones"><option value="30/70" selected>30/70</option><option value="25/75">25/75</option><option value="35/65">35/65</option><option value="none">без границ</option></select></div>
-        <div class="fld"><div class="lbl" data-i="confirm">Подтверждение</div>
-          <select data-key="confirm"><option selected>1</option><option>2</option></select></div>
-      </div>
-    </div>
-
-    <!-- 1h -->
-    <div class="tf-card" data-tf="1h" data-group="extrema">
-      <div class="tf-head"><div class="tf-name">1 час</div>
-        <button class="switch" data-on="true" aria-pressed="true"><span class="label">ВКЛ</span><span class="label">ВЫК</span><span class="knob"></span></button>
-      </div>
-      <div class="grid">
-        <div class="fld"><div class="lbl" data-i="strategy"></div>
-          <select data-key="strategy"><option value="both" selected>Лонг + Шорт</option><option value="long">Лонг</option><option value="short">Шорт</option></select></div>
-        <div class="fld"><div class="lbl" data-i="rsi_len"></div>
-          <select data-key="rsi_len"><option>7</option><option selected>14</option><option>21</option></select></div>
-        <div class="fld"><div class="lbl" data-i="window"></div>
-          <select data-key="window"><option>3</option><option>4</option><option selected>5</option><option>6</option><option>7</option><option>8</option><option>9</option></select></div>
-        <div class="fld"><div class="lbl" data-i="in_delta"></div>
-          <select data-key="in_delta"><option>0.3</option><option>0.5</option><option>0.7</option><option selected>0.8</option><option>0.9</option><option>1.0</option><option>1.2</option><option>1.5</option><option>1.7</option><option>2.0</option></select></div>
-        <div class="fld"><div class="lbl" data-i="zones"></div>
-          <select data-key="zones"><option value="30/70" selected>30/70</option><option value="25/75">25/75</option><option value="35/65">35/65</option><option value="none">без границ</option></select></div>
-        <div class="fld"><div class="lbl" data-i="confirm"></div>
-          <select data-key="confirm"><option selected>1</option><option>2</option></select></div>
-      </div>
-    </div>
-
-    <!-- 4h -->
-    <div class="tf-card" data-tf="4h" data-group="extrema">
-      <div class="tf-head"><div class="tf-name">4 часа</div>
-        <button class="switch" data-on="true" aria-pressed="true"><span class="label">ВКЛ</span><span class="label">ВЫК</span><span class="knob"></span></button>
-      </div>
-      <div class="grid">
-        <div class="fld"><div class="lbl" data-i="strategy"></div>
-          <select data-key="strategy"><option value="both" selected>Лонг + Шорт</option><option value="long">Лонг</option><option value="short">Шорт</option></select></div>
-        <div class="fld"><div class="lbl" data-i="rsi_len"></div>
-          <select data-key="rsi_len"><option>7</option><option selected>14</option><option>21</option></select></div>
-        <div class="fld"><div class="lbl" data-i="window"></div>
-          <select data-key="window"><option>3</option><option>4</option><option>5</option><option selected>6</option><option>7</option><option>8</option><option>9</option></select></div>
-        <div class="fld"><div class="lbl" data-i="in_delta"></div>
-          <select data-key="in_delta"><option>0.3</option><option>0.5</option><option selected>0.7</option><option>0.8</option><option>0.9</option><option>1.0</option><option>1.2</option><option>1.5</option><option>1.7</option><option>2.0</option></select></div>
-        <div class="fld"><div class="lbl" data-i="zones"></div>
-          <select data-key="zones"><option value="30/70" selected>30/70</option><option value="25/75">25/75</option><option value="35/65">35/65</option><option value="none">без границ</option></select></div>
-        <div class="fld"><div class="lbl" data-i="confirm"></div>
-          <select data-key="confirm"><option selected>1</option><option>2</option></select></div>
-      </div>
-    </div>
-
-    <!-- 8h -->
-    <div class="tf-card" data-tf="8h" data-group="extrema">
-      <div class="tf-head"><div class="tf-name">8 часов</div>
-        <button class="switch" data-on="false" aria-pressed="false"><span class="label">ВКЛ</span><span class="label">ВЫК</span><span class="knob"></span></button>
-      </div>
-      <div class="grid">
-        <div class="fld"><div class="lbl" data-i="strategy"></div>
-          <select data-key="strategy"><option value="both" selected>Лонг + Шорт</option><option value="long">Лонг</option><option value="short">Шорт</option></select></div>
-        <div class="fld"><div class="lbl" data-i="rsi_len"></div>
-          <select data-key="rsi_len"><option>7</option><option selected>14</option><option>21</option></select></div>
-        <div class="fld"><div class="lbl" data-i="window"></div>
-          <select data-key="window"><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option selected>8</option><option>9</option></select></div>
-        <div class="fld"><div class="lbl" data-i="in_delta"></div>
-          <select data-key="in_delta"><option>0.3</option><option selected>0.5</option><option>0.7</option><option>0.8</option><option>0.9</option><option>1.0</option><option>1.2</option><option>1.5</option><option>1.7</option><option>2.0</option></select></div>
-        <div class="fld"><div class="lbl" data-i="zones"></div>
-          <select data-key="zones"><option value="30/70" selected>30/70</option><option value="25/75">25/75</option><option value="35/65">35/65</option><option value="none">без границ</option></select></div>
-        <div class="fld"><div class="lbl" data-i="confirm"></div>
-          <select data-key="confirm"><option selected>1</option><option>2</option></select></div>
-      </div>
-    </div>
-  </section>
-
-  <button class="save-btn" id="saveBtn">Сохранить настройки</button>
-  <div class="footnote" id="fNote">Переключатели сохраняются на этом устройстве и применяются мгновенно.</div>
-</main>
-
-<script>
-/* ===== модель и i18n ===== */
-const LS_KEY = 'okx_rsi_v1';
-
-const I18N = {
-  en: {
-    main: "RSI Reversal Signals",
-    cross: "Level Crossings",
-    extrema: "Catch Minimum & Maximum",
-    strategy: "Strategy",
-    rsi_len: "RSI length",
-    zones: "Zones",
-    cross50: "Cross 50",
-    window: "Observation",
-    in_delta: "Delta",
-    confirm: "Confirmation",
-    on: "ON", off: "OFF",
-    no: "NO",
-    long: "Long", short: "Short", both: "Long + Short",
-    z_none: "none",
-    c_long: "Long (up-cross)",
-    c_short: "Short (down-cross)",
-    c_both: "Long + Short",
-    save: "Save settings",
-    note: "Switches are saved on this device and take effect instantly."
-  },
-  hi: {
-    main: "RSI रिवर्सल सिग्नल",
-    cross: "लेवल क्रॉसिंग",
-    extrema: "मिनिमम/मैक्सिमम पकड़ें",
-    strategy: "रणनीति",
-    rsi_len: "RSI पीरियड",
-    zones: "ज़ोन",
-    cross50: "50 क्रॉस",
-    window: "ऑब्ज़र्वेशन",
-    in_delta: "डेल्टा",
-    confirm: "कन्फ़र्मेशन",
-    on: "चालू", off: "बंद",
-    no: "नहीं",
-    long: "लॉन्ग", short: "शॉर्ट", both: "लॉन्ग + शॉर्ट",
-    z_none: "कोई नहीं",
-    c_long: "लॉन्ग (नीचे→ऊपर)",
-    c_short: "शॉर्ट (ऊपर→नीचे)",
-    c_both: "लॉन्ग + शॉर्ट",
-    save: "सेटिंग्स सहेजें",
-    note: "स्विच इस डिवाइस पर सेव होते हैं और तुरंत लागू होते हैं."
-  },
-  ru: {
-    main: "СИГНАЛЫ РАЗВОРОТА RSI",
-    cross: "Пересечение уровней",
-    extrema: "Ловим минимум & максимум",
-    strategy: "Стратегия",
-    rsi_len: "Период RSI",
-    zones: "Границы",
-    cross50: "Пересечение 50",
-    window: "Наблюдение",
-    in_delta: "Дельта",
-    confirm: "Подтверждение",
-    on: "ВКЛ", off: "ВЫК",
-    no: "НЕТ",
-    long: "Лонг", short: "Шорт", both: "Лонг + Шорт",
-    z_none: "без границ",
-    c_long: "Лонг (снизу→вверх)",
-    c_short: "Шорт (сверху→вниз)",
-    c_both: "Лонг + Шорт",
-    save: "Сохранить настройки",
-    note: "Переключатели сохраняются на этом устройстве и применяются мгновенно."
-  }
-};
-
-const DEFAULTS = {
-  // включение таймфреймов по умолчанию
-  enabled: { cross:{'15m':false,'1h':true,'4h':true,'8h':false},
-             extrema:{'15m':false,'1h':true,'4h':true,'8h':false} },
-  // значения по умолчанию
-  tf: {
-    cross: { strategy:'both', rsi_len:14, zones:'30/70', cross50:'none' },
-    extrema: { strategy:'both', rsi_len:14, window:{'15m':8,'1h':5,'4h':6,'8h':7}, in_delta:{'15m':1.0,'1h':0.8,'4h':0.7,'8h':0.5}, zones:'30/70', confirm:1 }
-  }
-};
-
-function load(){
-  try{ const raw = localStorage.getItem(LS_KEY); if(!raw) return null; return JSON.parse(raw); }catch{return null}
-}
-function save(obj){ try{ localStorage.setItem(LS_KEY, JSON.stringify(obj)); }catch{} }
-
-function setLang(lang){
-  const t = I18N[lang] || I18N.en;
-  document.getElementById('hMain').textContent = t.main;
-  document.getElementById('tCross').textContent = t.cross;
-  document.getElementById('tExtrema').textContent = t.extrema;
-  document.getElementById('saveBtn').textContent = t.save;
-  document.getElementById('fNote').textContent = t.note;
-  document.querySelectorAll('[data-i=strategy]').forEach(e=>e.textContent=t.strategy);
-  document.querySelectorAll('[data-i=rsi_len]').forEach(e=>e.textContent=t.rsi_len);
-  document.querySelectorAll('[data-i=zones]').forEach(e=>e.textContent=t.zones);
-  document.querySelectorAll('[data-i=cross50]').forEach(e=>e.textContent=t.cross50);
-  document.querySelectorAll('[data-i=window]').forEach(e=>e.textContent=t.window);
-  document.querySelectorAll('[data-i=in_delta]').forEach(e=>e.textContent=t.in_delta);
-  document.querySelectorAll('[data-i=confirm]').forEach(e=>e.textContent=t.confirm);
-}
-
-function snapshot(){
-  const out = { lang: currentLang, cross:{}, extrema:{} };
-  document.querySelectorAll('.tf-card').forEach(card=>{
-    const tf = card.getAttribute('data-tf');
-    const group = card.getAttribute('data-group'); // cross|extrema
-    const on = card.querySelector('.switch').getAttribute('data-on')==='true';
-    const rec = { on };
-    card.querySelectorAll('select').forEach(sel=>{
-      let v = sel.value;
-      if (['rsi_len','window','confirm'].includes(sel.dataset.key)) v = Number(v);
-      if (sel.dataset.key === 'in_delta') v = Number(v);
-      rec[sel.dataset.key] = v;
-    });
-    out[group][tf] = rec;
-  });
-  return out;
-}
-
-function restore(state){
-  if(!state) return;
-  currentLang = state.lang || currentLang;
-  document.querySelectorAll('.tf-card').forEach(card=>{
-    const tf = card.getAttribute('data-tf');
-    const group = card.getAttribute('data-group');
-    const rec = state[group]?.[tf]; if(!rec) return;
-    const sw = card.querySelector('.switch');
-    sw.setAttribute('data-on', String(!!rec.on));
-    sw.setAttribute('aria-pressed', String(!!rec.on));
-    card.querySelectorAll('select').forEach(sel=>{
-      const k = sel.dataset.key; if(rec[k] != null) sel.value = String(rec[k]);
-    });
-  });
-}
-
-function applyDefaults(){
-  // включение по умолчанию
-  document.querySelectorAll('.tf-card').forEach(card=>{
-    const tf = card.getAttribute('data-tf');
-    const group = card.getAttribute('data-group');
-    const sw = card.querySelector('.switch');
-    const on = DEFAULTS.enabled[group][tf];
-    sw.setAttribute('data-on', String(on));
-    sw.setAttribute('aria-pressed', String(on));
-  });
-  // значения
-  document.querySelectorAll('.tf-card[data-group=cross]').forEach(card=>{
-    const s = DEFAULTS.tf.cross;
-    card.querySelector('[data-key=strategy]').value = s.strategy;
-    card.querySelector('[data-key=rsi_len]').value = String(s.rsi_len);
-    card.querySelector('[data-key=zones]').value = s.zones;
-    card.querySelector('[data-key=cross50]').value = s.cross50;
-  });
-  document.querySelectorAll('.tf-card[data-group=extrema]').forEach(card=>{
-    const tf = card.getAttribute('data-tf');
-    const s = DEFAULTS.tf.extrema;
-    card.querySelector('[data-key=strategy]').value = s.strategy;
-    card.querySelector('[data-key=rsi_len]').value = String(s.rsi_len);
-    card.querySelector('[data-key=window]').value = String(s.window[tf]);
-    card.querySelector('[data-key=in_delta]').value = String(s.in_delta[tf]);
-    card.querySelector('[data-key=zones]').value = s.zones;
-    card.querySelector('[data-key=confirm]').value = String(s.confirm);
-  });
-}
-
-/* switch click */
-document.addEventListener('click', e=>{
-  const sw = e.target.closest('.switch'); if(!sw) return;
-  const on = sw.getAttribute('data-on')==='true';
-  sw.setAttribute('data-on', String(!on));
-  sw.setAttribute('aria-pressed', String(!on));
-});
-
-/* Telegram glue */
-const tg = window.Telegram?.WebApp ?? null;
-try{ tg?.ready(); tg?.expand(); }catch{}
-const isDesktop = (tg?.platform==='tdesktop' || tg?.platform==='macos');
-let currentLang = (()=>{ const sys = (tg?.initDataUnsafe?.user?.language_code||'en').slice(0,2).toLowerCase(); return ['en','hi','ru'].includes(sys)?sys:'en'; })();
-
-/* lang bar */
-document.querySelectorAll('.chip').forEach(ch=>{
-  ch.addEventListener('click', ()=>{
-    document.querySelectorAll('.chip').forEach(c=>c.classList.remove('active'));
-    ch.classList.add('active');
-    currentLang = ch.dataset.lang;
-    setLang(currentLang);
-  });
-});
-
-/* init */
-applyDefaults();
-const st = load(); if(st) restore(st);
-setLang(currentLang);
-
-/* save & send */
-document.getElementById('saveBtn').addEventListener('click', ()=>{
-  const state = snapshot();
-  save(state);
-  const payload = JSON.stringify({
-    type: "rsi_save",
-    alerts: [{ id:"alert2", on:true }],           // привязываем к твоему «Индекс RSI»
-    rsi_config: state                              // весь объект детальных настроек
-  });
-  try{
-    if(typeof tg?.sendData === 'function'){
-      tg.sendData(payload);
-    }
-  }catch(e){}
-
-  const t = I18N[currentLang]||I18N.en;
-  if (typeof tg?.showPopup === 'function'){
-    tg.showPopup({ title:"OKXcandlebot", message: t.save+" ✓", buttons:[{id:'ok',type:'ok'}] }, (id)=>{ if(id==='ok' && !isDesktop){ setTimeout(()=>{ try{tg.close()}catch{} }, 120)} });
-  }else if (typeof tg?.showAlert === 'function'){
-    tg.showAlert("OKXcandlebot\n"+t.save+" ✓", ()=>{ if(!isDesktop){ setTimeout(()=>{ try{tg.close()}catch{} },120)} });
-  }
-});
-</script>
-</body>
+    <script src="assets/js/i18n.js?v=1"></script>
+    <script src="assets/js/core.js?v=1"></script>
+    <script src="assets/js/rsi.page.js?v=1"></script>
+  </body>
 </html>
+

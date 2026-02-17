@@ -28,15 +28,24 @@
   const RSI_STORAGE_KEY = "okx_rsi_settings_v1";
 
   // ===== RSI: локальный кэш из отдельной страницы настроек =====
-  // ===== RSI: локальные настройки, сохранённые на отдельной странице =====
-  function loadRsiState() {
+  // Хранит JSON с настройками по всем ТФ (cross + extrema),
+  // которые сохраняются на странице setting_alerts_rsi.html.
+  const RSI_STORAGE_KEY = 'okx_rsi_settings_v1';
+
+  // Считываем RSI-настройки из localStorage как есть.
+  // Если данных нет или формат сломан — возвращаем null, бот этот блок не получит.
+  function loadRsiState(){
     const stored = loadLocal(RSI_STORAGE_KEY, null);
     if (!stored || typeof stored !== 'object') return null;
-
     return stored;
   }
+
   // Приводим RSI-состояние к аккуратному виду для отправки в бота:
-    function normalizeRsiForPayload(rsi){
+  //  • фильтруем только нужные поля
+  //  • числа явно приводим к Number
+  //  • если оба блока пустые (нет ни cross, ни extrema) — возвращаем null.
+  function normalizeRsiForPayload(rsi){
+
     if (!rsi || typeof rsi !== 'object') return null;
 
     const out = { cross: {}, extrema: {} };
@@ -80,6 +89,8 @@
       });
     });
 
+    // Если после фильтрации нет ни одного ТФ ни в cross, ни в extrema —
+    // вообще не шлём блок rsi в payload.
     if (!Object.keys(out.cross).length && !Object.keys(out.extrema).length) {
       return null;
     }
@@ -287,23 +298,31 @@ function updateOne(id){
   /* «Сохранить настройки» — отправка, вспышка, сводка */
   saveEl.addEventListener('click', ()=>{
     // Базовый payload с тумблерами основных алертов
-    const payloadObj = { type:'save', alerts };
+    const payloadObj = { type: 'save', alerts };
 
-    // Подхватываем EMA-настройки из локального кэша, если они есть.
-    // ВАЖНО: каждый раз читаем их из localStorage, чтобы поймать
+    // EMA: подхватываем настройки из локального кэша, если они есть.
+    // ВАЖНО: каждый раз читаем из localStorage, чтобы поймать
     // изменения, сделанные на отдельной странице EMA (setting_alerts_ma.html).
     const emaState = loadEmaState();
     const emaNormalized = normalizeEmaForPayload(emaState);
     if (emaNormalized) {
       payloadObj.ema = emaNormalized;
     }
-        
-    // Подхватываем RSI-настройки из локального кэша, если они есть.
+
+    // RSI: аналогично берём настройки из localStorage.
+    // Формат payloadObj.rsi:
+    //   {
+    //     cross:   { '15m': { on, strategy, rsi_len, zones, cross50 }, ... },
+    //     extrema: { '15m': { on, strategy, rsi_len, window, in_delta, zones, confirm }, ... }
+    //   }
+    // Если пользователь ещё ни разу не открывал RSI-страницу,
+    // normalizeRsiForPayload вернёт null и этот блок не уйдёт в бота.
     const rsiState = loadRsiState();
     const rsiNormalized = normalizeRsiForPayload(rsiState);
     if (rsiNormalized) {
       payloadObj.rsi = rsiNormalized;
     }
+
     const payload = JSON.stringify(payloadObj);
     const sent = safeSendData(payload);
     if (!sent) saveState(alerts);

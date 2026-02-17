@@ -1,52 +1,100 @@
-/* Файл: var-www-botcryptosignal-assets-css-rsi.css */
-/* RSI settings page.
+/* Файл: var-www-botcryptosignal-assets-css-rsi.css
+ * Назначение: стили страницы настроек RSI (setting_alerts_rsi.html).
  * ФАКТ:
- *  – Палитру, фон, тумблеры .switch даём core.css + alerts.css.
- *  – Здесь только верстка/раскладка блоков.
+ *   – Палитра, размеры и тумблеры .switch взяты из старого инлайнового <style>.
+ *   – HTML уже использует классы .wrap, .section, .tf-card, .tf-head, .tf-name, .row, .lbl, .field, .save-btn, .note.
+ *   – В разметке внутри .switch используется <span class="thumb">, поэтому в этом файле мы стилизуем .thumb (аналог старого .knob).
  */
 
-.page {
-  max-width: 720px;
-  margin: 0 auto;
-  padding: 16px;
+/* Палитра и базовая геометрия страницы */
+:root {
+  --bg: #050029;
+  --text: #e6ddcd;
+  --green: #79c172;
+  --red: #ff5f5f;
+  --muted: #a7a093;
+  --card-r: 20px;
+  --v-gap: clamp(14px, 3.5vw, 22px);
+  --pill-h: clamp(40px, 9vw, 56px);
+  --pill-w: clamp(180px, 60vw, 320px);
 }
 
-/* Заголовок и подзаголовок страницы (если есть текст сверху) */
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+/* Ограничиваем оформление только этой странице по классу на body */
+body.rsi-body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Inter, Arial;
+  line-height: 1.35;
+  display: flex;
+  justify-content: center;
+}
+
+/* Основной контейнер, как раньше .wrap */
+.wrap.rsi-wrap {
+  width: min(800px, 94vw);
+  padding: clamp(16px, 3vw, 28px);
+  display: flex;
+  flex-direction: column;
+}
+
+/* Заголовок страницы (аналог старого h1) */
 .page-title {
-  font-size: 24px;
+  margin: 0 0 0.8rem;
   font-weight: 800;
+  letter-spacing: 0.02em;
+  font-size: clamp(21px, 5vw, 30px);
+  text-transform: uppercase;
+}
+
+/* Блок подписи под заголовком, если нужен */
+.section-title {
   margin-bottom: 4px;
 }
 
-.page-subtitle {
-  margin-bottom: 18px;
-  font-size: 14px;
-  line-height: 1.5;
-  color: var(--text-muted, rgba(255, 255, 255, 0.72));
+.section-title-main {
+  font-size: clamp(16px, 3.6vw, 22px);
+  font-weight: 800;
+  margin-bottom: 0.1rem;
 }
 
-/* Группы RSI (Пересечения уровней / Минимумы & максимумы) */
-.rsi-groups {
+.section-title-caption {
+  font-size: 13px;
+  line-height: 1.4;
+  color: var(--muted);
+}
+
+/* Карточка секции (Пересечения / Минимумы и максимумы) */
+.section {
+  padding: clamp(12px, 2.6vw, 18px);
+  border: 1px solid #2a2458;
+  border-radius: var(--card-r);
+  background: rgba(255, 255, 255, 0.02);
+  margin-top: var(--v-gap);
+}
+
+/* Сетка карточек таймфреймов */
+.tf-grid {
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 12px;
+  margin-top: 10px;
 }
 
-/* Карточка большой группы (левое меню + блоки TF справа, если используется) */
-.rsi-group-card {
-  border-radius: 18px;
-  padding: 16px 18px 18px;
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  background: rgba(0, 0, 0, 0.16);
-}
-
-/* Карточка отдельного таймфрейма внутри группы */
+/* Карточка одного TF */
 .tf-card {
-  margin-top: 12px;
-  padding: 12px 14px 14px;
+  border: 1px solid #38306d;
   border-radius: 16px;
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  background: rgba(0, 0, 0, 0.10);
+  padding: 14px;
 }
 
 /* Шапка TF: название + тумблер */
@@ -54,67 +102,150 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
+  gap: 10px;
 }
 
 .tf-name {
-  font-size: 16px;
-  font-weight: 700;
+  font-size: 18px;
+  font-weight: 800;
 }
 
-/* Сетка полей (левый/правый столбец) */
-.grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 10px;
+/* Строка поля (лейбл + select) */
+.row {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
   margin-top: 10px;
 }
 
-.fld {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
+/* Лэйблы (подписи к полям) */
 .lbl {
+  color: var(--muted);
   font-size: 12px;
   letter-spacing: 0.02em;
   text-transform: uppercase;
-  color: var(--text-muted, rgba(255, 255, 255, 0.72));
 }
 
-/* Выпадающие списки. Палитру берём из текущей темы, не задаём свои цвета. */
-.tf-card select {
-  width: 100%;
-  min-height: 36px;
-  border-radius: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  background: rgba(0, 0, 0, 0.30);
-  color: inherit;
+/* Выпадающие списки (select) */
+.field {
+  background: #1b1645;
+  color: var(--text);
+  border: 1px solid #3a3276;
+  border-radius: 10px;
+  padding: 10px;
   font-size: 14px;
-  padding: 8px 10px;
   outline: none;
+  width: 100%;
 }
 
-.tf-card select:focus {
-  border-color: rgba(255, 255, 255, 0.45);
+.field:focus {
+  border-color: #ffffff;
 }
 
-/* Низ страницы: кнопка сохранения и подпись уже стилизованы в alerts.css
- * (класс .save-btn и .footnote). Здесь ничего не переопределяем.
+/* Тумблер ON/OFF — полностью перенесён из старого инлайнового CSS.
+ * Отличие: вместо .knob используется .thumb (как в текущем HTML).
  */
+.switch {
+  --pad: 6px;
+  position: relative;
+  width: var(--pill-w);
+  height: var(--pill-h);
+  border-radius: 999px;
+  border: 1px solid #382f78;
+  background: linear-gradient(90deg, var(--green) 0 50%, var(--red) 50% 100%);
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 var(--pad);
+  color: #050029;
+  user-select: none;
+  cursor: pointer;
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.04),
+    0 6px 18px rgba(0, 0, 0, 0.25);
+}
+
+/* Подписи ON / OFF */
+.switch .label {
+  font-weight: 900;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  font-size: 13px;
+  width: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.65;
+}
+
+.switch[data-on="true"] .label:first-of-type {
+  opacity: 1;
+}
+
+.switch[data-on="false"] .label:last-of-type {
+  opacity: 1;
+}
+
+/* Кружок-бегунок */
+.switch .thumb {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: calc(var(--pill-h) - var(--pad) * 2);
+  height: calc(var(--pill-h) - var(--pad) * 2);
+  border-radius: 50%;
+  background: #2d2a59;
+  box-shadow:
+    0 6px 12px rgba(0, 0, 0, 0.35),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.06);
+  transition: left 0.22s cubic-bezier(0.2, 0.9, 0.2, 1.2);
+}
+
+/* Позиции бегунка в зависимости от data-on */
+.switch[data-on="true"] .thumb {
+  left: var(--pad);
+}
+
+.switch[data-on="false"] .thumb {
+  left: calc(100% - var(--pill-h) + var(--pad));
+}
+
+/* Блок с кнопкой "Сохранить" */
+.save-row {
+  margin-top: var(--v-gap);
+}
+
+/* Кнопка сохранения (как в старом CSS) */
+.save-btn {
+  width: 100%;
+  border-radius: var(--card-r);
+  border: 1px solid var(--text);
+  background: var(--bg);
+  color: var(--text);
+  padding: clamp(14px, 3.5vw, 18px);
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  font-size: clamp(16px, 4vw, 22px);
+  text-align: center;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25);
+  cursor: pointer;
+}
+
+/* Подпись под кнопкой (note ~ footnote) */
+.note {
+  color: var(--muted);
+  text-align: center;
+  font-size: 13px;
+  margin-top: 6px;
+}
 
 /* Мобильная адаптация */
 @media (max-width: 760px) {
-  .grid {
-    grid-template-columns: 1fr;
+  .tf-grid {
+    gap: 10px;
   }
 
-  .page {
+  .wrap.rsi-wrap {
     padding: 12px;
-  }
-
-  .tf-card {
-    padding: 10px 12px 12px;
   }
 }

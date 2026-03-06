@@ -153,10 +153,25 @@
       const msgKey = "rsi.save_toast";
       const msg = t(msgKey) === msgKey ? "RSI settings saved." : t(msgKey);
 
+      // helper: переход обратно на alerts.html с сохранением query-строки
+      const goToAlerts = function () {
+        try {
+          const qs = window.location.search || "";
+          window.location.href = "alerts.html" + qs;
+        } catch (e) {
+          console && console.error && console.error("RSI: redirect failed", e);
+        }
+      };
+
       if (notifySavedAndMaybeClose) {
         notifySavedAndMaybeClose(msg);
+        // небольшая задержка, чтобы тост успел показаться
+        setTimeout(goToAlerts, 300);
       } else if (Core.showToast) {
         Core.showToast(msg);
+        setTimeout(goToAlerts, 300);
+      } else {
+        goToAlerts();
       }
     });
   }

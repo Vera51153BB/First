@@ -32,14 +32,33 @@
   }
 
   // Попап/тост «сохранено»
-  function notifySavedAndMaybeClose(message, { title='OKXcandlebot', closeOnMobile=true } = {}){
-    if (IS_DESKTOP) { showToast(message); return; }
+  // onAfter — необязательный колбэк, который вызовется после закрытия попапа/алерта
+  function notifySavedAndMaybeClose(
+    message,
+    { title='OKXcandlebot', closeOnMobile=true, onAfter=null } = {}
+  ){
+    const runAfter = () => {
+      if (typeof onAfter === 'function') {
+        try { onAfter(); } catch(e){ console.warn('notifySavedAndMaybeClose onAfter error', e); }
+      }
+    };
+
+    if (IS_DESKTOP) {
+      showToast(message);
+      runAfter();
+      return;
+    }
 
     if (typeof tg?.showPopup === 'function') {
       try {
         tg.showPopup(
           { title, message, buttons: [{ id:'ok', type:'ok' }] },
-          (btnId) => { if (btnId === 'ok' && closeOnMobile) setTimeout(()=>{ try { tg.close(); } catch {} }, 120); }
+          (btnId) => {
+            runAfter();
+            if (btnId === 'ok' && closeOnMobile) {
+              setTimeout(()=>{ try { tg.close(); } catch {} }, 120);
+            }
+          }
         );
         tg?.HapticFeedback?.notificationOccurred?.('success');
         return;
@@ -49,7 +68,10 @@
     if (typeof tg?.showAlert === 'function') {
       try {
         tg.showAlert(`${title}\n${message}`, () => {
-          if (closeOnMobile) setTimeout(()=>{ try { tg.close(); } catch {} }, 120);
+          runAfter();
+          if (closeOnMobile) {
+            setTimeout(()=>{ try { tg.close(); } catch {} }, 120);
+          }
         });
         tg?.HapticFeedback?.notificationOccurred?.('success');
         return;
@@ -57,6 +79,7 @@
     }
 
     showToast(message);
+    runAfter();
   }
 
   // Риппл-эффект + лёгкий хаптик

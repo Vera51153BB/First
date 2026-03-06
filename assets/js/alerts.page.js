@@ -25,9 +25,6 @@
   function saveState(arr){ saveLocal(STORAGE_KEY, arr); }
 
   // ===== RSI: локальный кэш из отдельной страницы настроек =====
-  const RSI_STORAGE_KEY = "okx_rsi_settings_v1";
-
-  // ===== RSI: локальный кэш из отдельной страницы настроек =====
   // Хранит JSON с настройками по всем ТФ (cross + extrema),
   // которые сохраняются на странице setting_alerts_rsi.html.
   const RSI_STORAGE_KEY = 'okx_rsi_settings_v1';

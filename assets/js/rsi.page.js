@@ -143,43 +143,20 @@
   });
 
   const saveBtn = document.getElementById("saveBtn");
-    if (saveBtn) {
-    saveBtn.addEventListener("click", function (e) {
-      e.preventDefault();
-
-      const values = collect();
-      if (!values) {
-        Core.showAlert("Не удалось собрать значения формы.");
-        return;
-      }
-
+  if (saveBtn) {
+    saveBtn.addEventListener("click", function () {
+      const state = snapshot();
       if (saveLocal) {
-        saveLocal(STORAGE_KEY, values);
+        saveLocal(STORAGE_KEY, state);
       }
 
-      const msg = "Настройки RSI сохранены.";
-
-      // Функция возврата на главную страницу настроек (alerts.html)
-      const goBackToAlerts = () => {
-        try {
-          const qs = window.location.search || "";
-          window.location.href = "alerts.html" + qs;
-        } catch (err) {
-          console.error("RSI: failed to redirect to alerts.html", err);
-        }
-      };
+      const msgKey = "rsi.save_toast";
+      const msg = t(msgKey) === msgKey ? "RSI settings saved." : t(msgKey);
 
       if (notifySavedAndMaybeClose) {
-        // Показываем алерт/тост и после его закрытия уходим на alerts.html.
-        notifySavedAndMaybeClose(msg, {
-          closeOnMobile: false,
-          onAfter: goBackToAlerts,
-        });
+        notifySavedAndMaybeClose(msg);
       } else if (Core.showToast) {
         Core.showToast(msg);
-        goBackToAlerts();
-      } else {
-        goBackToAlerts();
       }
     });
   }

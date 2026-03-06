@@ -142,6 +142,195 @@
     updateSwitchLabels();
   });
 
+  // Время показа всплывающего окна RSI (toast), мс
+  const RSI_TOAST_VISIBLE_MS = 11000;
+
+  // Toast для страницы RSI — визуально такой же, как у EMA.
+  function showRsiToast(text, timeoutMs, onDone) {
+    const div = document.createElement("div");
+    div.className = "ema-toast";
+
+    const content = document.createElement("div");
+    content.innerHTML = text || "";
+    div.appendChild(content);
+
+    const closeBtn = document.createElement("button");
+    closeBtn.type = "button";
+    closeBtn.textContent = "✖";
+    Object.assign(closeBtn.style, {
+      position: "absolute",
+      top: "8px",
+      right: "10px",
+      background: "transparent",
+      border: "none",
+      color: "#ff5f5f",
+      fontSize: "16px",
+      cursor: "pointer",
+      padding: "0",
+    });
+    div.appendChild(closeBtn);
+
+    Object.assign(div.style, {
+      position: "fixed",
+      left: "50%",
+      top: "50%",
+      transform: "translate(-50%, -50%)",
+      maxWidth: "480px",
+      width: "calc(100% - 32px)",
+      padding: "16px 20px",
+      borderRadius: "24px",
+      background: "#181722",
+      color: "#ffffff",
+      fontSize: "14px",
+      lineHeight: "1.4",
+      zIndex: 9999,
+      textAlign: "center",
+      opacity: "0",
+      transition: "opacity 0.3s ease",
+      pointerEvents: "auto",
+      boxSizing: "border-box",
+      whiteSpace: "pre-line",     // \n → перенос строки
+    });
+
+    document.body.appendChild(div);
+
+    // плавное появление
+    requestAnimationFrame(function () {
+      div.style.opacity = "1";
+    });
+
+    const visibleMs =
+      typeof timeoutMs === "number" ? timeoutMs : RSI_TOAST_VISIBLE_MS;
+
+    let closed = false;
+    let hideTimer = null;
+
+    function closeToast(needOnDone) {
+      if (closed) return;
+      closed = true;
+
+      if (hideTimer !== null) {
+        clearTimeout(hideTimer);
+        hideTimer = null;
+      }
+
+      div.style.opacity = "0";
+      setTimeout(function () {
+        if (div.parentNode) {
+          div.parentNode.removeChild(div);
+        }
+        if (needOnDone && typeof onDone === "function") {
+          onDone();
+        }
+      }, 300); // время fade-out
+    }
+
+    // клик по крестику → закрыть и уйти на alerts.html
+    closeBtn.addEventListener("click", function (evt) {
+      evt.stopPropagation();
+      closeToast(true);
+    });
+
+    // авто-закрытие по таймауту
+    hideTimer = setTimeout(function () {
+      closeToast(true);
+    }, visibleMs);
+  }
+
+  // Переход на основную страницу управления уведомлениями (alerts.html)
+  function openMainAlertsPage() {
+    try {
+      // 1) если есть <body data-alerts-url="..."> — берём оттуда
+      // 2) иначе origin + "/alerts.html"
+      const base =
+        (document.body &&
+          document.body.dataset &&
+          document.body.dataset.alertsUrl) ||
+        window.location.origin + "/alerts.html";
+
+      // сохраняем query (?lang=... и т.п.) и добавляем якорь на кнопку "Применить настройки"
+      const url = base + window.location.search + "#saveBtn";
+
+      // заменяем текущую страницу внутри WebView
+      window.location.replace(url);
+    } catch (e) {
+      // в случае ошибки остаёмся на RSI-странице
+    }
+  }
+
+  // Короткая сводка по текущим настройкам RSI (на русском для тоста)
+  function buildRsiSummaryText(state) {
+    const lines = [];
+
+    lines.push("Для применения настроек нажмите кнопку");
+    lines.push("♦ Применить настройки ♦");
+    lines.push("в меню: Управление уведомлениями");
+    lines.push("");
+    lines.push("Новые настройки RSI:");
+
+    const tfOrder = TF_ORDER.slice();
+    const groupTitles = {
+      cross: "Пересечение зон (cross)",
+      extrema: "Экстремумы (extrema)",
+    };
+
+    ["cross", "extrema"].forEach(function (group) {
+      const g = state[group];
+      if (!g || typeof g !== "object") return;
+
+      const enabledTfs = tfOrder.filter(function (tf) {
+        return g[tf] && g[tf].on;
+      });
+
+      if (!enabledTfs.length) {
+        lines.push("");
+        lines.push(groupTitles[group] + ": выключено");
+        return;
+      }
+
+      lines.push("");
+      lines.push(groupTitles[group] + ":");
+
+      enabledTfs.forEach(function (tf) {
+        const rec = g[tf];
+        if (!rec) return;
+
+        if (group === "cross") {
+          lines.push(
+            " • " +
+              tf +
+              ": период " +
+              (rec.rsi_len ?? "-") +
+              ", зоны " +
+              (rec.zones ?? "-") +
+              ", пересечение 50: " +
+              (rec.cross50 ?? "нет")
+          );
+        } else {
+          lines.push(
+            " • " +
+              tf +
+              ": период " +
+              (rec.rsi_len ?? "-") +
+              ", окно " +
+              (rec.window ?? "-") +
+              ", дельта " +
+              (rec.in_delta ?? "-") +
+              ", зоны " +
+              (rec.zones ?? "-") +
+              ", подтверждение " +
+              (rec.confirm ?? "-")
+          );
+        }
+      });
+    });
+
+    lines.push("");
+    lines.push("BotCryptoSignal");
+
+    return lines.join("\n");
+  }
+
   const saveBtn = document.getElementById("saveBtn");
   if (saveBtn) {
     saveBtn.addEventListener("click", function () {
@@ -150,33 +339,15 @@
         saveLocal(STORAGE_KEY, state);
       }
 
-      const msgKey = "rsi.save_toast";
-      const msg = t(msgKey) === msgKey ? "RSI settings saved." : t(msgKey);
-
-      // helper: переход обратно на alerts.html с сохранением query-строки
-      const goToAlerts = function () {
-        try {
-          const qs = window.location.search || "";
-          window.location.href = "alerts.html" + qs;
-        } catch (e) {
-          console && console.error && console.error("RSI: redirect failed", e);
-        }
-      };
-
-      if (notifySavedAndMaybeClose) {
-        notifySavedAndMaybeClose(msg);
-        // небольшая задержка, чтобы тост успел показаться
-        setTimeout(goToAlerts, 300);
-      } else if (Core.showToast) {
-        Core.showToast(msg);
-        setTimeout(goToAlerts, 300);
-      } else {
-        goToAlerts();
-      }
+      const summaryText = buildRsiSummaryText(state);
+      showRsiToast(summaryText, RSI_TOAST_VISIBLE_MS, function () {
+        openMainAlertsPage();
+      });
     });
   }
 
   // Init
+  
   const saved = loadLocal ? loadLocal(STORAGE_KEY, null) : null;
   if (saved) {
     restore(saved);

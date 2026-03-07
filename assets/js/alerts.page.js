@@ -37,61 +37,113 @@
     return stored;
   }
 
-  // Приводим RSI-состояние к аккуратному виду для отправки в бота:
-  //  • фильтруем только нужные поля
-  //  • числа явно приводим к Number
-  //  • если оба блока пустые (нет ни cross, ни extrema) — возвращаем null.
-  function normalizeRsiForPayload(rsi){
-
-    if (!rsi || typeof rsi !== 'object') return null;
-
-    const out = { cross: {}, extrema: {} };
-
-    ["cross", "extrema"].forEach(function (group) {
-      const srcGroup = rsi[group];
-      if (!srcGroup || typeof srcGroup !== "object") return;
-
-      Object.keys(srcGroup).forEach(function (tf) {
-        const src = srcGroup[tf];
-        if (!src || typeof src !== "object") return;
-
-        const rec = {};
-
-        if (typeof src.on !== "undefined") {
-          rec.on = !!src.on;
-        }
-        if (typeof src.strategy === "string") {
-          rec.strategy = src.strategy;
-        }
-        if (typeof src.rsi_len !== "undefined") {
-          rec.rsi_len = Number(src.rsi_len) || 0;
-        }
-        if (typeof src.zones === "string") {
-          rec.zones = src.zones;
-        }
-        if (typeof src.cross50 === "string") {
-          rec.cross50 = src.cross50;
-        }
-        if (typeof src.window !== "undefined") {
-          rec.window = Number(src.window) || 0;
-        }
-        if (typeof src.in_delta !== "undefined") {
-          rec.in_delta = Number(src.in_delta) || 0;
-        }
-        if (typeof src.confirm !== "undefined") {
-          rec.confirm = Number(src.confirm) || 0;
-        }
-
-        out[group][tf] = rec;
-      });
-    });
-
-    // Если после фильтрации нет ни одного ТФ ни в cross, ни в extrema —
-    // вообще не шлём блок rsi в payload.
-    if (!Object.keys(out.cross).length && !Object.keys(out.extrema).length) {
+  // Приводим RSI-состояние к виду, который ждёт бекенд:
+  // payload.rsi = { levels: {...}, extrema: {...} }
+  // Здесь:
+  //   • локальное состояние rsiState.cross → levels
+  //   • rsiState.extrema → extrema
+  //   • по каждому блоку собираем:
+  //        enabled, tfs{tf:bool}, strategy, rsi_len, zones,
+  //        cross50 (для levels), window/delta/confirm (для extrema).
+  function normalizeRsiForPayload(rsiState) {
+    if (!rsiState || typeof rsiState !== "object") {
       return null;
     }
 
+    // Опорный порядок TF — должен совпадать с тем, что в rsi.page.js
+    const tfOrder = ["15m", "1h", "4h", "6h", "12h", "1d"];
+
+    function buildGroup(srcGroup, kind) {
+      if (!srcGroup || typeof srcGroup !== "object") {
+        return null;
+      }
+
+      // Базовые дефолты — совпадают с DEFAULT_* в rsi_settings.py
+      const group = {
+        enabled: false,
+        tfs: {},
+        strategy: "both",
+        rsi_len: 14,
+        zones: "30/70",
+      };
+
+      if (kind === "levels") {
+        group.cross50 = "none";
+      } else {
+        group.window = 3;
+        group.delta = 0.5;
+        group.confirm = 1;
+      }
+
+      let anyOn = false;
+
+      tfOrder.forEach(function (tf) {
+        const src = srcGroup[tf];
+        if (!src || typeof src !== "object") {
+          return;
+        }
+
+        const on = !!src.on;
+        group.tfs[tf] = on;
+        if (on) {
+          anyOn = true;
+        }
+
+        if (typeof src.strategy === "string") {
+          group.strategy = src.strategy;
+        }
+        if (src.rsi_len !== undefined) {
+          const n = Number(src.rsi_len);
+          if (!Number.isNaN(n) && n > 0) {
+            group.rsi_len = n;
+          }
+        }
+        if (typeof src.zones === "string") {
+          group.zones = src.zones;
+        }
+
+        if (kind === "levels") {
+          if (typeof src.cross50 === "string") {
+            group.cross50 = src.cross50;
+          }
+        } else {
+          if (src.window !== undefined) {
+            const w = Number(src.window);
+            if (!Number.isNaN(w) && w > 0) {
+              group.window = w;
+            }
+          }
+          // В UI поле называется in_delta, в БД — delta
+          if (src.in_delta !== undefined) {
+            const d = Number(src.in_delta);
+            if (!Number.isNaN(d) && d >= 0) {
+              group.delta = d;
+            }
+          }
+          if (src.confirm !== undefined) {
+            const c = Number(src.confirm);
+            if (!Number.isNaN(c) && c >= 0) {
+              group.confirm = c;
+            }
+          }
+        }
+      });
+
+      group.enabled = anyOn;
+      return anyOn ? group : null;
+    }
+
+    // cross в UI = levels в бекенде
+    const levels = buildGroup(rsiState.cross, "levels");
+    const extrema = buildGroup(rsiState.extrema, "extrema");
+
+    if (!levels && !extrema) {
+      return null;
+    }
+
+    const out = {};
+    if (levels) out.levels = levels;
+    if (extrema) out.extrema = extrema;
     return out;
   }
   

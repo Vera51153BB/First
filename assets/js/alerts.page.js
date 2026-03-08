@@ -37,14 +37,14 @@
     return stored;
   }
 
-  // Приводим RSI-состояние к виду, который ждёт бекенд:
-  // payload.rsi = { levels: {...}, extrema: {...} }
+  // Приводим RSI-состояние к виду, который уходит в payload WebApp:
+  // payload.rsi = { cross: {...}, extrema: {...} }
   // Здесь:
-  //   • локальное состояние rsiState.cross → levels
-  //   • rsiState.extrema → extrema
-  //   • по каждому блоку собираем:
-  //        enabled, tfs{tf:bool}, strategy, rsi_len, zones,
-  //        cross50 (для levels), window/delta/confirm (для extrema).
+  //   • локальное состояние rsiState.cross остаётся cross
+  //   • локальное состояние rsiState.extrema остаётся extrema
+  //   • по каждому TF собираем:
+  //        on, strategy, rsi_len, zones,
+  //        cross50 (для cross), window/delta/confirm (для extrema).
   function normalizeRsiForPayload(raw) {
     // raw — это то, что положил rsi.page.js в localStorage (okx_rsi_settings_v1)
     if (!raw || typeof raw !== "object") {
@@ -310,7 +310,7 @@ function updateOne(id){
     // Формат payloadObj.rsi:
     //   {
     //     cross:   { '15m': { on, strategy, rsi_len, zones, cross50 }, ... },
-    //     extrema: { '15m': { on, strategy, rsi_len, window, in_delta, zones, confirm }, ... }
+    //     extrema: { '15m': { on, strategy, rsi_len, window, delta, zones, confirm }, ... }
     //   }
     // Если пользователь ещё ни разу не открывал RSI-страницу,
     // normalizeRsiForPayload вернёт null и этот блок не уйдёт в бота.

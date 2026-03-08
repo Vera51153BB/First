@@ -45,105 +45,53 @@
   //   • по каждому блоку собираем:
   //        enabled, tfs{tf:bool}, strategy, rsi_len, zones,
   //        cross50 (для levels), window/delta/confirm (для extrema).
-  function normalizeRsiForPayload(rsiState) {
-    if (!rsiState || typeof rsiState !== "object") {
+  function normalizeRsiForPayload(raw) {
+    // raw — это то, что положил rsi.page.js в localStorage (okx_rsi_settings_v1)
+    if (!raw || typeof raw !== "object") {
       return null;
     }
-
-    // Опорный порядок TF — должен совпадать с тем, что в rsi.page.js
-    const tfOrder = ["15m", "1h", "4h", "6h", "12h", "1d"];
-
-    function buildGroup(srcGroup, kind) {
+  
+    const out = { cross: {}, extrema: {} };
+    const groups = ["cross", "extrema"];
+  
+    groups.forEach(function (group) {
+      const srcGroup = raw[group];
       if (!srcGroup || typeof srcGroup !== "object") {
-        return null;
+        return;
       }
-
-      // Базовые дефолты — совпадают с DEFAULT_* в rsi_settings.py
-      const group = {
-        enabled: false,
-        tfs: {},
-        strategy: "both",
-        rsi_len: 14,
-        zones: "30/70",
-      };
-
-      if (kind === "levels") {
-        group.cross50 = "none";
-      } else {
-        group.window = 3;
-        group.delta = 0.5;
-        group.confirm = 1;
-      }
-
-      let anyOn = false;
-
-      tfOrder.forEach(function (tf) {
+  
+      Object.keys(srcGroup).forEach(function (tf) {
         const src = srcGroup[tf];
         if (!src || typeof src !== "object") {
           return;
         }
-
-        const on = !!src.on;
-        group.tfs[tf] = on;
-        if (on) {
-          anyOn = true;
-        }
-
-        if (typeof src.strategy === "string") {
-          group.strategy = src.strategy;
-        }
-        if (src.rsi_len !== undefined) {
-          const n = Number(src.rsi_len);
-          if (!Number.isNaN(n) && n > 0) {
-            group.rsi_len = n;
-          }
-        }
-        if (typeof src.zones === "string") {
-          group.zones = src.zones;
-        }
-
-        if (kind === "levels") {
-          if (typeof src.cross50 === "string") {
-            group.cross50 = src.cross50;
-          }
+  
+        const rec = {};
+  
+        // on по каждому TF
+        rec.on = !!src.on;
+  
+        if (group === "cross") {
+          // strategy / rsi_len / zones / cross50
+          if (src.strategy) rec.strategy = String(src.strategy);
+          if (src.rsi_len != null) rec.rsi_len = Number(src.rsi_len);
+          if (src.zones) rec.zones = String(src.zones);
+          if (src.cross50) rec.cross50 = String(src.cross50);
         } else {
-          if (src.window !== undefined) {
-            const w = Number(src.window);
-            if (!Number.isNaN(w) && w > 0) {
-              group.window = w;
-            }
-          }
-          // В UI поле называется in_delta, в БД — delta
-          if (src.in_delta !== undefined) {
-            const d = Number(src.in_delta);
-            if (!Number.isNaN(d) && d >= 0) {
-              group.delta = d;
-            }
-          }
-          if (src.confirm !== undefined) {
-            const c = Number(src.confirm);
-            if (!Number.isNaN(c) && c >= 0) {
-              group.confirm = c;
-            }
-          }
+          // extrema: strategy / rsi_len / window / delta / zones / confirm
+          if (src.strategy) rec.strategy = String(src.strategy);
+          if (src.rsi_len != null) rec.rsi_len = Number(src.rsi_len);
+          if (src.window != null) rec.window = Number(src.window);
+          if (src.delta != null) rec.delta = Number(src.delta);  
+          if (src.zones) rec.zones = String(src.zones);
+          if (src.confirm != null) rec.confirm = Number(src.confirm);
         }
+  
+        if (!out[group]) out[group] = {};
+        out[group][tf] = rec;
       });
-
-      group.enabled = anyOn;
-      return anyOn ? group : null;
-    }
-
-    // cross в UI = levels в бекенде
-    const levels = buildGroup(rsiState.cross, "levels");
-    const extrema = buildGroup(rsiState.extrema, "extrema");
-
-    if (!levels && !extrema) {
-      return null;
-    }
-
-    const out = {};
-    if (levels) out.levels = levels;
-    if (extrema) out.extrema = extrema;
+    });
+  
     return out;
   }
   

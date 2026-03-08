@@ -24,12 +24,12 @@
       "1d":  { on: false, strategy: "both", rsi_len: 14, zones: "30/70", cross50: "none" },
     },
     extrema: {
-      "15m": { on: false, strategy: "both", rsi_len: 14, window: 8, in_delta: 1.0, zones: "30/70", confirm: 1 },
-      "1h":  { on: true,  strategy: "both", rsi_len: 14, window: 6, in_delta: 0.8, zones: "30/70", confirm: 1 },
-      "4h":  { on: true,  strategy: "both", rsi_len: 14, window: 5, in_delta: 0.7, zones: "30/70", confirm: 1 },
-      "6h":  { on: false, strategy: "both", rsi_len: 14, window: 5, in_delta: 0.6, zones: "30/70", confirm: 1 },
-      "12h": { on: false, strategy: "both", rsi_len: 14, window: 4, in_delta: 0.5, zones: "30/70", confirm: 1 },
-      "1d":  { on: false, strategy: "both", rsi_len: 14, window: 3, in_delta: 0.5, zones: "30/70", confirm: 1 },
+      "15m": { on: false, strategy: "both", rsi_len: 14, window: 8,  delta: 1.0, zones: "30/70", confirm: 1 },
+      "1h":  { on: true,  strategy: "both", rsi_len: 14, window: 6,  delta: 0.8, zones: "30/70", confirm: 1 },
+      "4h":  { on: true,  strategy: "both", rsi_len: 14, window: 5,  delta: 0.7, zones: "30/70", confirm: 1 },
+      "6h":  { on: false, strategy: "both", rsi_len: 14, window: 5,  delta: 0.6, zones: "30/70", confirm: 1 },
+      "12h": { on: false, strategy: "both", rsi_len: 14, window: 4,  delta: 0.5, zones: "30/70", confirm: 1 },
+      "1d":  { on: false, strategy: "both", rsi_len: 14, window: 3,  delta: 0.5, zones: "30/70", confirm: 1 },
     },
   };
 
@@ -95,9 +95,7 @@
         if (!key) return;
         let v = sel.value;
 
-        if (key === "rsi_len" || key === "window" || key === "confirm") {
-          v = Number(v);
-        } else if (key === "in_delta") {
+        if (key === "rsi_len" || key === "window" || key === "confirm" || key === "delta") {
           v = Number(v);
         }
 
@@ -315,7 +313,7 @@
               ", окно " +
               (rec.window ?? "-") +
               ", дельта " +
-              (rec.in_delta ?? "-") +
+              (rec.delta ?? "-") +
               ", зоны " +
               (rec.zones ?? "-") +
               ", подтверждение " +

@@ -74,10 +74,18 @@ function fetch_home_quotes() {
           return;
         }
 
-        const price =
-          typeof coin.price_usd === "number" && isFinite(coin.price_usd)
-            ? coin.price_usd
-            : null;
+        let price = null;
+
+        if (typeof coin.price_usd === "number" && isFinite(coin.price_usd)) {
+          price = coin.price_usd;
+        } else if (typeof coin.price_usd === "string") {
+          const parsedPrice = parseFloat(
+            coin.price_usd.replace(",", ".").trim()
+          );
+          if (isFinite(parsedPrice)) {
+            price = parsedPrice;
+          }
+        }
 
         let change = null;
 
@@ -103,6 +111,19 @@ function fetch_home_quotes() {
           isFinite(coin.change_24h_pct)
         ) {
           change = coin.change_24h_pct;
+        }
+
+        // Вариант 4: запасной строковый ключ
+        if (
+          change === null &&
+          typeof coin.change_24h_pct === "string"
+        ) {
+          const parsedPct = parseFloat(
+            coin.change_24h_pct.replace("%", "").replace(",", ".").trim()
+          );
+          if (isFinite(parsedPct)) {
+            change = parsedPct;
+          }
         }
 
         normalized[symbol] = {
@@ -166,7 +187,7 @@ function build_home_ticker_row(data) {
       typeof change === "number" && isFinite(change) ? change : null;
 
     let changeClass = "ticker_home_change";
-    let changeText = "0.00%";
+    let changeText = "– – –%";
 
     if (changeNum !== null) {
       const sign = changeNum >= 0 ? "+" : "";
@@ -182,7 +203,7 @@ function build_home_ticker_row(data) {
           ? " ticker_home_change--up"
           : " ticker_home_change--down";
     } else {
-      changeClass += " ticker_home_change--up";
+      changeClass += " ticker_home_change--down";
     }
 
     changeEl.className = changeClass;

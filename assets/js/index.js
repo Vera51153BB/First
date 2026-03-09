@@ -25,9 +25,7 @@ const TICKER_HOME_CONFIG = {
     { symbol: "OKB",  label: "OKB·USDT",  priceDigits: 2 },
     { symbol: "UNI",  label: "UNI·USDT",  priceDigits: 2 },
     { symbol: "DOT",  label: "DOT·USDT",  priceDigits: 4 },
-    { symbol: "LINK", label: "LINK·USDT", priceDigits: 4 },
-    { symbol: "PEPE", label: "PEPE·USDT", priceDigits: 8 },
-    { symbol: "0G", label: "0G·USDT", priceDigits: 3 }    
+    { symbol: "LINK", label: "LINK·USDT", priceDigits: 4 }
   ],
 
   // Параметры обновления

@@ -20,12 +20,12 @@ const TICKER_HOME_CONFIG = {
     { symbol: "BNB",  label: "BNB·USDT",  priceDigits: 2 },
     { symbol: "ADA",  label: "ADA·USDT",  priceDigits: 4 },
     { symbol: "LTC",  label: "LTC·USDT",  priceDigits: 4 },
-    { symbol: "STC",  label: "STC·USDT",  priceDigits: 5 },
+    { symbol: "AVAX", label: "AVAX·USDT", priceDigits: 4 },
     { symbol: "SHIB", label: "SHIB·USDT", priceDigits: 8 },
     { symbol: "OKB",  label: "OKB·USDT",  priceDigits: 2 },
     { symbol: "VET",  label: "VET·USDT",  priceDigits: 4 },
-    { symbol: "PUMP", label: "PUMP·USDT", priceDigits: 4 },
-    { symbol: "OG",   label: "OG·USDT",   priceDigits: 4 }
+    { symbol: "DOT",  label: "DOT·USDT",  priceDigits: 4 },
+    { symbol: "LINK", label: "LINK·USDT", priceDigits: 4 }
   ],
 
   // Параметры обновления
@@ -41,10 +41,55 @@ const TICKER_HOME_CONFIG = {
   // ВАЖНО:
   //   • фронт больше не обращается к CoinGecko;
   //   • берём уже подготовленные данные с нашего backend.
-  apiUrl: "/api/home/ticker"
+  apiUrl: "/api/news/feed?lang=en&limit=10"
 };
 
 // --- Вспомогательные функции (_home_) ---
+
+function parse_home_ticker_summary(summaryText) {
+  const normalized = Object.create(null);
+
+  if (typeof summaryText !== "string" || !summaryText.trim()) {
+    return normalized;
+  }
+
+  const parts = summaryText.split("·");
+
+  parts.forEach((part) => {
+    const text = String(part || "").trim();
+    if (!text) {
+      return;
+    }
+
+    const tokens = text.split(/\s+/).filter(Boolean);
+    if (tokens.length < 3) {
+      return;
+    }
+
+    const symbol = String(tokens[0] || "").trim().toUpperCase();
+    const changeToken = String(tokens[tokens.length - 1] || "").trim();
+    const priceToken = tokens.slice(1, -1).join("");
+
+    if (!symbol || !priceToken || !changeToken) {
+      return;
+    }
+
+    const price = parseFloat(
+      priceToken.replace(/\s+/g, "").replace(",", ".")
+    );
+
+    const change = parseFloat(
+      changeToken.replace("%", "").replace(",", ".")
+    );
+
+    normalized[symbol] = {
+      usd: isFinite(price) ? price : null,
+      usd_24h_change: isFinite(change) ? change : null
+    };
+  });
+
+  return normalized;
+}
 
 function fetch_home_quotes() {
   return fetch(TICKER_HOME_CONFIG.apiUrl, { cache: "no-store" })
@@ -54,85 +99,25 @@ function fetch_home_quotes() {
       }
       return res.json();
     })
-    .then((snapshot) => {
-      // Нормализуем backend snapshot к формату,
-      // который уже использует текущий UI тикера:
-      // data[SYMBOL] = { usd: number|null, usd_24h_change: number|null }
-      const normalized = Object.create(null);
+    .then((feedItems) => {
+      if (!Array.isArray(feedItems)) {
+        return null;
+      }
 
-      const coins = snapshot && Array.isArray(snapshot.coins)
-        ? snapshot.coins
-        : [];
-
-      coins.forEach((coin) => {
-        if (!coin || typeof coin.symbol !== "string") {
-          return;
-        }
-
-        const symbol = coin.symbol.trim().toUpperCase();
-        if (!symbol) {
-          return;
-        }
-
-        let price = null;
-
-        if (typeof coin.price_usd === "number" && isFinite(coin.price_usd)) {
-          price = coin.price_usd;
-        } else if (typeof coin.price_usd === "string") {
-          const parsedPrice = parseFloat(
-            coin.price_usd.replace(",", ".").trim()
-          );
-          if (isFinite(parsedPrice)) {
-            price = parsedPrice;
-          }
-        }
-
-        let change = null;
-
-        // Вариант 1: backend уже отдал число
-        if (typeof coin.change_24h === "number" && isFinite(coin.change_24h)) {
-          change = coin.change_24h;
-        }
-
-        // Вариант 2: backend отдал строку вида "+2.34%"
-        if (change === null && typeof coin.change_24h === "string") {
-          const parsed = parseFloat(
-            coin.change_24h.replace("%", "").replace(",", ".").trim()
-          );
-          if (isFinite(parsed)) {
-            change = parsed;
-          }
-        }
-
-        // Вариант 3: запасной числовой ключ
-        if (
-          change === null &&
-          typeof coin.change_24h_pct === "number" &&
-          isFinite(coin.change_24h_pct)
-        ) {
-          change = coin.change_24h_pct;
-        }
-
-        // Вариант 4: запасной строковый ключ
-        if (
-          change === null &&
-          typeof coin.change_24h_pct === "string"
-        ) {
-          const parsedPct = parseFloat(
-            coin.change_24h_pct.replace("%", "").replace(",", ".").trim()
-          );
-          if (isFinite(parsedPct)) {
-            change = parsedPct;
-          }
-        }
-
-        normalized[symbol] = {
-          usd: price,
-          usd_24h_change: change
-        };
+      const tickerCard = feedItems.find((item) => {
+        return item && item.kind === "ticker";
       });
 
-      return normalized;
+      if (!tickerCard) {
+        return null;
+      }
+
+      const summaryText =
+        typeof tickerCard.summary === "string" && tickerCard.summary.trim()
+          ? tickerCard.summary
+          : "";
+
+      return parse_home_ticker_summary(summaryText);
     })
     .catch((err) => {
       console.warn("[home_ticker] fetch error:", err);

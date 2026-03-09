@@ -4,51 +4,114 @@ const TICKER_HOME_CONFIG = {
   //  imgWidth: 1344,
   //  imgHeight: 768,
 
-// Список монет с CoinGecko для отображения (можно менять)
+  // Список монет для отображения.
+  // ВАЖНО:
+  //   • symbol — ключ сопоставления с backend /api/home/ticker;
+  //   • label — подпись в UI;
+  //   • priceDigits — точность цены для конкретной монеты;
+  //   • внешний CoinGecko больше не используется.
   symbols: [
-    { id: "bitcoin", label: "BTC·USDT" },
-    { id: "ethereum", label: "ETH·USDT" },
-    { id: "solana", label: "SOL·USDT" },
-    { id: "the-open-network", label: "TON·USDT" },    
-    { id: "ripple", label: "XRP·USDT" },
-    { id: "dogecoin", label: "DOGE·USDT" },
-    { id: "binancecoin", label: "BNB·USDT" },
-    { id: "cardano", label: "ADA·USDT" },
-    { id: "litecoin", label: "LTC·USDT" },
-    { id: "starcoin", label: "STRC·USDT" },
-    { id: "shiba-inu", label: "SHIB·USDT" },
-    { id: "okb", label: "OKB·USDT" },
-    { id: "vechain", label: "VeChain·USDT" },
-    { id: "pump-fun", label: "PUMP·USDT" },
-    { id: "og-fan-token", label: "OG·USDT" }
-    
+    { symbol: "BTC",  label: "BTC·USDT",  priceDigits: 2 },
+    { symbol: "ETH",  label: "ETH·USDT",  priceDigits: 2 },
+    { symbol: "SOL",  label: "SOL·USDT",  priceDigits: 4 },
+    { symbol: "TON",  label: "TON·USDT",  priceDigits: 4 },
+    { symbol: "XRP",  label: "XRP·USDT",  priceDigits: 4 },
+    { symbol: "DOGE", label: "DOGE·USDT", priceDigits: 5 },
+    { symbol: "BNB",  label: "BNB·USDT",  priceDigits: 2 },
+    { symbol: "ADA",  label: "ADA·USDT",  priceDigits: 4 },
+    { symbol: "LTC",  label: "LTC·USDT",  priceDigits: 4 },
+    { symbol: "STC",  label: "STC·USDT",  priceDigits: 5 },
+    { symbol: "SHIB", label: "SHIB·USDT", priceDigits: 8 },
+    { symbol: "OKB",  label: "OKB·USDT",  priceDigits: 2 },
+    { symbol: "VET",  label: "VET·USDT",  priceDigits: 4 },
+    { symbol: "PUMP", label: "PUMP·USDT", priceDigits: 4 },
+    { symbol: "OG",   label: "OG·USDT",   priceDigits: 4 }
   ],
 
   // Параметры обновления
   refreshMs: 60000, // 60 секунд
-  // Округление цены и процента
-  priceDigits: 2,
+
+  // Округление процента.
+  // ВАЖНО:
+  //   • priceDigits теперь задаётся на уровне каждой монеты отдельно;
+  //   • changeDigits остаётся общим для процентов.
   changeDigits: 2,
 
-  // URL CoinGecko: берём simple/price (можно заменить на свой backend)
-  apiUrl:
-    "https://api.coingecko.com/api/v3/simple/price?vs_currencies=usd&include_24hr_change=true"
+  // Backend-снимок цен.
+  // ВАЖНО:
+  //   • фронт больше не обращается к CoinGecko;
+  //   • берём уже подготовленные данные с нашего backend.
+  apiUrl: "/api/home/ticker"
 };
 
 // --- Вспомогательные функции (_home_) ---
 
 function fetch_home_quotes() {
-  const ids = TICKER_HOME_CONFIG.symbols
-    .map((s) => encodeURIComponent(s.id))
-    .join(",");
-  const url = TICKER_HOME_CONFIG.apiUrl + "&ids=" + ids;
-
-  return fetch(url, { cache: "no-store" })
+  return fetch(TICKER_HOME_CONFIG.apiUrl, { cache: "no-store" })
     .then((res) => {
       if (!res.ok) {
         throw new Error("HTTP " + res.status);
       }
       return res.json();
+    })
+    .then((snapshot) => {
+      // Нормализуем backend snapshot к формату,
+      // который уже использует текущий UI тикера:
+      // data[SYMBOL] = { usd: number|null, usd_24h_change: number|null }
+      const normalized = Object.create(null);
+
+      const coins = snapshot && Array.isArray(snapshot.coins)
+        ? snapshot.coins
+        : [];
+
+      coins.forEach((coin) => {
+        if (!coin || typeof coin.symbol !== "string") {
+          return;
+        }
+
+        const symbol = coin.symbol.trim().toUpperCase();
+        if (!symbol) {
+          return;
+        }
+
+        const price =
+          typeof coin.price_usd === "number" && isFinite(coin.price_usd)
+            ? coin.price_usd
+            : null;
+
+        let change = null;
+
+        // Вариант 1: backend уже отдал число
+        if (typeof coin.change_24h === "number" && isFinite(coin.change_24h)) {
+          change = coin.change_24h;
+        }
+
+        // Вариант 2: backend отдал строку вида "+2.34%"
+        if (change === null && typeof coin.change_24h === "string") {
+          const parsed = parseFloat(
+            coin.change_24h.replace("%", "").replace(",", ".").trim()
+          );
+          if (isFinite(parsed)) {
+            change = parsed;
+          }
+        }
+
+        // Вариант 3: запасной числовой ключ
+        if (
+          change === null &&
+          typeof coin.change_24h_pct === "number" &&
+          isFinite(coin.change_24h_pct)
+        ) {
+          change = coin.change_24h_pct;
+        }
+
+        normalized[symbol] = {
+          usd: price,
+          usd_24h_change: change
+        };
+      });
+
+      return normalized;
     })
     .catch((err) => {
       console.warn("[home_ticker] fetch error:", err);
@@ -78,7 +141,7 @@ function build_home_ticker_row(data) {
   const frag = document.createDocumentFragment();
 
   TICKER_HOME_CONFIG.symbols.forEach((sym) => {
-    const raw = data && data[sym.id];
+    const raw = data && data[sym.symbol];
     const price = raw ? raw.usd : null;
     const change = raw ? raw.usd_24h_change : null;
 
@@ -93,9 +156,11 @@ function build_home_ticker_row(data) {
     priceEl.className = "ticker_home_price";
     priceEl.textContent = format_home_number(
       price,
-      TICKER_HOME_CONFIG.priceDigits
+      typeof sym.priceDigits === "number"
+        ? sym.priceDigits
+        : 2
     );
-
+    
     const changeEl = document.createElement("span");
     const changeNum =
       typeof change === "number" && isFinite(change) ? change : null;
